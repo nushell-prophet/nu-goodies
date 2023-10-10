@@ -1,4 +1,4 @@
-use to-number-format.nu
+use number-format.nu
 
 export def main [
     column_name: string
@@ -61,11 +61,9 @@ export def main [
 
 
     $input
-    | upsert $column_name {
-        |i| (
-            to-number-format ($i | get $column_name)
+    | upsert $column_name {|i|
+        ( number-format ($i | get $column_name)
             --denom $denom --decimals $decimals
-            --thousands_delim $thousands_delim --integers $integers
-        )
+            --thousands_delim $thousands_delim --integers $integers )
     }
 }
