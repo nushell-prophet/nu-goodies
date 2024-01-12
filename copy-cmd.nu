@@ -1,5 +1,5 @@
 # copy this command to clipboard
-use std clip
+use clip.nu
 export def main [] {
     history
     | last

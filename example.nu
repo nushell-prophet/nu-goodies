@@ -1,5 +1,5 @@
 # output a command from a pipe where `example` used, and truncate the output table
-use std clip
+use clip.nu
 use abbreviate.nu
 export def main [
     --dont_copy (-C)
