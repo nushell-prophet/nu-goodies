@@ -1,6 +1,6 @@
 export def --env main [
     --first: int = 500
-] {
+]: [list -> nothing, table -> nothing] {
     let $input = $in
     let $temp_path = $nu.temp-path | path join 'hard_links' (date now | format date "%Y%m%d_%H%M%S")
 
