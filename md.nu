@@ -1,13 +1,16 @@
 export def --env main [
-    target_dir: path
+    target_dir
     -d # use standard directory
     --dest_dir: path = '/Users/user/temp'
 ] {
-    let $dir = (if $d or ($dest_dir != '/Users/user/temp') {
+    let $dir = (
+        if $d or ($dest_dir != '/Users/user/temp') {
             $dest_dir | path join $target_dir
-        } else {$target_dir})
-    
+        } else {$target_dir}
+        | path expand
+    )
+
     mkdir $dir
     cd $dir
-    wezterm cli set-tab-title $target_dir
+    wezterm cli set-tab-title ($dir | path basename)
 }
