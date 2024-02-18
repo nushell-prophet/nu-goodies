@@ -2,11 +2,15 @@
 # by @melmass at discord
 
 # interactively select columns from a table
-export def iselect [] {
-    let tgt = $in
+export def main [] {
+    let tgt = ($in | first 10)
     let cols = ($tgt | columns)
 
-    let choices = ($cols | input list -m "Pick columns to get: ")
-    $tgt | select $choices
-
+    let $choices = ($cols | input list -m "Pick columns to get: ")
+    
+    history 
+    | last 
+    | get command 
+    | str replace 'select-i' $'select ($choices | str join " ")'
+    | commandline $in
 }
