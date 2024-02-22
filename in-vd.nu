@@ -7,7 +7,7 @@ use /Users/user/git/nushell-kv/kv.nu
 #
 # Examples:
 # > history | in-vd
-def 'in-vd' [
+export def main [
     --dont_strip_ansi_codes (-S) # ansi codes are stripped by default, this option disables stripping ansi codes.
     --json (-j)     # force to use json for piping data in-vd
     --csv (-c)      # force to use csv for piping data in-vd
@@ -50,8 +50,10 @@ def 'in-vd' [
     }
 }
 
+alias core_hist = history
+
 # Open nushell commands history in visidata
-export def 'history-in-vd' [
+export def 'history' [
     query: string = ''
     --entries: int = 5000 # the number of last entries to work with
     --all                   # return all the history
@@ -61,7 +63,7 @@ export def 'history-in-vd' [
 ] {
     $in
     | if $in != null {} else {
-        history -l
+        core_hist -l
         | if $session {
             where session_id == (history session)
         } else if $folder {
