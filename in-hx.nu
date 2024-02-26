@@ -7,10 +7,8 @@ export def main [
     let $filename = $nu.temp-path | path join (date now | format date "%Y%m%d_%H%M%S" | $in + '.nu')
 
     $input
-    | if ($type =~ '(table|record|list)') {
-        to nuon
-    } else {}
-    # | if ($type =~ '(raw type|string)') { }
+    | if ($type =~ '(table|record|list)') { to nuon } else {}
+    | if ($type =~ '(raw type|string)') { ansi strip } else {}
     | save $filename
 
     hx $filename
