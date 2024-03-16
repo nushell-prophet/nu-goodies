@@ -3,7 +3,7 @@
 
 # interactively select columns from a table
 export def main [] {
-    let tgt = ($in | first 10)
+    let tgt = ($in)
     let cols = ($tgt | columns)
 
     let $choices = ($cols | input list -m "Pick columns to get: ")
