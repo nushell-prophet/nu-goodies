@@ -3,7 +3,8 @@ use abbreviate.nu
 export def main [
     --dont_copy (-C)
     --dont_comment (-H)
-    --indentation_spaces (-i) = 1
+    --indentation_spaces (-i): int = 1
+    --first: int
 ] {
     let $in_table = ($in | abbreviate | table | ansi strip)
 
@@ -17,7 +18,17 @@ export def main [
         | each {|i| $'#(seq 1 $indentation_spaces | each {" "} | str join '')($i)'}
         | str join (char nl)
     }
+    | if $first != null {
+        lines
+        | if ($in | length | $in <= $first) {} else {
+            first $first
+            | append '...'
+        }
+        | str join (char nl)
+    } else {}
     | if $dont_copy {} else {
-        pbcopy
+        let $i = $in
+        $i | pbcopy
+        $i
     }
 }
