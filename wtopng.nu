@@ -1,29 +1,39 @@
+# capture wezterm scrollback, split by prompts, output chosen to an image file
+# uses nu_plugin_image
+# https://wezfurlong.org/wezterm/index.html
+# https://github.com/FMotalleb/nu_plugin_image/
+
+# capture wezterm scrollback, split by prompts, output chosen ones to an image file
 export def main [
-    $n_commands: int = 1
-    --lines_before_top: int = 100
-    --regex: string = '' # some regex to split prompts with results from each other
-    --min_term_width: int = 120
-    --date # make images uniq by prepending date
+    $n_last_commands: int = 1 # Number of recent commands (and outputs) to capture. Default is 1.
+    --lines_before_top_of_term: int = 100 # Lines from top of scrollback in Wezterm to capture.
+    --regex: string = '' # Regex to separate prompts from outputs. Default is ''.
+    --min_term_width: int = 60
+    --output_path: path = '' # Path for saving output images.
+    --date # Append date to image filenames for uniqueness (ignored if `--output_path` is set)
 ] {
-    let $filename = (
-        last-commands $n_commands
-        | to-safe-filename --suffix '.png' --date=$date
+    let $output_path: path = (
+        $output_path
+        | if $in != '' {} else {
+            last-commands $n_last_commands
+            | to-safe-filename --prefix 'wez-out-' --suffix '.png' --date=$date
+        }
     )
 
-    ^wezterm cli get-text --escapes --start-line ($lines_before_top * -1)
+    ^wezterm cli get-text --escapes --start-line ($lines_before_top_of_term * -1)
     | str replace -ra '(\r|\n)+$' ''
     | lines
     | skip until {|i| $i =~ $regex}
     | split list --regex $regex
     | drop
-    | last $n_commands
+    | last $n_last_commands
     | flatten
     | append (seq 1 $min_term_width | each {' '} | str join)
     | prepend ''
     | str join (char nl)
-    | to png $filename
+    | to png $output_path
 
-    $filename
+    $output_path
 }
 
 def now-fn []: nothing -> string {
@@ -31,13 +41,17 @@ def now-fn []: nothing -> string {
 }
 
 def last-commands [
-    $n_commands
+    $n_last_commands
 ]: nothing -> string {
-    history | last ($n_commands + 1) | drop | get command | str trim | str join '+'
+    history
+    | last ($n_last_commands + 1)
+    | drop # drop the last command to initiate image capture
+    | get command
+    | str trim
+    | str join '+'
 }
 
 def to-safe-filename [
-    --version (-v): int = 1 #version of shortening
     --prefix: string = ''
     --suffix: string = ''
     --regex: string = '[^A-Za-z0-9_А-Яа-я+]' # symbols to keep
@@ -53,5 +67,4 @@ def to-safe-filename [
         }
     } else {}
     | $'($prefix)($in)($suffix)'
-
 }
