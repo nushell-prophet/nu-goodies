@@ -1,5 +1,4 @@
 use /Users/user/git/nushell-kv/kv.nu
-use 'history extra.nu'
 
 # Open data in VisiData🔥
 #
@@ -51,17 +50,8 @@ export def main [
     }
 }
 
-alias core_hist = history
-
 # Open nushell commands history in visidata
-export def 'history' [
-    query: string = ''
-    --entries: int = 5000 # the number of last entries to work with
-    --all                   # return all the history
-    --session (-s)  # show only entries from session
-    --folder
-    --last_x: duration # duration for the period to check commands
-] {
+export def 'history' [ ] {
     where command !~ 'in-vd history'
     | to csv
     | vd --save-filetype csv --filetype csv -o -
@@ -71,5 +61,5 @@ export def 'history' [
     | reverse
     | str join $';(char nl)'
     | str replace -r ';.+?\| in-vd;' ';'
-    | commandline $in
+    | commandline edit -r $in
 }
