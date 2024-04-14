@@ -4,6 +4,7 @@ export def 'main' [
     let $message = ($message | default (date now | format date "%Y-%m-%d"))
 
     glob $'("~" | path expand)/.*' --no-dir
+    | where $it != '/Users/user/.CFUserTextEncoding'
     | each {|i| cp $i ('~/.config/dot_home_dir' | path expand)}
 
     [
@@ -11,7 +12,7 @@ export def 'main' [
         '~/apps-files/github/nu_scripts/'
         '~/.config/'
         '~/.visidata/'
-    ] 
+    ]
     | path expand
     | each { |dir|
         print $dir;
@@ -20,4 +21,3 @@ export def 'main' [
         git commit -a -m $message
     }
 }
-
