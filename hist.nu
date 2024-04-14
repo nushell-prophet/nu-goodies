@@ -20,7 +20,7 @@ export def main [
         }
     }
     | if $last_x != null {
-        where start_timestamp > (date now | $in - $last_x | format date '%F %X')
+        where start_timestamp > ((date now) - $last_x | format date '%F %X')
     } else {}
     | if $query == '' {} else {
         where command =~ $query
