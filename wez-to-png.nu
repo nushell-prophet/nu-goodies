@@ -6,7 +6,7 @@
 # capture wezterm scrollback, split by prompts, output chosen ones to an image file
 export def main [
     $n_last_commands: int = 1 # Number of recent commands (and outputs) to capture. Default is 1.
-    --lines_before_top_of_term: int = 100 # Lines from top of scrollback in Wezterm to capture.
+    --lines_before_top_of_term: int = 10000 # Lines from top of scrollback in Wezterm to capture.
     --regex: string = '' # Regex to separate prompts from outputs. Default is ''.
     --min_term_width: int = 60
     --output_path: path = '' # Path for saving output images.
@@ -59,11 +59,11 @@ def to-safe-filename [
 ]: string -> string {
     str replace -ra $regex '_'
     | str replace -ra '__+' '_'
-    | if (($in | str length) > 220) {
+    | if (($in | str length) > 50) {
         if $date {
-            $'(now-fn)+($in | str substring ..220)' # make string uniq
+            $'(now-fn)+($in | str substring ..50)' # make string uniq
         } else {
-            $'($in | str substring ..220)($in | hash sha256 | str substring ..10)' # make string uniq
+            $'($in | str substring ..50)($in | hash sha256 | str substring ..10)' # make string uniq
         }
     } else {}
     | $'($prefix)($in)($suffix)'
