@@ -1,4 +1,5 @@
 alias core_hist = history
+use in-vd.nu history
 
 # add useful columns for history filtering, uses the first argument as a regex to filter commands
 export def main [
@@ -8,6 +9,7 @@ export def main [
     --session (-s)  # show only entries from session
     --folder
     --last_x: duration # duration for the period to check commands
+    --in_vd (-v) # open in vd
 ] {
     if $in != null {} else {
         core_hist -l
@@ -31,4 +33,7 @@ export def main [
         | move start_timestamp --after command
         | upsert pipes {|i| $i.command | split row -r '\s\|\s' | length}
     }
+    | if $in_vd {
+        history
+    } else {}
 }
