@@ -7,10 +7,10 @@ export def main [] {
     let cols = ($tgt | columns)
 
     let $choices = ($cols | input list -m "Pick columns to get: ")
-    
-    history 
-    | last 
-    | get command 
+
+    history
+    | last
+    | get command
     | str replace 'select-i' $'select ($choices | str join " ")'
-    | commandline $in
+    | commandline edit -r $in
 }
