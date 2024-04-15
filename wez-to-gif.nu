@@ -1,11 +1,20 @@
 #wez-to-gif
 export def main [
     filename?: path
+    --font-family: string = "JetBrainsMono Nerd Font Mono"
+    --font-size: int = 20
 ] {
-    let $wezrec = (^wezterm record | complete | get stderr | str replace -r '.*\n.*\/var' '/var' | str trim -c (char nl))
-    let $gif_name = $filename
-        | default ($'_wez_gif_(date now | format date '%s').gif')
+    let $wezrec = ^wezterm record
+        | complete
+        | get stderr
+        | str replace -r '.*\n.*\/var' '/var'
+        | str trim -c (char nl)
 
-    ^agg --font-family "JetBrainsMono Nerd Font Mono" --font-size 20 -v $wezrec $gif_name
+    let $gif_name = $filename
+        | default $'_wez_gif_(date now | format date `%s`).gif'
+        | path expand
+
+    ^agg --font-family $font_family --font-size $font_size -v $wezrec $gif_name
+    print ''
     $gif_name
 }
