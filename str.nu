@@ -12,20 +12,20 @@ export def repeat [
 export def append [
     ...text: string
     --space (-s)
+    --2space (-2)
     --new-line (-n)
     --tab (-t)
     --concatenator (-c): string = '' # input and rest concatenator
     --rest_el: string = ' ' # rest elements concatenator
 ] {
     let $input = $in
-    let $concatenator = $concatenator
-        | if $in != '' {} else {
-            if $new_line {(char nl)} else {
-                if $tab {(char tab)} else {
-                    if $space {' '} else {''}
-                }
-            }
-        }
+    let $concatenator = $"(
+        if $new_line {(char nl)} )(
+        if $tab {(char tab)} )(
+        if $2space {'  '} )(
+        if $space {' '} )(
+        $concatenator
+    )"
 
     $"($input)($concatenator)( $text | str join $rest_el )"
 }
@@ -33,20 +33,20 @@ export def append [
 export def prepend [
     ...text: string
     --space (-s)
+    --2space (-2)
     --new-line (-n)
     --tab (-t)
     --concatenator (-c): string = '' # input and rest concatenator
     --rest_el: string = ' ' # rest elements concatenator
 ] {
     let $input = $in
-    let $concatenator = $concatenator
-        | if $in != '' {} else {
-            if $new_line {(char nl)} else {
-                if $tab {(char tab)} else {
-                    if $space {' '} else {''}
-                }
-            }
-        }
+    let $concatenator = $"(
+        if $new_line {(char nl)} )(
+        if $tab {(char tab)} )(
+        if $2space {'  '} )(
+        if $space {' '} )(
+        $concatenator
+    )"
 
     $"( $text | str join $rest_el )($concatenator)($input)"
 }
