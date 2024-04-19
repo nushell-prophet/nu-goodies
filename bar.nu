@@ -1,6 +1,7 @@
 use std repeat
 
 # construct bars based of a given percentage from a given width (5 is default)
+#
 # https://github.com/nushell/nu_scripts/blob/main/sourced/progress_bar/bar.nu
 # > bar 0.2
 # █
