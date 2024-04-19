@@ -10,19 +10,45 @@ export def repeat [
 }
 
 export def append [
-    text: string
+    ...text: string
     --space (-s)
     --new-line (-n)
+    --tab (-t)
+    --concatenator (-c): string = '' # input and rest concatenator
+    --rest_el: string = ' ' # rest elements concatenator
 ] {
-    $"($in)(if $space {' '})(if $new_line {(char nl)})($text)"
+    let $input = $in
+    let $concatenator = $concatenator
+        | if $in != '' {} else {
+            if $new_line {(char nl)} else {
+                if $tab {(char tab)} else {
+                    if $space {' '} else {''}
+                }
+            }
+        }
+
+    $"($input)($concatenator)( $text | str join $rest_el )"
 }
 
 export def prepend [
-    text: string
+    ...text: string
     --space (-s)
     --new-line (-n)
+    --tab (-t)
+    --concatenator (-c): string = '' # input and rest concatenator
+    --rest_el: string = ' ' # rest elements concatenator
 ] {
-    $"($text)(if $space {' '})(if $new_line {(char nl)})($in)"
+    let $input = $in
+    let $concatenator = $concatenator
+        | if $in != '' {} else {
+            if $new_line {(char nl)} else {
+                if $tab {(char tab)} else {
+                    if $space {' '} else {''}
+                }
+            }
+        }
+
+    $"( $text | str join $rest_el )($concatenator)($input)"
 }
 
 export def indent [] {}
