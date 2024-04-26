@@ -16,6 +16,6 @@ export def main [
     if $path {
         print $path
     } else {
-        commandline (open $filename)
+        commandline edit -r (open $filename)
     }
 }
