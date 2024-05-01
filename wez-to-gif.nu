@@ -4,7 +4,7 @@ export def main [
     --font-family: string = "JetBrainsMono Nerd Font Mono"
     --font-size: int = 20
 ] {
-    let $wezrec = ^wezterm record
+    let $wezrec = ^wezterm record --cwd (pwd)
         | complete
         | get stderr
         | str replace -r '.*\n.*\/var' '/var'
