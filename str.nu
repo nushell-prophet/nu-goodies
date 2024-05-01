@@ -54,3 +54,13 @@ export def prepend [
 export def indent [] {}
 
 export def dedent [] {}
+
+export def 'escape-regex' [] {
+    let $input = $in
+    let $regex_special_symbols = [\\, \., \^, "\\$", \*, \+, \?, "\\{", "\\}", "\\(", "\\)", "\\[", "\\]", "\\|", \/]
+
+    $regex_special_symbols
+    | str replace '\' ''
+    | zip $regex_special_symbols
+    | reduce -f $input {|i acc| $acc | str replace -a $i.0 $i.1}
+}
