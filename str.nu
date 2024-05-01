@@ -64,3 +64,13 @@ export def 'escape-regex' [] {
     | zip $regex_special_symbols
     | reduce -f $input {|i acc| $acc | str replace -a $i.0 $i.1}
 }
+
+export def 'escape-escapes' [] {
+    let $input = $in
+
+    help escapes
+    | filter {|i| ($i.output | str length) == 1}
+    | std_prepend {sequence: '\\' output: '\'}
+    | uniq
+    | reduce -f $input {|i acc| $acc | str replace -a $i.output $i.sequence}
+}
