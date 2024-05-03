@@ -1,12 +1,11 @@
 #wez-to-gif
 export def main [
-    ...rest: string
-    --filename: path
+    filename?: path
     --font-family: string = "JetBrainsMono Nerd Font Mono"
     --font-size: int = 20
     --ascinema # copy ascinema here too
 ] {
-    let $wezrec = ^wezterm record --cwd (pwd) -- $nu.current-exe --execute $'source $nu.env-path; clear; commandline edit -r ($rest | str join " ")'
+    let $wezrec = ^wezterm record --cwd (pwd) -- $nu.current-exe --execute $'source $nu.env-path; clear'
         | complete
         | get stderr
         | str replace -r '.*\n.*\/var' '/var'
