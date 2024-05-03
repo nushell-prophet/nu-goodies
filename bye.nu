@@ -1,13 +1,18 @@
 export def main [
-    main_text:string = '<nushell<is<awesome<'
-    hidden_text: string = 'you<are<awesome<too'
-    --frames_total: int = 500
-    --frame_hidden: int = 495
+    1:string = '<nushell<is<awesome<'
+    2:string = '<wezterm<is<awesome<'
+    3:string = 'and<you<are<awesome<'
+    --frames: int = 500
     -n # don't quit
 ] {
-    seq 0 $frames_total
-    | each {$main_text | ansi gradient --fgstart '0x3719bd' --fgend '0xa9be52'}
-    | insert $frame_hidden ($hidden_text | ansi gradient --fgstart '0x3719bd' --fgend '0xa9be52')
+    seq 0 $frames
+    | each {$1 | ansi gradient --fgstart '0x3719bd' --fgend '0xa9be52'}
+    | insert ($frames - (random int 2..10)) (
+        $3 | ansi gradient --fgstart '0x3719bd' --fgend '0xa9be52'
+    )
+    | insert ($frames - (random int 8..20)) (
+        $2 | ansi gradient --fgstart '0x3719bd' --fgend '0xa9be52'
+    )
     | str join
     | print; sleep 0.2sec;
 
