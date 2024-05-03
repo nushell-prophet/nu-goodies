@@ -1,3 +1,4 @@
+export module bye.nu
 export module "L.nu"
 export module "abbreviate.nu"
 export module "bar.nu"
