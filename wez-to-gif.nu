@@ -1,12 +1,11 @@
 #wez-to-gif
 export def main [
-    ...rest: string
+    command: string
     --filename: path
     --font-family: string = "JetBrainsMono Nerd Font Mono"
     --font-size: int = 20
     --ascinema # copy ascinema here too
 ] {
-    let $command = ($rest | str join " ")
     let $com_out = $'"> " + ($command) | nu-highlight | print; ($command)'
     let $wezrec = ^wezterm record --cwd (pwd) -- $nu.current-exe --execute $'source $nu.env-path; clear; ($com_out)'
         | complete
