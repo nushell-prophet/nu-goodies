@@ -12,7 +12,12 @@ export def main [
     --copy (-c) # strip ansi codes from output table and copy it to clipboard
 ] {
     let $value = $in
-    let $val_length = ($value | length)
+    let $value_desc = $value | describe
+    let $val_length = if $value_desc =~ '^(table|list)' {
+            $value | length
+        } else {
+            1
+        }
 
     if $val_length > 6 {
         $value | first 3
