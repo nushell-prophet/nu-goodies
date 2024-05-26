@@ -12,13 +12,13 @@ export def main [
     --output_path: path = '' # Path for saving output images.
     --date # Append date to image filenames for uniqueness (ignored if `--output_path` is set)
 ] {
-    let $output_path: path = (
-        $output_path
+    let $output_path = $output_path
         | if $in != '' {} else {
             last-commands $n_last_commands
             | to-safe-filename --prefix 'wez-out-' --suffix '.png' --date=$date
         }
-    )
+        | [(pwd) $in]
+        | path join
 
     ^wezterm cli get-text --escapes --start-line ($lines_before_top_of_term * -1)
     | str replace -ra '(\r|\n)+$' ''
@@ -48,7 +48,7 @@ def last-commands [
     | drop # drop the last command to initiate image capture
     | get command
     | str trim
-    | str join '+'
+    | str join '_'
 }
 
 def to-safe-filename [
@@ -59,11 +59,11 @@ def to-safe-filename [
 ]: string -> string {
     str replace -ra $regex '_'
     | str replace -ra '__+' '_'
-    | if (($in | str length) > 50) {
+    | if (($in | str length) > 30) {
         if $date {
-            $'(now-fn)+($in | str substring ..50)' # make string uniq
+            $'(now-fn)+($in | str substring ..30)' # make string uniq
         } else {
-            $'($in | str substring ..50)($in | hash sha256 | str substring ..10)' # make string uniq
+            $'($in | str substring ..30)($in | hash sha256 | str substring ..10)' # make string uniq
         }
     } else {}
     | $'($prefix)($in)($suffix)'
