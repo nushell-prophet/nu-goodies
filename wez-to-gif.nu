@@ -1,6 +1,6 @@
 #wez-to-gif
 export def main [
-    command: string
+    command: string = '""'
     --filename: path
     --font-family: string = "JetBrainsMono Nerd Font Mono"
     --font-size: int = 20
