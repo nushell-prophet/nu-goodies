@@ -1,9 +1,10 @@
 export def main [
     r
     --delimeter: string = ' ' # delimeter between left and right
+    --collapse # use collapsed table representation
 ] {
-    let $l = $in | table | into string | lines
-    let $r = $r | table | into string | lines
+    let $l = $in | if $collapse {table} else {table -e} | into string | lines
+    let $r = $r | if $collapse {table} else {table -e} | into string | lines
 
     if $l == $r {
         print 'equal!'
