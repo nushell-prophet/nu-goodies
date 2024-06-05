@@ -7,9 +7,9 @@
 # the stdin first. If no stdin is used closure takes no argument & the output is
 # used as the file content. If there is stdin closure takes the file name as an
 # argument & operates on it.
-export def command-to-temp-file [
+export def main [
     expression?: closure     # Commands used to generate the content of the file.
-]: [string -> path, nothing -> path] {
+]: {
     let content = $in | default ""
     let output_file = mktemp -t
     if $content != "" {
@@ -19,6 +19,6 @@ export def command-to-temp-file [
         }
         return $output_file
     }
-    do $expression | default "" o> $output_file
+    do $expression | default "" | save $output_file
     $output_file
 }
