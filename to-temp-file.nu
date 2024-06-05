@@ -8,17 +8,13 @@
 # used as the file content. If there is stdin closure takes the file name as an
 # argument & operates on it.
 export def main [
-    expression?: closure     # Commands used to generate the content of the file.
+    content?     # Commands used to generate the content of the file.
 ]: {
-    let content = $in | default ""
-    let output_file = mktemp -t
-    if $content != "" {
-        $content | save -f $output_file
-        if $expression != null {
-            do $expression $output_file
-        }
-        return $output_file
-    }
-    do $expression | default "" | save $output_file
+    let content = if $content == null {} else {$content}
+    let output_file = $nu.temp-path
+        | path join $'(date now | into int).yaml'
+
+    $content | save $output_file
+
     $output_file
 }
