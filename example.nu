@@ -6,7 +6,9 @@ export def main [
     --indentation_spaces (-i): int = 1
     --first: int
 ] {
-    let $in_table = ($in | abbreviate | table | ansi strip)
+    let $in_table = abbreviate
+        | table
+        | if $dont_comment {} else {ansi strip}
 
     history
     | last
