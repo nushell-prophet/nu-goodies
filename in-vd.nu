@@ -46,7 +46,10 @@ export def main [
     }
     | from json  # vd will output the final sheet `ctrl + shift + q`
     | if ($in != null) {
-        kv set vd
+        if ($in | columns) == [''] {
+            get ''
+        } else {}
+        | kv set vd
     }
 }
 
