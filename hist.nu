@@ -25,15 +25,11 @@ export def main [
         where start_timestamp > ((date now) - $last_x | format date '%F %X')
     } else {}
     | if $query == [] {} else {
-        if ($query | length) == 1 {
-            where command =~ $query.0
-        } else {
-            let $inp = $in
+        let $inp = $in
 
-            $query
-            | reduce -f $inp {|it acc|
-                $acc | filter {|i| $i.command =~ $it}
-            }
+        $query
+        | reduce -f $inp {|it acc|
+            $acc | filter {|i| $i.command =~ $it}
         }
     }
     | if ('duration_s' in ...($in | columns)) {} else {
