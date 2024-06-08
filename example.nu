@@ -14,6 +14,9 @@ export def main [
     | last
     | get command
     | str replace -r '\| example.*' ''
+    | if $dont_comment {
+        nu-highlight # for making screnshots
+    } else {}
     | $'> ($in)(char nl)($in_table)'
     | if $dont_comment {} else {
         lines
