@@ -62,7 +62,7 @@ export def 'history' [ ] {
     | from csv
     | get command
     | reverse
-    | str join $';(char nl)'
+    | str join $'(char nl)'
     | str replace -r ';.+?\| in-vd;' ';'
     | commandline edit -r $in
 }
