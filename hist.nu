@@ -3,7 +3,7 @@ use in-vd.nu history
 
 # add useful columns for history filtering, uses the first argument as a regex to filter commands
 export def main [
-    query: string = ''
+    ...query: string
     --entries: int = 5000 # the number of last entries to work with
     --all                   # return all the history
     --session (-s)  # show only entries from session
@@ -24,8 +24,17 @@ export def main [
     | if $last_x != null {
         where start_timestamp > ((date now) - $last_x | format date '%F %X')
     } else {}
-    | if $query == '' {} else {
-        where command =~ $query
+    | if $query == [] {} else {
+        if ($query | length) == 1 {
+            where command =~ $query.0
+        } else {
+            let $inp = $in
+
+            $query
+            | reduce -f $inp {|it acc|
+                $acc | filter {|i| $i.command =~ $it}
+            }
+        }
     }
     | if ('duration_s' in ...($in | columns)) {} else {
         upsert duration_s {|i| $i.duration | into int | $in / (10 ** 9)}
