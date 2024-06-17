@@ -31,7 +31,8 @@ export def main [
     | append (seq 1 $min_term_width | each {' '} | str join)
     | prepend ''
     | str join (char nl)
-    | to png $output_path
+    | freeze -o $output_path
+    # | to png $output_path
 
     $output_path
 }
