@@ -31,3 +31,4 @@ export module "side-by-side.nu"
 export module "orbita.nu"
 export module "to-temp-file.nu"
 export module 'nu-test.nu'
+export module 'normalize.nu'
