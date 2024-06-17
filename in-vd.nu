@@ -27,9 +27,8 @@ export def main [
     }
 
     $obj
-    | if ($obj | describe | $in == 'dataframe') {
-        dfr into-nu
-        | reject index
+    | if ($obj | describe | $in =~ 'FrameCustomValue') {
+        polars into-nu
     } else { }
     | if ($csv) or (($in | is_flat) and (not $json)) {
         to csv
