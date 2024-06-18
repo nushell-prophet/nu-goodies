@@ -54,10 +54,6 @@ export def main [
     | print; sleep 0.2sec;
 }
 
-def rand_hex_col [] {1..3 | each {random int 0..255 | into binary --compact  | encode hex} | prepend '0x' | str join}
-
-def generate_colors_pair [] {1..3 | each {[(random int 0..255) (random int 0..255)]}}
-
 def generate_colors [] {1..3 | each {(random int 0..255)}}
 
 def make_hex [] {each {into binary --compact  | encode hex} | prepend '0x' | str join}
@@ -83,5 +79,5 @@ def rand_hex_col2 [] {
         $color1 = ($color0 | each {($in + $rand) mod 255})
     }
 
-    [$color0 $color1] | inspect | each {make_hex}
+    [$color0 $color1] | each {make_hex}
 }
