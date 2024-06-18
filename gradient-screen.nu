@@ -18,8 +18,7 @@ export def main [
     let $1_len = $1_list | length
     let $date_text = date now | format date "%Y%m%d_%H%M%S"
 
-    let $fg_start = rand_hex_col
-    let $fg_finish = rand_hex_col
+    let colors = rand_hex_col2
 
     let $other_strings = $strings
         | skip
@@ -50,9 +49,30 @@ export def main [
         | append ($date_text | split chars)
     }
     | window $1_len --stride $1_len --remainder
-    | each {str join | ansi gradient --fgstart $fg_start --fgend $fg_finish}
+    | each {str join | ansi gradient --fgstart $colors.0 --fgend $colors.1}
     | str join
     | print; sleep 0.2sec;
 }
 
 def rand_hex_col [] {1..3 | each {random int 0..255 | into binary --compact  | encode hex} | prepend '0x' | str join}
+
+def generate_colors_pair [] {1..3 | each {[(random int 0..255) (random int 0..255)]}}
+
+def generate_colors [] {1..3 | each {(random int 0..255)}}
+
+def make_hex [] {each {into binary --compact  | encode hex} | prepend '0x' | str join}
+
+def rand_hex_col2 [--threshold = 300] {
+    mut color0 = []
+    mut color1 = []
+
+    for pair in 1..100 {
+        $color0 = (generate_colors)
+        $color1 = (generate_colors)
+        if ($color0 | zip $color1 | each {|i| ($i.0 - $i.1) ** 2} | math sum | math sqrt) > $threshold {
+            break
+        }
+    }
+
+    [$color0 $color1] | inspect | each {make_hex}
+}
