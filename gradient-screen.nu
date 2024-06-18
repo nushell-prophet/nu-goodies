@@ -62,16 +62,25 @@ def generate_colors [] {1..3 | each {(random int 0..255)}}
 
 def make_hex [] {each {into binary --compact  | encode hex} | prepend '0x' | str join}
 
-def rand_hex_col2 [--threshold = 300] {
+def check_colors [c0 c1 --threshold = 250] {
+    ($c0 | zip $c1 | each {|i| ($i.0 - $i.1) ** 2} | math sum | math sqrt) > $threshold
+}
+
+def rand_hex_col2 [] {
     mut color0 = []
     mut color1 = []
 
-    for pair in 1..100 {
+    for pair in 1..30 {
         $color0 = (generate_colors)
         $color1 = (generate_colors)
-        if ($color0 | zip $color1 | each {|i| ($i.0 - $i.1) ** 2} | math sum | math sqrt) > $threshold {
+        if (check_colors $color0 $color1) {
             break
         }
+    }
+
+    if not (check_colors $color0 $color1) {
+        let rand = random int 100..180
+        $color1 = ($color0 | each {($in + $rand) mod 255})
     }
 
     [$color0 $color1] | inspect | each {make_hex}
