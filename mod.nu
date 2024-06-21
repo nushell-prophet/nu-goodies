@@ -34,3 +34,4 @@ export module 'nu-test.nu'
 export module 'normalize.nu'
 export module 'format profile.nu'
 export module 'O.nu'
+export module "wez-to-ansi.nu"
