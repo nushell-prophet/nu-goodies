@@ -3,12 +3,11 @@
 # https://wezfurlong.org/wezterm/index.html
 # https://github.com/FMotalleb/nu_plugin_image/
 
+use wez-to-ansi.nu
+
 # capture wezterm scrollback, split by prompts, output chosen ones to an image file
 export def main [
-    $n_last_commands: int = 1 # Number of recent commands (and outputs) to capture. Default is 1.
-    --lines_before_top_of_term: int = 10000 # Lines from top of scrollback in Wezterm to capture.
-    --regex: string = '' # Regex to separate prompts from outputs. Default is ''.
-    --min_term_width: int = 60
+    $n_last_commands: int = 10 # Number of recent commands (and outputs) to capture. Default is 1.
     --output_path: path = '' # Path for saving output images.
     --date # Append date to image filenames for uniqueness (ignored if `--output_path` is set)
 ] {
@@ -20,17 +19,7 @@ export def main [
         | [(pwd) $in]
         | path join
 
-    ^wezterm cli get-text --escapes --start-line ($lines_before_top_of_term * -1)
-    | str replace -ra '(\r|\n)+$' ''
-    | lines
-    | skip until {|i| $i =~ $regex}
-    | split list --regex $regex
-    | drop
-    | last $n_last_commands
-    | flatten
-    | append (seq 1 $min_term_width | each {' '} | str join)
-    | prepend ''
-    | str join (char nl)
+    wez-to-ansi $n_last_commands
     | freeze -o $output_path
     # | to png $output_path
 
