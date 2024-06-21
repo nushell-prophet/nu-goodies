@@ -13,17 +13,24 @@ export def main [
 ] {
     let $output_path = $output_path
         | if $in != '' {} else {
-            last-commands $n_last_commands
-            | to-safe-filename --prefix 'wez-out-' --suffix '.png' --date=$date
-        }
-        | [(pwd) $in]
-        | path join
+            let filename = last-commands $n_last_commands
+                | to-safe-filename --prefix 'wez-out-' --suffix '.png' --date
 
-    wez-to-ansi $n_last_commands
-    | freeze -o $output_path
+            ['/Users/user/temp/freeze_images/' (pwd | path split | last)]
+            | path join
+            | $'($in)(mkdir $in)'
+            | path join $filename
+        }
+
+    let out = wez-to-ansi $n_last_commands
+
+    $out | freeze -o ($output_path | str replace -a '.png' '.svg')
+    $out | freeze -o ($output_path | str replace -a '.png' '.webp')
+    $out | freeze -o $output_path
+    $out | save ($output_path | str replace -a '.png' '.ans')
     # | to png $output_path
 
-    $output_path
+    ^open -R $output_path
 }
 
 def now-fn []: nothing -> string {
