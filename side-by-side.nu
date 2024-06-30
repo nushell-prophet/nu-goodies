@@ -2,12 +2,19 @@ export def main [
     r
     --delimeter: string = ' ' # delimeter between left and right
     --collapse # use collapsed table representation
+    --l_header: string
+    --r_header: string
 ] {
-    let $l = $in | if $collapse {table} else {table -e} | into string | lines
-    let $r = $r | if $collapse {table} else {table -e} | into string | lines
+    mut $l = $in | if $collapse {table} else {table -e} | into string | lines
+    mut $r = $r | if $collapse {table} else {table -e} | into string | lines
 
     if $l == $r {
         print 'equal!'
+    }
+
+    if $l_header != null or $r_header != null {
+        $l = ([$" (ansi yellow)($l_header)(ansi reset) "] | append $l)
+        $r = ([$" (ansi yellow)($r_header)(ansi reset) "] | append $r)
     }
 
     let $l_strip = $l | ansi strip
@@ -22,6 +29,7 @@ export def main [
             seq 1 ($r_n_lines - $l_n_lines)
             | each { seq 1 $l_str_len_max | each {' '} | str join }
         )
+        | each {fill --width $l_str_len_max}
         | zip (
             $r | append (
                 seq 1 ($l_n_lines - $r_n_lines)
