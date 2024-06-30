@@ -8,7 +8,6 @@ use /Users/user/git/nushell-kv/kv.nu
 # Examples:
 # > history | in-vd
 export def main [
-    --dont_strip_ansi_codes (-S) # ansi codes are stripped by default, this option disables stripping ansi codes.
     --msgpack (-m)     # force to use msgpack for piping data in-vd
     --csv (-c)      # force to use csv for piping data in-vd
 ] {
@@ -30,9 +29,7 @@ export def main [
     } else { }
     | if ($csv) or (not ($in | has_hier) and (not $msgpack)) {
         to csv
-        | if not $dont_strip_ansi_codes {
-            ansi strip
-        } else { }
+        | ansi strip
         | vd --save-filetype json --filetype csv -o -
     } else {
         to msgpack
