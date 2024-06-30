@@ -14,22 +14,21 @@ export def main [
 ] {
     let $obj = $in
 
-    # > [{a: b, c: d}] | is_flat
-    # true
-    # > [{a: {c: d}, b: e}] | is_flat
+    # > [{a: b, c: d}] | has_hier
     # false
-    def is_flat [] {
+    # > [{a: {c: d}, b: e}] | has_hier
+    # true
+    def has_hier [] {
         describe
         | find -r '^table(?!.*: (table|record|list))'
         | is-empty
-        | not $in
     }
 
     $obj
     | if ($obj | describe | $in =~ 'FrameCustomValue') {
         polars into-nu
     } else { }
-    | if ($csv) or (($in | is_flat) and (not $msgpack)) {
+    | if ($csv) or (not ($in | has_hier) and (not $msgpack)) {
         to csv
         | if not $dont_strip_ansi_codes {
             ansi strip
