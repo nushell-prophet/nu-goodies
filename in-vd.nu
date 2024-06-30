@@ -9,7 +9,7 @@ use /Users/user/git/nushell-kv/kv.nu
 # > history | in-vd
 export def main [
     --dont_strip_ansi_codes (-S) # ansi codes are stripped by default, this option disables stripping ansi codes.
-    --json (-j)     # force to use json for piping data in-vd
+    --msgpack (-m)     # force to use msgpack for piping data in-vd
     --csv (-c)      # force to use csv for piping data in-vd
 ] {
     let $obj = $in
@@ -19,8 +19,7 @@ export def main [
     # > [{a: {c: d}, b: e}] | is_flat
     # false
     def is_flat [] {
-        $in
-        | describe
+        describe
         | find -r '^table(?!.*: (table|record|list))'
         | is-empty
         | not $in
@@ -30,18 +29,15 @@ export def main [
     | if ($obj | describe | $in =~ 'FrameCustomValue') {
         polars into-nu
     } else { }
-    | if ($csv) or (($in | is_flat) and (not $json)) {
+    | if ($csv) or (($in | is_flat) and (not $msgpack)) {
         to csv
         | if not $dont_strip_ansi_codes {
             ansi strip
         } else { }
         | vd --save-filetype json --filetype csv -o -
     } else {
-        to json -r
-        | if not $dont_strip_ansi_codes {
-            ansi strip
-        } else { }
-        | vd --save-filetype json --filetype json -o -
+        to msgpack
+        | vd --save-filetype json --filetype msgpack -o -
     }
     | from json  # vd will output the final sheet `ctrl + shift + q`
     | if ($in != null) {
