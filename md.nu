@@ -5,7 +5,7 @@ export def --env main [
 ] {
     let $dir = (
         if $d or ($dest_dir != '/Users/user/temp') {
-            $dest_dir | path join $target_dir
+            $dest_dir | path join ($target_dir | str replace -a ' ' '_')
         } else {$target_dir}
         | path expand
     )
