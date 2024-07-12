@@ -3,11 +3,11 @@ use in-vd.nu history
 
 # add useful columns for history filtering, uses the first argument as a regex to filter commands
 export def main [
-    ...query: string
+    ...query: string # a string to search for
     --entries: int = 5000 # the number of last entries to work with
-    --all                   # return all the history
+    --all # return all the history
     --session (-s)  # show only entries from session
-    --folder
+    --folder # show only entries from session
     --last_x: duration # duration for the period to check commands
     --in_vd (-v) # open in vd
 ] {
