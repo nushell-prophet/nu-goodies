@@ -12,7 +12,7 @@ export def main [
     --indentation_spaces (-i): int = 1
     --abbreviated: int = 10
 ] {
-    let $in_table = table --abbreviated $abbreviated
+    let $input = table --abbreviated $abbreviated
         | if $dont_comment {} else {ansi strip}
 
     history
@@ -22,7 +22,7 @@ export def main [
     | if $dont_comment {
         nu-highlight # for making screnshots
     } else {}
-    | $'#(char nl)> ($in)(char nl)($in_table)'
+    | $'#(char nl)> ($in)(char nl)($input)'
     | if $dont_comment {} else {
         lines
         | each {|i| $'#(seq 1 $indentation_spaces | each {" "} | str join '')($i)'}
