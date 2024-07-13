@@ -3,10 +3,7 @@ use bar.nu
 
 # > debug profile {pin-text cyber} --max-depth 7 --spans
 export def main [] {
-    let $input = $in
-
-    $input
-    | skip
+    skip
     | update depth {|i| $i.depth - 1}
     | normalize duration_ms
     | update duration_ms_norm {bar $in --width 16}
