@@ -1,6 +1,5 @@
 export module "L.nu"
 export module "O.nu"
-export module "abbreviate.nu"
 export module "bar.nu"
 export module "bye.nu"
 export module "copy-cmd.nu"
