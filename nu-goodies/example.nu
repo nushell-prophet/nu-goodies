@@ -1,4 +1,11 @@
 # output a command from a pipe where `example` used, and truncate the output table
+#
+# > ls nu-goodies | first 3 | reject modified | example
+# ╭───────────name───────────┬─type─┬──size──╮
+# │ nu-goodies/str.nu        │ file │ 1.4 KB │
+# │ nu-goodies/cb.nu         │ file │  170 B │
+# │ nu-goodies/abbreviate.nu │ file │  898 B │
+# ╰───────────name───────────┴─type─┴──size──╯
 export def main [
     --dont_copy (-C)
     --dont_comment (-H)
