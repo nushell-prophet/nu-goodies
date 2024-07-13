@@ -22,7 +22,7 @@ export def main [
     | if $dont_comment {
         nu-highlight # for making screnshots
     } else {}
-    | $'> ($in)(char nl)($in_table)'
+    | $'#(char nl)> ($in)(char nl)($in_table)'
     | if $dont_comment {} else {
         lines
         | each {|i| $'#(seq 1 $indentation_spaces | each {" "} | str join '')($i)'}
