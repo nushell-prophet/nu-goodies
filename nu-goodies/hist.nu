@@ -1,15 +1,15 @@
 alias core_hist = history
 use in-vd.nu
 
-# add useful columns for history filtering, uses the first argument as a regex to filter commands
+# Filter history with regex and convenient flags, add useful columns
 export def main [
-    ...query: string # a string to search for
+    ...query: string # a regex to search for
     --entries: int = 5000 # a number of last entries to work with
-    --all # return all the history
-    --session (-s)  # show only entries from session
-    --folder # show only entries from session
+    --all (-a) # return all the history
+    --session (-s) # show only entries from the current session
+    --folder # show only entries from the current folder
     --last_x: duration # duration for the period to check commands
-    --in_vd (-v) # open in vd
+    --not_in_vd (-V) # disable opening command in visidata
 ] {
     if $in != null {} else {
         core_hist -l
@@ -32,13 +32,13 @@ export def main [
             $acc | filter {|i| $i.command =~ $it}
         }
     }
-    | if ('duration_s' in ...($in | columns)) {} else {
-        upsert duration_s {|i| $i.duration | into int | $in / (10 ** 9)}
+    | if 'duration_s' in ...($in | columns) {} else {
+        insert duration_s {|i| $i.duration | into int | $in / (10 ** 9)}
         | reject -i item_id duration hostname
         | move start_timestamp --after command
         | upsert pipes {|i| $i.command | split row -r '\s\|\s' | length}
     }
-    | if $in_vd {
+    | if $not_in_vd {} else {
         in-vd history
-    } else {}
+    }
 }
