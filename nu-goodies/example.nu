@@ -3,7 +3,6 @@ export def main [
     --dont_copy (-C)
     --dont_comment (-H)
     --indentation_spaces (-i): int = 1
-    --first: int
     --abbreviated: int = 10
 ] {
     let $in_table = table --abbreviated $abbreviated
@@ -22,14 +21,6 @@ export def main [
         | each {|i| $'#(seq 1 $indentation_spaces | each {" "} | str join '')($i)'}
         | str join (char nl)
     }
-    | if $first != null {
-        lines
-        | if ($in | length | $in <= $first) {} else {
-            first $first
-            | append '...'
-        }
-        | str join (char nl)
-    } else {}
     | if $dont_copy {} else {
         let $i = $in
         $i | pbcopy
