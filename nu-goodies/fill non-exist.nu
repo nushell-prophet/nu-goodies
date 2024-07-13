@@ -1,3 +1,6 @@
+# fill missing columns for each row
+#
+# this is how empty columns are present
 # > [{a: 1} {b: 2}] | to nuon
 # [{a: 1}, {b: 2}]
 #
@@ -8,16 +11,10 @@ export def main [
 ] {
     let $table = $in
 
-    let $cols = (
-        $table
-        | par-each {|i| $i | columns}
-        | flatten
-        | uniq
-        | reduce --fold {} {|i acc|
-            $acc
-            | merge {$i: $value_to_replace}
-        }
-    )
-
-    $table | each {|i| $cols | merge $i}
+    $table
+    | columns
+    | reduce --fold $table {|i acc|
+        $acc
+        | default $value_to_replace $i
+    }
 }
