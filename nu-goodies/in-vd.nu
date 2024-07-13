@@ -1,3 +1,4 @@
+# https://github.com/nushell-prophet/nu-kv
 use /Users/user/git/nushell-kv/kv.nu
 
 # Open data in VisiData🔥
@@ -8,26 +9,13 @@ use /Users/user/git/nushell-kv/kv.nu
 # Examples:
 # > history | in-vd
 export def main [
-    --msgpack (-m)     # force to use msgpack for piping data in-vd
-    --csv (-c)      # force to use csv for piping data in-vd
+    --msgpack (-m) # force to use msgpack for piping data in-vd
+    --csv (-c) # force to use csv for piping data in-vd
 ] {
-    let $obj = $in
-
-    # > [{a: b, c: d}] | has_hier
-    # false
-    # > [{a: {c: d}, b: e}] | has_hier
-    # true
-    def has_hier [] {
-        describe
-        | find -r '^table(?!.*: (table|record|list))'
-        | is-empty
-    }
-
-    $obj
-    | if ($obj | describe | $in =~ 'FrameCustomValue') {
+    if ($in | describe | $in =~ 'FrameCustomValue') {
         polars into-nu
     } else { }
-    | if ($csv) or (not ($in | has_hier) and (not $msgpack)) {
+    | if $csv or (not ($in | has_hier) and (not $msgpack)) {
         to csv
         | ansi strip
         | vd --save-filetype json --filetype csv -o -
@@ -56,4 +44,14 @@ export def 'history' [ ] {
     | str join $'(char nl)'
     | str replace -r ';.+?\| in-vd;' ';'
     | commandline edit -r $in
+}
+
+# > [{a: b, c: d}] | has_hier
+# false
+# > [{a: {c: d}, b: e}] | has_hier
+# true
+def has_hier [] {
+    describe
+    | find -r '^table(?!.*: (table|record|list))'
+    | is-empty
 }
