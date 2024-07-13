@@ -1,13 +1,12 @@
 # output a command from a pipe where `example` used, and truncate the output table
-use abbreviate.nu
 export def main [
     --dont_copy (-C)
     --dont_comment (-H)
     --indentation_spaces (-i): int = 1
     --first: int
+    --abbreviated: int = 10
 ] {
-    let $in_table = abbreviate
-        | table
+    let $in_table = table --abbreviated $abbreviated
         | if $dont_comment {} else {ansi strip}
 
     history
