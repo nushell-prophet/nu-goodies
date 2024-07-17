@@ -1,3 +1,4 @@
+# commit current version of dot files and apps settings
 export def 'main' [
     --message (-m): string
 ] {
