@@ -1,3 +1,4 @@
+# An alternative to `inspect` that doesn't break debugging output
 export def main [
     callback?: closure
 ] {
