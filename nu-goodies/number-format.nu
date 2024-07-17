@@ -1,3 +1,5 @@
+use significant-digits.nu
+
 # Format big numbers nicely
 #
 # > number-format 1000 -t "'"
@@ -15,7 +17,7 @@ export def main [
     num? # Number to format
     --thousands_delim (-t): string = '_' # Thousands delimiter
     --integers (-w): int = 0 # Length of padding whole-part digits
-    --significant_integers: int = 3 # The number of first integers to display, others will become 0
+    --significant_digits: int = 3 # The number of first integers to display, others will become 0
     --decimals (-d): int = 0 # Number of digits after decimal delimiter
     --denom (-D): string = '' # Denom
     --color: string = 'green'
@@ -24,15 +26,11 @@ export def main [
 
     let parts = $num
         | default $in_num
+        | if $significant_digits == 0 {} else {
+            significant-digits $significant_digits
+        }
         | into string
         | split chars
-        | if $significant_integers == 0 {} else {
-            enumerate
-            | each {
-                |i| if $i.item == '.' {'.'} else { # if decimals are in range - they miss one symbol, better to fix
-                    if $i.index < $significant_integers {$i.item} else {0}}
-                }
-        }
         | split list '.'
 
     let $whole_part = $parts.0
