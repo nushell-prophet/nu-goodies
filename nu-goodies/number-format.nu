@@ -1,11 +1,23 @@
 # Format big numbers nicely
+#
+# > number-format 1000 -t "'"
+# 1'000
+#
+# > number-format 123 -w 6
+#    123
+#
+# > number-format 1000.1234 -d 2
+# 1000.12
+#
+# > number-format 1000 --denom 'Wt'
+# 1000Wt
 export def main [
     num? # Number to format
-    --thousands_delim (-t): string = '_' # Thousands delimiter: number-format 1000 -t ': 1'000
-    --integers (-w): int = 0 # Length of padding whole-part digits: number-format 123 -w 6:    123
+    --thousands_delim (-t): string = '_' # Thousands delimiter
+    --integers (-w): int = 0 # Length of padding whole-part digits
     --significant_integers: int = 3 # The number of first integers to display, others will become 0
-    --decimals (-d): int = 0 # Number of digits after decimal delimiter: number-format 1000.1234 -d 2: 1000.12
-    --denom (-D): string = '' # Denom `--denom "Wt": number-format 1000 --denom 'Wt': 1000Wt
+    --decimals (-d): int = 0 # Number of digits after decimal delimiter
+    --denom (-D): string = '' # Denom
     --color: string = 'green'
 ] {
     let $in_num = $in
