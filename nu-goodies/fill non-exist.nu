@@ -5,7 +5,7 @@
 # [{a: 1}, {b: 2}]
 #
 # > [{a: 1} {b: 2}] | fill non-exist | to nuon
-# [[a, b]; [1, null], [null, 2]]
+# [{a: 1, b: ""}, {b: 2, a: ""}]
 export def main [
     value_to_replace: any = ''
 ] {
