@@ -22,7 +22,6 @@ export def main [
 
         $table = (
             $table
-            | into float $column
             | upsert $'($column)($suffix)' {
                 |i| $i
                 | get $column
