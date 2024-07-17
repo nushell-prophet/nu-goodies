@@ -12,15 +12,13 @@ export def main [
     ...column_names
     --suffix = '_norm'
 ] {
-    mut $table = $in
+    mut $table = ($in)
 
     for column in $column_names {
-        let $max_value = (
-            $table
+        let $max_value = $table
             | get $column
             | where ($it | describe | $in in ['int' 'float'])
             | math max
-        )
 
         $table = (
             $table
