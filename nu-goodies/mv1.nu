@@ -1,3 +1,4 @@
+# toggle suffix `_back` for a file
 export def main [
     file: path
 ] {
