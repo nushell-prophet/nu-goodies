@@ -2,13 +2,13 @@ use significant-digits.nu
 
 # Format big numbers nicely
 #
-# > number-format 1000 -t "'"
+# > number-format 1000 --thousands_delim "'"
 # 1'000
 #
-# > number-format 123 -w 6
+# > number-format 123 --integers 6
 #    123
 #
-# > number-format 1000.1234 -d 2
+# > number-format 1000.1234 --decimals 2
 # 1_000.12
 #
 # > number-format 1000 --denom 'Wt'
@@ -16,7 +16,7 @@ use significant-digits.nu
 export def main [
     num? # Number to format
     --thousands_delim (-t): string = '_' # Thousands delimiter
-    --integers (-w): int = 0 # Length of padding whole-part digits
+    --integers (-i): int = 0 # Length of padding whole-part digits
     --significant_digits: int = 0 # The number of first digits to display, others will become 0
     --decimals (-d): int = 0 # Number of digits after decimal delimiter
     --denom (-D): string = '' # Denom
@@ -36,7 +36,7 @@ export def main [
     let $whole_part = $parts.0
         | reverse
         | window 3 -s 3 --remainder
-        | each {|i| $i | reverse | str join}
+        | each {reverse | str join}
         | reverse
         | str join $thousands_delim
         | if $integers == 0 { } else {
