@@ -3,14 +3,15 @@
 
 # interactively select columns from a table
 export def main [] {
-    let tgt = ($in)
-    let cols = ($tgt | columns)
-
-    let $choices = ($cols | input list -m "Pick columns to get: ")
+    let tgt = $in
+    let $choices = $tgt
+        | columns
+        | input list -m "Pick columns to get: "
+        | str join " "
 
     history
     | last
     | get command
-    | str replace 'select-i' $'select ($choices | str join " ")'
+    | str replace 'select-i' $'select ($choices)'
     | commandline edit -r $in
 }
