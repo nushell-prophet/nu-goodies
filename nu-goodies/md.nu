@@ -1,3 +1,4 @@
+# makedir and cd into it
 export def --env main [
     target_dir
     -d # use standard directory
