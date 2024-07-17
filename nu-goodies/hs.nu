@@ -1,16 +1,16 @@
+# Save significant or all current session history entries into a .nu file. If the .nu file already exists, data will be appended.
 export def 'main' [
     filename?
-    --dir: string
-    --dont_open (-O)
-    --up (-u): int = 0
-    --all               # Save all history into .nu file
+    --dir: string # where to save history file
+    --dont_open (-O) # don't open the save history file in editor
+    --up (-u): int = 0 # set number of last events to save
+    --all # Save all history into .nu file
     --directory_hist # get history for a directory instead of session
 ] {
-    let $path = (
-        if ($dir == null) {
+    let $path = if $dir == null {
             [
                 (pwd)
-                "/Users/user/apps-files/github/nushell_playing/"
+                "/Users/user/git/nushell_playing/"
                 'type your variant'
                 'use gum'
             ]
@@ -32,18 +32,16 @@ export def 'main' [
             }
         } else {$dir}
         | path expand
-    )
-    let $session = (history session)
-    let $hist_raw = (
-        history -l
+
+    let $session = history session
+    let $hist_raw = history -l
         | if $directory_hist {
             where cwd == (pwd)
         } else {
             where session_id == $session
-        })
+        }
 
-    let $name = (
-        $filename
+    let $name = $filename
         | if ($in != null) {} else {
             [
                 ($"history($session)"),
@@ -53,18 +51,15 @@ export def 'main' [
                 input 'type your variant: '
             } else {}
         }
-    )
 
-    let $filepath = ($path | path join $"($name).nu")
+    let $filepath = $path
+        | path join $"($name).nu"
 
-    let $hist = (
-        | $hist_raw
+    let $hist = $hist_raw
         | get command
         | each {|i| $i | str replace -ar $';(char nl)\$.*? in-vd' ''}
-    )
 
-    let buffer = (
-        if $up > 1 {
+    let buffer = if $up > 1 {
             $hist
             | last ($up + 1)
             | drop 1
@@ -73,11 +68,10 @@ export def 'main' [
             | drop 1
         } else {
             $hist
-            | filter {|i| ($i =~ '(^(let|def|export) )|#|\b(save|source|mkdir|dfr to-csv|dfr to-avro|dfr to-jsonl|dfr to-arrow|dfr to-parquet)\b')}
+            | filter {|i| $i =~ '(^(let|def|export) )|#|\b(save|source|mkdir|polars to-csv|polars to-avro|polars to-jsonl|polars to-arrow|polars to-parquet)\b'}
             | append "\n\n"
             | prepend $"#($name)"
         }
-    )
 
     $buffer | save -a $filepath
 
@@ -85,4 +79,3 @@ export def 'main' [
         code -n $filepath
     }
 }
-
