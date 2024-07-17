@@ -1,4 +1,4 @@
-# fill screen with repeated texts from arguments or $env.gradient-screen.texts
+# fill screen with repeated texts from arguments or $env.gradient-screen.texts with random color gradient
 export def main [
     ...strings: string
     --no_date # don't append date
