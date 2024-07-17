@@ -2,9 +2,9 @@ use number-format.nu
 
 export def main [
     column_name: string
-    --thousands_delim (-t) = '_'    # Thousands delimiter: number-format 1000 -t ': 1'000
-    --decimals (-d) = 0       # Number of digits after decimal delimiter: number-format 1000.1234 -d 2: 1000.12
-    --denom (-D) = ''               # Denom `--denom "Wt": number-format 1000 --denom 'Wt': 1000Wt
+    --thousands_delim (-t) = '_' # Thousands delimiter: number-format 1000 -t ': 1'000
+    --decimals (-d) = 0 # Number of digits after decimal delimiter: number-format 1000.1234 -d 2: 1000.12
+    --denom (-D) = '' # Denom `--denom "Wt": number-format 1000 --denom 'Wt': 1000Wt
 ] {
     let $input = $in
 
@@ -12,38 +12,9 @@ export def main [
         error make {'msg': $'There is no ($column_name) in columns'}
     }
 
-    # let $integers = (
-    #     $input
-    #     | get $column_name
-    #     | math max
-    #     | number-format $in --denom $denom --decimals $decimals --thousands_delim $thousands_delim
-    #     | inspect
-    #     | str length --grapheme-clusters
-    #     | append ($column_name | str length)
-    #     | math max
-    #     | $in - $decimals - ($thousands_delim | str length) - ($denom | str length)
-    # )
+    let $thousands_delim_length = $thousands_delim | str length --grapheme-clusters
 
-    # let $integers = (
-    #     $input
-    #     | get $column_name
-    #     | math max
-    #     | into string
-    #     | split row '.'
-    #     | get 0
-    #     | str length
-    #     | number-format $in --denom $denom --decimals $decimals --thousands_delim $thousands_delim
-    #     | inspect
-    #     | str length --grapheme-clusters
-    #     | append ($column_name | str length)
-    #     | math max
-    #     | $in - $decimals - ($thousands_delim | str length) - ($denom | str length)
-    # )
-
-    let $thousands_delim_length = ($thousands_delim | str length --grapheme-clusters)
-
-    let $integers = (
-        $input
+    let $integers = $input
         | get $column_name
         | math max
         | split row '.'
@@ -57,7 +28,6 @@ export def main [
             | $in - $decimals - $thousands_delim_length - ($denom | str length --grapheme-clusters)
         )
         | math max
-    )
 
 
     $input
