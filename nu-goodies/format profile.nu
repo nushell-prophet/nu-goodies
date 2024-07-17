@@ -1,7 +1,9 @@
 use normalize.nu
 use bar.nu
 
-# > debug profile {pin-text cyber} --max-depth 7 --spans
+# format `debug profile` output
+#
+# > debug profile {pin-text cyber} --max-depth 7 --spans | format profile | null
 export def main [] {
     skip
     | update depth {|i| $i.depth - 1}
