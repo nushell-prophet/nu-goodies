@@ -2,6 +2,8 @@ def nu-complete-macos-apps [] {
     ls /Applications -s | get name | each {str replace '.app' '' | $'"($in)"' }
 }
 
+# Open a file in the specified macOS application or reveal it in Finder (--app flag supports completions)
+# > O O.nu --app "Sublime Text"
 export def main [
     filepath?: path
     --app (-a): string@'nu-complete-macos-apps' = '"Snagit 2022"' # app to open at
