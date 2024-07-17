@@ -1,3 +1,4 @@
+# convert datastructure to json and open it in fx
 export def --wrapped main [
     ...rest
 ] {
