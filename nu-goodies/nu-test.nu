@@ -1,11 +1,13 @@
+# install nushell or polars from the HEAD or the specified PR
 export def nu-test-install [
-    --nushell
-    --polars
+    --nushell # update nushell only
+    --polars # update polars plugin only
     --no-launch
     --plugin-config: path = '/Users/user/.test_config/nushell/polars_test.msgpackz'
-    --pr: string
+    --nushell-repo-folder: path = '/Users/user/git/nushell/'
+    --pr: string # a pr to checkout like ayax79:polars_pivot
 ] {
-    cd /Users/user/git/nushell/
+    cd $nushell_repo_folder
 
     git checkout main
     git pull
