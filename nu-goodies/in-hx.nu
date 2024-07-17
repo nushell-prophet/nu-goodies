@@ -1,4 +1,4 @@
-# opens piped-in results in hx, output back the saved file
+# open piped-in results in hx, output back the saved file
 export def main [
     --path (-p) # output path of the file
 ] {
