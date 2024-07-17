@@ -1,3 +1,4 @@
+# open midnight commander, cd to the last folder
 export def --env main [
     path1?: path
     path2?: path
