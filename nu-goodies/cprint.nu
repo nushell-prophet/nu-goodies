@@ -19,48 +19,61 @@ export def main [
         | [$in $width] | math min
         | [$in 1] | math max # term size gives 0 in tests
 
-    def wrapit [] {
-        str replace -r -a '(?m)^[\t ]+' ''
-        | if $keep_single_breaks { } else {
-            str replace -r -a '(\n[\t ]*(\n[\t ]*)+)' '⏎'
-            | str replace -r -a '\n' ' ' # remove single line breaks used for code formatting
-            | str replace -a '⏎' "\n\n"
-        }
-        | str replace -r -a '[\t ]+$' ''
-        | str replace -r -a $"\(.{1,($width_safe - $indent)}\)\(\\s|$\)|\(.{1,($width_safe - $indent)}\)" "$1$3\n"
-        | str replace -r $'(char nl)$' '' # trailing new line
-        | str replace -r -a '(?m)^(.)' $'((char sp) | str repeat $indent)$1'
-    }
-
-    def colorit [] {
-        str replace -r -a '\*([\s\S]+?)\*' $'(ansi reset)(ansi $highlight_color)$1(ansi reset)(ansi $color)'
-        | $'(ansi $color)($in)(ansi reset)'
-    }
-
-    def frameit [] {
-        let $text = $in
-        let $width_frame = $width_safe
-            | ($in // ($frame | str length))
-            | [$in 1] | math max
-
-        let $frame_line = ' '
-            | fill -a r -w $width_frame -c $frame
-            | $'(ansi $frame_color)($in)(ansi reset)'
-
-        $frame_line + "\n" + $text + "\n" + $frame_line
-    }
-
-    def newlineit [] {
-        $"((char nl) | str repeat $before)($in)((char nl) | str repeat $after)"
-    }
-
     $text_args
     | str join ' '
-    | wrapit
-    | colorit
+    | wrapit $keep_single_breaks $width_safe $indent
+    | colorit $highlight_color $color
     | if $frame != '' {
-        frameit
+        frameit $width_safe $frame $frame_color
     } else {}
-    | newlineit
+    | newlineit $before $after
     | if $echo { } else { print -n $in }
+}
+
+def wrapit [
+    $keep_single_breaks
+    $width_safe
+    $indent
+] {
+    str replace -r -a '(?m)^[\t ]+' ''
+    | if $keep_single_breaks { } else {
+        str replace -r -a '(\n[\t ]*(\n[\t ]*)+)' '⏎'
+        | str replace -r -a '\n' ' ' # remove single line breaks used for code formatting
+        | str replace -a '⏎' "\n\n"
+    }
+    | str replace -r -a '[\t ]+$' ''
+    | str replace -r -a $"\(.{1,($width_safe - $indent)}\)\(\\s|$\)|\(.{1,($width_safe - $indent)}\)" "$1$3\n"
+    | str replace -r $'(char nl)$' '' # trailing new line
+    | str replace -r -a '(?m)^(.)' $'((char sp) | str repeat $indent)$1'
+}
+
+def newlineit [
+    $before
+    $after
+] {
+    $"((char nl) | str repeat $before)($in)((char nl) | str repeat $after)"
+}
+
+def frameit [
+    $width_safe
+    $frame
+    $frame_color
+] {
+    let $input = $in
+    let $width_frame = $width_safe
+        | ($in // ($frame | str length))
+        | [$in 1] | math max
+
+    ' '
+    | fill -a r -w $width_frame -c $frame
+    | $'(ansi $frame_color)($in)(ansi reset)'
+    | $in + "\n" + $input + "\n" + $in
+}
+
+def colorit [
+    $highlight_color
+    $color
+] {
+    str replace -r -a '\*([\s\S]+?)\*' $'(ansi reset)(ansi $highlight_color)$1(ansi reset)(ansi $color)'
+    | $'(ansi $color)($in)(ansi reset)'
 }
