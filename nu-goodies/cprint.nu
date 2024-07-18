@@ -17,7 +17,7 @@ export def main [
 ] {
     let $width_safe = term size
         | get columns
-        | [$in $width] | math min
+        | [$in ($width + $indent)] | math min
         | [$in 1] | math max # term size gives 0 in tests
 
     $text_args
