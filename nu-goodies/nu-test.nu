@@ -2,12 +2,12 @@
 export def nu-test-install [
     --nushell # update nushell only
     --polars # update polars plugin only
-    --no-launch
+    --nushell-repo-path: path = '/Users/user/git/nushell/'
+    --cargo-test-path: path = '/Users/user/.cargo_test/'
     --plugin-config: path = '/Users/user/.test_config/nushell/polars_test.msgpackz'
-    --nushell-repo-folder: path = '/Users/user/git/nushell/'
     --pr: string # a pr to checkout like ayax79:polars_pivot
 ] {
-    cd $nushell_repo_folder
+    cd $nushell_repo_path
 
     git checkout main
     git pull
@@ -16,23 +16,20 @@ export def nu-test-install [
         gh co $pr
     }
 
-    $env.CARGO_HOME = ("~/.cargo_test" | path expand)
+    mkdir $cargo_test_path
+    $env.CARGO_HOME = $cargo_test_path
 
     if $polars or not $nushell {
-        cargo install --path /Users/user/git/nushell/crates/nu_plugin_polars
-        cp /Users/user/.cargo_test/bin/nu_plugin_polars $'/Users/user/.cargo_test/bin/backups/nu_plugin_polars(date now | format date %F)'
+        cargo install --path ([$nushell_repo_path crates nu_plugin_polars] | path join)
 
-        plugin add '/Users/user/.cargo_test/bin/nu_plugin_polars' --plugin-config $plugin_config
+        plugin add ([$cargo_test_path bin nu_plugin_polars] | path join) --plugin-config $plugin_config
         print 'test plugin updated' ''
     }
 
     if $nushell or not $polars {
-        cargo install --path .
-        cp /Users/user/.cargo_test/bin/nu $'/Users/user/.cargo_test/bin/backups/nu(date now | format date %F)'
+        cargo install --path $nushell_repo_path
         print 'test nushell updated' ''
     }
 
-    if not $no_launch {
-        commandline edit -r $'^/Users/user/.cargo_test/bin/nu --plugin-config ($plugin_config)'
-    }
+    commandline edit -r $'^($cargo_test_path | path join bin nu) --plugin-config ($plugin_config)'
 }
