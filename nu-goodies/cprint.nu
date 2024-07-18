@@ -60,12 +60,10 @@ def frameit [
     $frame_color
 ] {
     let $input = $in
-    let $width_frame = $width_safe
-        | ($in // ($frame | str length))
-        | [$in 1] | math max
 
-    ' '
-    | fill -a r -w $width_frame -c $frame
+    $frame
+    | str repeat $width_safe
+    | str substring --grapheme-clusters 1..($width_safe) # in case that frame has more than 1 chars
     | $'(ansi $frame_color)($in)(ansi reset)'
     | $in + "\n" + $input + "\n" + $in
 }
