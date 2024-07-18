@@ -2,7 +2,7 @@ use str.nu
 
 # Print a string colorfully with bells and whistles.
 export def main [
-    ...text_args
+    text: string
     --color (-c): any = 'default'
     --highlight_color (-h): any = 'green_bold'
     --frame_color (-r): any = 'dark_gray'
@@ -21,8 +21,7 @@ export def main [
         | $in - $indent
         | [$in 1] | math max # term size gives 0 in tests
 
-    $text_args
-    | str join ' '
+    $text
     | wrapit $keep_single_breaks $width_safe $indent
     | colorit $highlight_color $color
     | alignit $alignment $width_safe
