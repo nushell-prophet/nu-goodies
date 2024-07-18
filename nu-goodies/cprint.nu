@@ -1,5 +1,3 @@
-use str.nu
-
 # Print a string colorfully with bells and whistles
 export def main [
     text: string
@@ -94,4 +92,11 @@ def indentit [
     $indent
 ] {
     str replace -r -a '(?m)^(.)' $'((char sp) | str repeat $indent)$1'
+}
+
+def 'str repeat' [
+    $n
+] {
+    let $text = $in
+    seq 1 $n | each {$text} | str join
 }
