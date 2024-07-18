@@ -17,7 +17,8 @@ export def main [
 ] {
     let $width_safe = term size
         | get columns
-        | [$in ($width + $indent)] | math min
+        | [$in $width] | math min
+        | $in - $indent
         | [$in 1] | math max # term size gives 0 in tests
 
     $text_args
@@ -28,6 +29,7 @@ export def main [
     | if $frame != '' {
         frameit $width_safe $frame $frame_color
     } else {}
+    | indentit $indent
     | newlineit $before $after
     | if $echo { } else { print -n $in }
 }
@@ -44,9 +46,8 @@ def wrapit [
         | str replace -a '⏎' "\n\n"
     }
     | str replace -r -a '[\t ]+$' ''
-    | str replace -r -a $"\(.{1,($width_safe - $indent)}\)\(\\s|$\)|\(.{1,($width_safe - $indent)}\)" "$1$3\n"
+    | str replace -r -a $"\(.{1,($width_safe)}\)\(\\s|$\)|\(.{1,($width_safe)}\)" "$1$3\n"
     | str replace -r $'(char nl)$' '' # trailing new line
-    | str replace -r -a '(?m)^(.)' $'((char sp) | str repeat $indent)$1'
 }
 
 def newlineit [
@@ -87,4 +88,11 @@ def alignit [
         fill --alignment $alignment --width $width_safe
     }
     | str join (char nl)
+}
+
+
+def indentit [
+    $indent
+] {
+    str replace -r -a '(?m)^(.)' $'((char sp) | str repeat $indent)$1'
 }
