@@ -13,6 +13,7 @@ export def main [
     --keep_single_breaks # Don't remove single line breaks
     --width (-w): int = 80 # The width of text to format it
     --indent (-i): int = 0
+    --alignment: string = 'left'
 ] {
     let $width_safe = term size
         | get columns
@@ -23,6 +24,7 @@ export def main [
     | str join ' '
     | wrapit $keep_single_breaks $width_safe $indent
     | colorit $highlight_color $color
+    | alignit $alignment $width_safe
     | if $frame != '' {
         frameit $width_safe $frame $frame_color
     } else {}
@@ -74,4 +76,15 @@ def colorit [
 ] {
     str replace -r -a '\*([\s\S]+?)\*' $'(ansi reset)(ansi $highlight_color)$1(ansi reset)(ansi $color)'
     | $'(ansi $color)($in)(ansi reset)'
+}
+
+def alignit [
+    $alignment: string
+    $width_safe
+] {
+    lines
+    | each {
+        fill --alignment $alignment --width $width_safe
+    }
+    | str join (char nl)
 }
