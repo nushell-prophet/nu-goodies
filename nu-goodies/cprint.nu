@@ -1,6 +1,6 @@
 use str.nu
 
-# Print a string colorfully with bells and whistles.
+# Print a string colorfully with bells and whistles
 export def main [
     text: string
     --color (-c): any = 'default'
@@ -11,9 +11,9 @@ export def main [
     --lines_after (-a): int = 1 # A number of new lines after a text
     --echo (-e) # Echo text string instead of printing
     --keep_single_breaks # Don't remove single line breaks
-    --width (-w): int = 80 # The width of text to format it
-    --indent (-i): int = 0
-    --alignment: string = 'left'
+    --width (-w): int = 80 # The total width of text to wrap it
+    --indent (-i): int = 0 # indent output by numer of spaces
+    --alignment: string = 'left' # aligment of text
 ] {
     let $width_safe = term size
         | get columns
