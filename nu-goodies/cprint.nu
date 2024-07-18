@@ -7,8 +7,8 @@ export def main [
     --highlight_color (-h): any = 'green_bold'
     --frame_color (-r): any = 'dark_gray'
     --frame (-f): string = '' # A symbol (or a string) to frame a text
-    --before (-b): int = 0 # A number of new lines before a text
-    --after (-a): int = 1 # A number of new lines after a text
+    --lines_before (-b): int = 0 # A number of new lines before a text
+    --lines_after (-a): int = 1 # A number of new lines after a text
     --echo (-e) # Echo text string instead of printing
     --keep_single_breaks # Don't remove single line breaks
     --width (-w): int = 80 # The width of text to format it
@@ -30,7 +30,7 @@ export def main [
         frameit $width_safe $frame $frame_color
     } else {}
     | indentit $indent
-    | newlineit $before $after
+    | newlineit $lines_before $lines_after
     | if $echo { } else { print -n $in }
 }
 
