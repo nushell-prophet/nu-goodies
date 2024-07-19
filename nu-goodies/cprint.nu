@@ -38,13 +38,17 @@ def wrapit [
 ] {
     str replace -r -a '(?m)^[\t ]+' ''
     | if $keep_single_breaks { } else {
-        str replace -r -a '(\n[\t ]*(\n[\t ]*)+)' '⏎'
-        | str replace -r -a '\n' ' ' # remove single line breaks used for code formatting
-        | str replace -a '⏎' "\n\n"
+        remove_single_nls
     }
     | str replace -r -a '[\t ]+$' ''
     | str replace -r -a $"\(.{1,($width_safe)}\)\(\\s|$\)|\(.{1,($width_safe)}\)" "$1$3\n"
     | str replace -r $'(char nl)$' '' # trailing new line
+}
+
+def remove_single_nls [] {
+    str replace -r -a '(\n[\t ]*(\n[\t ]*)+)' '⏎'
+    | str replace -r -a '\n' ' ' # remove single line breaks used for code formatting
+    | str replace -a '⏎' "\n\n"
 }
 
 def newlineit [
