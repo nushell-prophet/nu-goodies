@@ -1,6 +1,17 @@
 ```nu
 use ../cprint.nu
+source ../cprint.nu
+
 let $text = open TheSongoftheFalcon.txt
+```
+
+```nu
+    r#'"High up in the mountains, a Snake crawled and lay in a damp gorge, coiled
+    into a knot, staring out at the sea.'#
+    | remove_single_nls
+```
+
+```nu
 cprint $text --keep_single_breaks --indent 4
 ```
 
