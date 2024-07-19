@@ -13,11 +13,7 @@ export def main [
     --indent (-i): int = 0 # indent output by numer of spaces
     --alignment: string = 'left' # aligment of text
 ] {
-    let $width_safe = term size
-        | get columns
-        | [$in $width] | math min
-        | $in - $indent
-        | [$in 1] | math max # term size gives 0 in tests
+    let $width_safe = width-safe $width $indent
 
     $text
     | wrapit $keep_single_breaks $width_safe $indent
@@ -29,6 +25,18 @@ export def main [
     | indentit $indent
     | newlineit $lines_before $lines_after
     | if $echo { } else { print -n $in }
+}
+
+
+export def width-safe [
+    $width
+    $indent
+] {
+    term size
+    | get columns
+    | [$in $width] | math min
+    | $in - $indent
+    | [$in 1] | math max # term size gives 0 in tests
 }
 
 def wrapit [
