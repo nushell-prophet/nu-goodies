@@ -1,6 +1,5 @@
 ```nu
-use ../cprint.nu
-source ../cprint.nu
+use ../cprint.nu *
 
 let $text = open TheSongoftheFalcon.txt
 ```
