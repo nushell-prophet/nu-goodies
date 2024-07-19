@@ -27,6 +27,8 @@ export def main [
     | if $echo { } else { print -n $in }
 }
 
+# I `export` commands here to be availible for testing, yet to be included
+# in the same file, so cprint could be just copied to other projects.
 
 export def width-safe [
     $width
@@ -39,7 +41,7 @@ export def width-safe [
     | [$in 1] | math max # term size gives 0 in tests
 }
 
-def wrapit [
+export def wrapit [
     $keep_single_breaks
     $width_safe
     $indent
@@ -53,20 +55,20 @@ def wrapit [
     | str replace -r $'(char nl)$' '' # trailing new line
 }
 
-def remove_single_nls [] {
+export def remove_single_nls [] {
     str replace -r -a '(\n[\t ]*(\n[\t ]*)+)' '⏎'
     | str replace -r -a '\n' ' ' # remove single line breaks used for code formatting
     | str replace -a '⏎' "\n\n"
 }
 
-def newlineit [
+export def newlineit [
     $before
     $after
 ] {
     $"((char nl) | str repeat $before)($in)((char nl) | str repeat $after)"
 }
 
-def frameit [
+export def frameit [
     $width_safe
     $frame
     $frame_color
@@ -80,7 +82,7 @@ def frameit [
     | $in + "\n" + $input + "\n" + $in
 }
 
-def colorit [
+export def colorit [
     $highlight_color
     $color
 ] {
@@ -88,7 +90,7 @@ def colorit [
     | $'(ansi $color)($in)(ansi reset)'
 }
 
-def alignit [
+export def alignit [
     $alignment: string
     $width_safe
 ] {
@@ -100,7 +102,7 @@ def alignit [
 }
 
 
-def indentit [
+export def indentit [
     $indent
 ] {
     str replace -r -a '(?m)^(.)' $'((char sp) | str repeat $indent)$1'
