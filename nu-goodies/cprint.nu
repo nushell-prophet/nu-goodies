@@ -2,7 +2,7 @@
 export def main [
     text?: string # text to format, if ommited stdin will be used
     --color (-c): string@'nu-complete-colors' = 'default' # color to use for the main text
-    --highlight_color (-h): string@'nu-complete-colors' = 'green_bold' # color to use for highlighting text enclosed in asterisks
+    --highlight_color (-H): string@'nu-complete-colors' = 'green_bold' # color to use for highlighting text enclosed in asterisks
     --frame_color (-r): string@'nu-complete-colors' = 'dark_gray' # color to use for frame
     --frame (-f): string = '' # symbol (or a string) to frame a text
     --lines_before (-b): int = 0 # number of new lines before a text
