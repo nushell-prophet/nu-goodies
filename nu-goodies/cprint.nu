@@ -1,6 +1,5 @@
 # Print a string colorfully with bells and whistles
 export def main [
-    text: string
     --color (-c): any = 'default'
     --highlight_color (-h): any = 'green_bold'
     --frame_color (-r): any = 'dark_gray'
@@ -10,9 +9,12 @@ export def main [
     --echo (-e) # Echo text string instead of printing
     --keep_single_breaks # Don't remove single line breaks
     --width (-w): int = 80 # The total width of text to wrap it
+    text?: string # text to format, if ommited stdin will be used
     --indent (-i): int = 0 # indent output by number of spaces
     --alignment: string = 'left' # aligment of text
-] {
+]: [nothing -> string, string -> string] {
+    let $text = if $text == null {} else {$text}
+
     let $width_safe = width-safe $width $indent
 
     $text
