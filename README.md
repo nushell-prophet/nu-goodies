@@ -24,7 +24,7 @@ let $sample_text = r##'# The Song of the *Falcon* (excerpt)
 "High up in the mountains, a Snake crawled and lay in a damp gorge, coiled into a knot, staring out at the sea.
 
 "The sun was shining high in the *sky*, and the mountains were exhaling heat into the *sky*, and the waves were crashing below against the rocks...
-'
+'##
 ```
 
 ```nu no-output
