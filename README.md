@@ -84,12 +84,14 @@ def some_command [] {
             This behaviour can be disabled with the `--keep_single_breaks` flag."
     }
 }
+
+# and we execute the command to show how cprint works.
+some_command
 ```
 
-and we execute the command to show how cprint works.
+Output:
 
-```nu
-> some_command
+```
 Here we have a really long line that we want to show to the final user, yet we
 don't want to spoil our code formatting.
 
@@ -107,5 +109,4 @@ cprint $sample_text --indent 5 --width 45 --align center --echo --highlight_colo
 | null
 ```
 
-![cprint $sample_text --indent 5 --width 45 --align center --echo --highlight_color yellow](media/2_cprint_indent_align.png)
 ![cprint $sample_text --indent 5 --width 45 --align center --echo --highlight_color yellow](media/2_cprint_indent_align.png)
