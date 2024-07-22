@@ -19,7 +19,8 @@ cprint --help | numd parse-help
 Output:
 
 ```
-Print a string colorfully with bells and whistles
+Description:
+  Print a string colorfully with bells and whistles
 
 Usage:
   > main {flags} <text>
@@ -36,7 +37,6 @@ Flags:
   -w, --width <Int> - The total width of text to wrap it (default: 80)
   -i, --indent <Int> - indent output by number of spaces (default: 0)
   --alignment <String> - aligment of text (default: 'left')
-  -h, --help - Display the help message for this command
 
 Parameters:
   text <string>:
