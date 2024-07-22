@@ -21,3 +21,4 @@ Some of my nushell commands.
 cprint $sample_text --width 40 --echo | freeze -o media/1_cprint_width40.png
 ```
 
+![cprint $sample_text --width 40 --echo](media/1_cprint_width40.png)
