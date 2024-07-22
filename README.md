@@ -48,7 +48,7 @@ Input/output types:
   ╰──input──┴─output─╯
 ```
 
-# Sample text
+### Examples
 
 ```nu
 let $sample_text = r##'# The Song of the *Falcon* (excerpt)
@@ -58,6 +58,8 @@ let $sample_text = r##'# The Song of the *Falcon* (excerpt)
 "The sun was shining high in the *sky*, and the mountains were exhaling heat into the *sky*, and the waves were crashing below against the rocks...
 '##
 ```
+
+Let's wrap the long to 40 symbols
 
 ```nu no-output
 cprint $sample_text --width 40 --echo --highlight_color yellow
