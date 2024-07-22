@@ -29,8 +29,8 @@ export def main [
     | if $echo { } else { print -n $in }
 }
 
-# I `export` commands here to be availible for testing, yet to be included
-# in the same file, so cprint could be just copied to other projects.
+# I `export` commands here to make them available for testing, yet to be included
+# in the same file, so cprint could be easily copied to other projects
 
 export def width-safe [
     $width
