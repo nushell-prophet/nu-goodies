@@ -13,7 +13,33 @@ Some of my nushell commands.
 ## cprint
 
 ```nu
-cprint --help | freeze -o media/0_cprint_help.png | null
+cprint --help | numd parse-help
+```
+
+Output:
+
+```
+Print a string colorfully with bells and whistles
+
+Usage:
+  > main {flags} <text>
+
+Flags:
+  -c, --color <Any> -  (default: 'default')
+  -h, --highlight_color <Any> -  (default: 'green_bold')
+  -r, --frame_color <Any> -  (default: 'dark_gray')
+  -f, --frame <String> - A symbol (or a string) to frame a text (default: '')
+  -b, --lines_before <Int> - A number of new lines before a text (default: 0)
+  -a, --lines_after <Int> - A number of new lines after a text (default: 1)
+  -e, --echo - Echo text string instead of printing
+  --keep_single_breaks - Don't remove single line breaks
+  -w, --width <Int> - The total width of text to wrap it (default: 80)
+  -i, --indent <Int> - indent output by number of spaces (default: 0)
+  --alignment <String> - aligment of text (default: 'left')
+  -h, --help - Display the help message for this command
+
+Parameters:
+  text <string>:
 ```
 
 ![](media/0_cprint_help.png)
