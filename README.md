@@ -19,11 +19,13 @@ cprint --help | freeze -o media/0_cprint_help.png | null
 ![](media/0_cprint_help.png)
 
 ```nu no-output
-let $sample_text = open nu-goodies/lazytests/TheSongoftheFalcon.txt | lines | first 6 | str join (char nl)
-$sample_text | freeze -o media/0_bare_example.png --language text | null
-```
+let $sample_text = r##'# The Song of the *Falcon* (excerpt)
 
-![$sample_text](media/0_bare_example.png)
+"High up in the mountains, a Snake crawled and lay in a damp gorge, coiled into a knot, staring out at the sea.
+
+"The sun was shining high in the *sky*, and the mountains were exhaling heat into the *sky*, and the waves were crashing below against the rocks...
+'
+```
 
 ```nu no-output
 cprint $sample_text --width 40 --echo | freeze -o media/1_cprint_width40.png | null
