@@ -1,9 +1,9 @@
 # Print a string colorfully with bells and whistles
 export def main [
     text?: string # text to format, if ommited stdin will be used
-    --color (-c): any = 'default' # color to use for the main text
-    --highlight_color (-h): any = 'green_bold' # color to use for highlighting text enclosed in asterisks
-    --frame_color (-r): any = 'dark_gray' # color to use for frame
+    --color (-c): string = 'default' # color to use for the main text
+    --highlight_color (-h): string = 'green_bold' # color to use for highlighting text enclosed in asterisks
+    --frame_color (-r): string = 'dark_gray' # color to use for frame
     --frame (-f): string = '' # symbol (or a string) to frame a text
     --lines_before (-b): int = 0 # number of new lines before a text
     --lines_after (-a): int = 1 # number of new lines after a text
