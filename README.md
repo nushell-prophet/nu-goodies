@@ -27,7 +27,7 @@ Usage:
 
 Flags:
   -c, --color <CompleterWrapper(String, 704)> - color to use for the main text (default: 'default')
-  -h, --highlight_color <CompleterWrapper(String, 704)> - color to use for highlighting text enclosed in asterisks (default: 'green_bold')
+  -H, --highlight_color <CompleterWrapper(String, 704)> - color to use for highlighting text enclosed in asterisks (default: 'green_bold')
   -r, --frame_color <CompleterWrapper(String, 704)> - color to use for frame (default: 'dark_gray')
   -f, --frame <String> - symbol (or a string) to frame a text (default: '')
   -b, --lines_before <Int> - number of new lines before a text (default: 0)
@@ -69,7 +69,7 @@ cprint $sample_text --width 40 --echo --highlight_color yellow
 
 ![cprint $sample_text --width 40 --echo](media/1_cprint_width40.png)
 
-`cprint` can be used inside of code, automatically concatenating single new lines delimited texts
+`cprint` can be used inside of code, automatically concatenating single new lines delimited texts. All space characters from line beginnings are removed by default.
 
 ```nu
 def some_command [] {
@@ -79,7 +79,9 @@ def some_command [] {
             to the final user, yet we don't want to spoil our code formatting.
 
             So we make a new paragraph with a double new line, and leave single
-            new lines to be concatenated automatically by `cprint`."
+            new lines to be concatenated automatically by `cprint`.
+
+            This behaviour can be disabled with the `--keep_single_breaks` flag."
     }
 }
 
@@ -95,4 +97,6 @@ don't want to spoil our code formatting.
 
 So we make a new paragraph with a double new line, and leave single new lines to
 be concatenated automatically by `cprint`.
+
+This behaviour can be disabled with the `--keep_single_breaks` flag.
 ```
