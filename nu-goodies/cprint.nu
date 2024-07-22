@@ -10,7 +10,7 @@ export def main [
     --echo (-e) # Echo text string instead of printing
     --keep_single_breaks # Don't remove single line breaks
     --width (-w): int = 80 # The total width of text to wrap it
-    --indent (-i): int = 0 # indent output by numer of spaces
+    --indent (-i): int = 0 # indent output by number of spaces
     --alignment: string = 'left' # aligment of text
 ] {
     let $width_safe = width-safe $width $indent
