@@ -16,7 +16,7 @@ Some of my nushell commands.
 cprint --help | numd parse-help
 ```
 
-Output
+Output:
 
 ```
 Description:
