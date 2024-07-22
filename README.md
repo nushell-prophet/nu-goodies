@@ -48,8 +48,6 @@ Input/output types:
   ╰──input──┴─output─╯
 ```
 
-![](media/0_cprint_help.png)
-
 ```nu no-output
 let $sample_text = r##'# The Song of the *Falcon* (excerpt)
 
