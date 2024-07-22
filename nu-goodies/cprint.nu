@@ -1,15 +1,15 @@
 # Print a string colorfully with bells and whistles
 export def main [
-    --color (-c): any = 'default'
-    --highlight_color (-h): any = 'green_bold'
-    --frame_color (-r): any = 'dark_gray'
-    --frame (-f): string = '' # A symbol (or a string) to frame a text
-    --lines_before (-b): int = 0 # A number of new lines before a text
-    --lines_after (-a): int = 1 # A number of new lines after a text
-    --echo (-e) # Echo text string instead of printing
-    --keep_single_breaks # Don't remove single line breaks
-    --width (-w): int = 80 # The total width of text to wrap it
     text?: string # text to format, if ommited stdin will be used
+    --color (-c): any = 'default' # color to use for the main text
+    --highlight_color (-h): any = 'green_bold' # color to use for highlighting text enclosed in asterisks
+    --frame_color (-r): any = 'dark_gray' # color to use for frame
+    --frame (-f): string = '' # symbol (or a string) to frame a text
+    --lines_before (-b): int = 0 # number of new lines before a text
+    --lines_after (-a): int = 1 # number of new lines after a text
+    --echo (-e) # echo text string instead of printing
+    --keep_single_breaks # don't remove single line breaks
+    --width (-w): int = 80 # the total width of text to wrap it
     --indent (-i): int = 0 # indent output by number of spaces
     --alignment: string = 'left' # aligment of text
 ]: [nothing -> string, string -> string] {
