@@ -26,9 +26,9 @@ Usage:
   > main {flags} (text)
 
 Flags:
-  -c, --color <String> - color to use for the main text (default: 'default')
-  -h, --highlight_color <String> - color to use for highlighting text enclosed in asterisks (default: 'green_bold')
-  -r, --frame_color <String> - color to use for frame (default: 'dark_gray')
+  -c, --color <CompleterWrapper(String, 704)> - color to use for the main text (default: 'default')
+  -h, --highlight_color <CompleterWrapper(String, 704)> - color to use for highlighting text enclosed in asterisks (default: 'green_bold')
+  -r, --frame_color <CompleterWrapper(String, 704)> - color to use for frame (default: 'dark_gray')
   -f, --frame <String> - symbol (or a string) to frame a text (default: '')
   -b, --lines_before <Int> - number of new lines before a text (default: 0)
   -a, --lines_after <Int> - number of new lines after a text (default: 1)
