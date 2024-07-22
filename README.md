@@ -72,7 +72,7 @@ cprint $sample_text --width 40 --echo --highlight_color yellow
 `cprint` can be used inside of code to automatically concatenate texts delimited by single new lines. By default, all space characters from line beginnings are removed.
 
 ```nu
-def some_command [] {
+def example_command_with_formatted_code [] {
     # some code
     if true {
         cprint "Here we have a really long line that we want to show
@@ -86,7 +86,7 @@ def some_command [] {
 }
 
 # and we execute the command to show how cprint works.
-some_command
+example_command_with_formatted_code
 ```
 
 Output:
