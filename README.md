@@ -12,6 +12,12 @@ Some of my nushell commands.
 
 ## cprint
 
+```nu
+cprint --help | freeze -o media/0_cprint_help.png | null
+```
+
+![](media/0_cprint_help.png)
+
 ```nu no-output
 let $sample_text = open nu-goodies/lazytests/TheSongoftheFalcon.txt | lines | first 6 | str join (char nl)
 $sample_text | freeze -o media/0_bare_example.png --language text | null
