@@ -58,7 +58,9 @@ let $sample_text = r##'# The Song of the *Falcon* (excerpt)
 ```
 
 ```nu no-output
-cprint $sample_text --width 40 --echo | freeze -o media/1_cprint_width40.png | null
+cprint $sample_text --width 40 --echo
+| freeze -o media/1_cprint_width40.png --theme average
+| null
 ```
 
 ![cprint $sample_text --width 40 --echo](media/1_cprint_width40.png)
