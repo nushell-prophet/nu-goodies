@@ -68,3 +68,31 @@ cprint $sample_text --width 40 --echo --highlight_color yellow
 ```
 
 ![cprint $sample_text --width 40 --echo](media/1_cprint_width40.png)
+
+`cprint` can be used inside of code, automatically concatenating single new lines delimited texts
+
+```nu
+def some_command [] {
+    # some code
+    if true {
+        cprint "here we have a really long line that we want to show
+            to final user, yet we don't want to spoil our code formatting
+
+            So we make a new paragraph with a double new line, and leave
+            single new lines to be concatenated automatically by *cprint*"
+    }
+}
+
+# and we execute the command to show how cprint works.
+some_command
+```
+
+Output:
+
+```
+here we have a really long line that we want to show to final user, yet we don't
+want to spoil our code formatting
+
+So we make a new paragraph with a double new line, and leave single new lines to
+be concatenated automatically by cprint
+```
