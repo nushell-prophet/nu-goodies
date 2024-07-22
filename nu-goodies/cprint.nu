@@ -11,7 +11,7 @@ export def main [
     --keep_single_breaks # don't remove single line breaks
     --width (-w): int = 80 # the total width of text to wrap it
     --indent (-i): int = 0 # indent output by number of spaces
-    --alignment: string = 'left' # aligment of text
+    --align: string = 'left' # alignment of text
 ]: [nothing -> string, string -> string] {
     let $text = if $text == null {} else {$text}
 
@@ -20,7 +20,7 @@ export def main [
     $text
     | wrapit $keep_single_breaks $width_safe $indent
     | colorit $highlight_color $color
-    | alignit $alignment $width_safe
+    | alignit $align $width_safe
     | if $frame != '' {
         frameit $width_safe $frame $frame_color
     } else {}

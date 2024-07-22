@@ -36,7 +36,7 @@ Flags:
   --keep_single_breaks - don't remove single line breaks
   -w, --width <Int> - the total width of text to wrap it (default: 80)
   -i, --indent <Int> - indent output by number of spaces (default: 0)
-  --alignment <String> - aligment of text (default: 'left')
+  --align <String> - aligment of text (default: 'left')
 
 Parameters:
   text <string>: text to format, if ommited stdin will be used (optional)
@@ -102,9 +102,9 @@ This behaviour can be disabled with the `--keep_single_breaks` flag.
 Text can be indented and aligned
 
 ```nu
-cprint $sample_text --indent 5 --width 45 --alignment center --echo --highlight_color yellow
+cprint $sample_text --indent 5 --width 45 --align center --echo --highlight_color yellow
 | freeze -o media/2_cprint_indent_align.png --theme average
 | null
 ```
 
-![cprint $sample_text --indent 5 --width 45 --alignment center --echo --highlight_color yellow](media/2_cprint_indent_align.png)
+![cprint $sample_text --indent 5 --width 45 --align center --echo --highlight_color yellow](media/2_cprint_indent_align.png)
