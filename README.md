@@ -98,3 +98,13 @@ be concatenated automatically by `cprint`.
 
 This behaviour can be disabled with the `--keep_single_breaks` flag.
 ```
+
+Text can be indented and aligned
+
+```nu
+cprint $sample_text --indent 5 --width 45 --alignment center --echo --highlight_color yellow
+| freeze -o media/2_cprint_indent_align.png --theme average
+| null
+```
+
+![cprint $sample_text --indent 5 --width 45 --alignment center --echo --highlight_color yellow](media/2_cprint_indent_align.png)
