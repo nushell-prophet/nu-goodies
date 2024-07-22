@@ -69,7 +69,7 @@ cprint $sample_text --width 40 --echo --highlight_color yellow
 
 ![cprint $sample_text --width 40 --echo](media/1_cprint_width40.png)
 
-`cprint` can be used inside of code, automatically concatenating single new lines delimited texts. All space characters from line beginnings are removed by default.
+`cprint` can be used inside of code to automatically concatenate texts delimited by single new lines. By default, all space characters from line beginnings are removed.
 
 ```nu
 def some_command [] {
@@ -84,14 +84,12 @@ def some_command [] {
             This behaviour can be disabled with the `--keep_single_breaks` flag."
     }
 }
-
-# and we execute the command to show how cprint works.
-some_command
 ```
 
-Output:
+and we execute the command to show how cprint works.
 
-```
+```nu
+> some_command
 Here we have a really long line that we want to show to the final user, yet we
 don't want to spoil our code formatting.
 
