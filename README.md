@@ -13,12 +13,7 @@ Some of my nushell commands.
 ## cprint
 
 ```nu
-cprint --help | numd parse-help
-```
-
-Output:
-
-```
+> cprint --help | numd parse-help
 Description:
   Print a string colorfully with bells and whistles
 
