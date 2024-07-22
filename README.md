@@ -59,7 +59,7 @@ let $sample_text = r##'# The Song of the *Falcon* (excerpt)
 '##
 ```
 
-Let's wrap the long to 40 symbols
+Let's wrap the long text to 40 symbols
 
 ```nu no-output
 cprint $sample_text --width 40 --echo --highlight_color yellow
@@ -75,11 +75,11 @@ cprint $sample_text --width 40 --echo --highlight_color yellow
 def some_command [] {
     # some code
     if true {
-        cprint "here we have a really long line that we want to show
-            to final user, yet we don't want to spoil our code formatting
+        cprint "Here we have a really long line that we want to show
+            to the final user, yet we don't want to spoil our code formatting.
 
-            So we make a new paragraph with a double new line, and leave
-            single new lines to be concatenated automatically by *cprint*"
+            So we make a new paragraph with a double new line, and leave single
+            new lines to be concatenated automatically by `cprint`."
     }
 }
 
@@ -90,9 +90,9 @@ some_command
 Output:
 
 ```
-here we have a really long line that we want to show to final user, yet we don't
-want to spoil our code formatting
+Here we have a really long line that we want to show to the final user, yet we
+don't want to spoil our code formatting.
 
 So we make a new paragraph with a double new line, and leave single new lines to
-be concatenated automatically by cprint
+be concatenated automatically by `cprint`.
 ```
