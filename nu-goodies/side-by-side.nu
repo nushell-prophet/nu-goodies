@@ -1,6 +1,6 @@
 export def main [
     r
-    --delimeter: string = ' ' # delimeter between left and right
+    --delimiter: string = ' ' # delimiter between left and right
     --collapse # use collapsed table representation
     --l_header: string
     --r_header: string
@@ -36,13 +36,13 @@ export def main [
                 | each {''}
             )
         )
-        | each {|i| $i.0 + $delimeter + $i.1}
+        | each {|i| $i.0 + $delimiter + $i.1}
         | str join (char nl)
 
     let $width = term size | get columns
 
     $res
-    | if ($r_str_len_max + $l_str_len_max + ($delimeter | str length)) > $width {
+    | if ($r_str_len_max + $l_str_len_max + ($delimiter | str length)) > $width {
         lines
         | ansi strip
         | str substring 0..$width --grapheme-clusters

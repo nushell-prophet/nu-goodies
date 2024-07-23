@@ -39,7 +39,7 @@ Flags:
   --align <String> - alignment of text (default: 'left')
 
 Parameters:
-  text <string>: text to format, if ommited stdin will be used (optional)
+  text <string>: text to format, if omitted stdin will be used (optional)
 
 Input/output types:
   ╭──input──┬─output─╮
