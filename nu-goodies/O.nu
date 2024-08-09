@@ -6,7 +6,7 @@ def nu-complete-macos-apps [] {
 # > O O.nu --app "Sublime Text"
 export def main [
     filepath?: path
-    --app (-a): string@'nu-complete-macos-apps' = '"Snagit 2022"' # app to open at
+    --app (-a): string@'nu-complete-macos-apps' = 'Snagit 2022.app' # app to open at
     --reveal (-r) # reveal app in finder
 ]: [path -> nothing, nothing -> nothing] {
     if $filepath == null {} else {$filepath}
