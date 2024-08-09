@@ -9,19 +9,19 @@ use /Users/user/git/nushell-kv/kv.nu
 # Examples:
 # > history | in-vd
 export def main [
-    --msgpack (-m) # force to use msgpack for piping data in-vd
+    --json (-j) # force to use msgpack for piping data in-vd
     --csv (-c) # force to use csv for piping data in-vd
 ] {
     if ($in | describe | $in =~ 'FrameCustomValue') {
         polars into-nu
     } else { }
-    | if $csv or (not ($in | has_hier) and (not $msgpack)) {
+    | if $csv or (not ($in | has_hier) and (not $json)) {
         to csv
         | ansi strip
         | vd --save-filetype json --filetype csv -o -
     } else {
-        to msgpack
-        | vd --save-filetype json --filetype msgpack -o -
+        to json --raw
+        | vd --save-filetype json --filetype json -o -
     }
     | from json  # vd will output the final sheet `ctrl + shift + q`
     | if ($in != null) {
