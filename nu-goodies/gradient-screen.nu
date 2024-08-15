@@ -2,6 +2,7 @@
 export def main [
     ...strings: string
     --no_date # don't append date
+    --echo
 ] {
     let $strings = $strings
         | if $in == [] {
@@ -51,7 +52,9 @@ export def main [
     | window $1_len --stride $1_len --remainder
     | each {str join | ansi gradient --fgstart $colors.0 --fgend $colors.1}
     | str join
-    | print; sleep 0.2sec;
+    | if $echo {} else {
+        print; sleep 0.2sec;
+    }
 }
 
 def generate_colors [] {1..3 | each {(random int 0..255)}}
