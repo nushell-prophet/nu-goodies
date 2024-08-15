@@ -3,6 +3,7 @@ export def main [
     ...strings: string
     --no_date # don't append date
     --echo
+    --rows: int
 ] {
     let $strings = $strings
         | if $in == [] {
@@ -14,7 +15,13 @@ export def main [
             ]
         } else {}
 
-    let $screen_size = term size | values | math product
+    let $screen_size = term size
+        | if $rows == null {values} else {
+            $in.columns * $rows
+        }
+        | math product
+
+
     let $1_list = $strings.0 | split chars
     let $1_len = $1_list | length
     let $date_text = date now | format date "%Y%m%d_%H%M%S"
