@@ -12,6 +12,9 @@ Some of my nushell commands.
 
 ## cprint
 
+`cprint` provides enhanced formatting for long text messages in your scripts. It supports colorful output, text highlighting, framing, and various text formatting options for improved readability and presentation.
+
+
 ```nu
 cprint --help | numd parse-help
 ```
@@ -63,8 +66,7 @@ Let's wrap the long text to 40 symbols
 
 ```nu no-output
 cprint $sample_text --width 40 --echo --highlight_color yellow
-| freeze -o media/1_cprint_width40.png --theme average
-| null
+| freeze -o media/1_cprint_width40.png --theme average | null
 ```
 
 ![cprint $sample_text --width 40 --echo](media/1_cprint_width40.png)
@@ -105,8 +107,7 @@ Text can be indented and aligned
 
 ```nu
 cprint $sample_text --indent 5 --width 45 --align center --echo --highlight_color yellow
-| freeze -o media/2_cprint_indent_align.png --theme average
-| null
+| freeze -o media/2_cprint_indent_align.png --theme average | null
 ```
 
 ![cprint $sample_text --indent 5 --width 45 --align center --echo --highlight_color yellow](media/2_cprint_indent_align.png)
