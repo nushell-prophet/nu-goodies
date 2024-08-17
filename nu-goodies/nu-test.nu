@@ -1,5 +1,5 @@
 # install nushell or polars from the HEAD or the specified PR
-export def nu-test-install [
+export def install [
     --nushell # update nushell only
     --polars # update polars plugin only
     --nushell-repo-path: path = '/Users/user/git/nushell/'
