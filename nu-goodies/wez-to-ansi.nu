@@ -1,7 +1,7 @@
 export def main [
-    $n_last_commands: int = 10 # Number of recent commands (and outputs) to capture. Default is 1.
+    $n_last_commands: int = 2 # Number of recent commands (and outputs) to capture. Default is 1.
     --regex: string = '' # Regex to separate prompts from outputs. Default is ''.
-    --lines_before_top_of_term: int = 10000 # Lines from top of scrollback in Wezterm to capture.
+    --lines_before_top_of_term: int = 100 # Lines from top of scrollback in Wezterm to capture.
     --min_term_width: int = 0
 ] {
     ^wezterm cli get-text --escapes --start-line ($lines_before_top_of_term * -1)
