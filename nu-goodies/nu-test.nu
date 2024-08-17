@@ -33,3 +33,13 @@ export def install [
 
     commandline edit -r $'^($cargo_test_path | path join bin nu) --plugin-config ($plugin_config)'
 }
+
+export def launch [
+    --with-plugin
+] {
+    if $with_plugin {
+        ^('/Users/user/.cargo_test/' | path join bin nu) --plugin-config '/Users/user/.test_config/nushell/polars_test.msgpackz'
+    } else {
+        ^('/Users/user/.cargo_test/' | path join bin nu)
+    }
+}
