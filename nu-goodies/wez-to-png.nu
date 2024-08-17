@@ -7,9 +7,8 @@ use wez-to-ansi.nu
 
 # capture wezterm scrollback, split by prompts, output chosen ones to an image file
 export def main [
-    $n_last_commands: int = 10 # Number of recent commands (and outputs) to capture. Default is 1.
+    $n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
     --output_path: path = '' # Path for saving output images.
-    --date # Append date to image filenames for uniqueness (ignored if `--output_path` is set)
 ] {
     let $output_path = $output_path
         | if $in != '' {} else {
@@ -24,10 +23,10 @@ export def main [
 
     let out = wez-to-ansi $n_last_commands
 
-    $out | freeze -o ($output_path | str replace -a '.png' '.svg')
-    $out | freeze -o ($output_path | str replace -a '.png' '.webp')
-    $out | freeze -o $output_path
-    $out | save ($output_path | str replace -a '.png' '.ans')
+    $out | freeze --config user -o ($output_path | str replace -a '.png' '.svg')
+    $out | freeze --config user -o ($output_path | str replace -a '.png' '.webp')
+    $out | freeze --config user -o $output_path
+    $out | save -f ($output_path | str replace -a '.png' '.ans')
     # | to png $output_path
 
     ^open -R $output_path
