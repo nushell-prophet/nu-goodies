@@ -56,12 +56,10 @@ def to-safe-filename [
 ]: string -> string {
     str replace -ra $regex '_'
     | str replace -ra '__+' '_'
-    | if (($in | str length) > 30) {
-        if $date {
-            $'(now-fn)+($in | str substring ..30)' # make string uniq
-        } else {
-            $'($in | str substring ..30)($in | hash sha256 | str substring ..10)' # make string uniq
-        }
+    | if $date {
+        $'(now-fn)+($in | str substring ..30)' # make string uniq
+    } else if (($in | str length) > 30) {
+        $'($in | str substring ..30)($in | hash sha256 | str substring ..10)' # make string uniq
     } else {}
     | $'($prefix)($in)($suffix)'
 }
