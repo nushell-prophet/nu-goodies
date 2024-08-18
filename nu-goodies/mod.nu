@@ -3,6 +3,7 @@ export module "O.nu"
 export module "bar.nu"
 export module "bye.nu"
 export module "copy-cmd.nu"
+export module "center.nu"
 export use "cprint.nu" main
 export module "dfr enumerate.nu"
 export module "example.nu"
