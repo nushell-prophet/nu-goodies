@@ -7,7 +7,7 @@ export def 'main' [
     glob $'("~" | path expand)/.*' --no-dir --exclude [
         '.CFUserTextEncoding'
     ]
-    | each {|i| cp $i ('~/.config/dot_home_dir' | path expand)}
+    | each {|i| cp --update $i ('~/.config/dot_home_dir' | path expand)}
 
     let paths = [
             '~/.config/nushell'
