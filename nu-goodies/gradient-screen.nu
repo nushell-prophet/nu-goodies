@@ -1,5 +1,5 @@
 # fill screen with repeated texts from arguments or $env.gradient-screen.texts with random color gradient
-export def main [
+export def --env main [
     ...strings: string
     --no_date # don't append date
     --echo
@@ -27,6 +27,8 @@ export def main [
     let $date_text = date now | format date "%Y%m%d_%H%M%S"
 
     let colors = rand_hex_col2
+
+    $env.gradient-screen-last-colors = $colors
 
     let $other_strings = $strings
         | skip
