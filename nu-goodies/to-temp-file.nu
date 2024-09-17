@@ -9,7 +9,7 @@
 # argument & operates on it.
 export def main [
     content?     # Commands used to generate the content of the file.
-]: {
+] {
     let content = if $content == null {} else {$content}
     let output_file = $nu.temp-path
         | path join $'(date now | into int).yaml'
