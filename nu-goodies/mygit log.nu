@@ -23,7 +23,7 @@ export def 'main' [
 
     sqlite3 $nu.history-path $'.backup ($temp_hist_folder)/hist.db'
 
-    cp ~/.config/nushell/history.sqlite* $temp_hist_folder
+    # cp ~/.config/nushell/history.sqlite* $temp_hist_folder
 
     let paths = [
             '~/.config/nushell'
@@ -33,9 +33,11 @@ export def 'main' [
         | path expand
 
     for $dir in $paths {
-        print $dir '';
-        cd $dir;
-        git add --all
-        git commit -a -m $message
+        try {
+            print $dir '';
+            cd $dir;
+            git add --all
+            git commit -a -m $message
+        }
     }
 }
