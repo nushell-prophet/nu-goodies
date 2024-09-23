@@ -5,11 +5,32 @@ export def 'main' [
     let $message = $message
         | default (date now | format date "%Y-%m-%d")
 
+    let $dot_dir = '~/.config/dot_home_dir'
+        | path expand
+
     $nu.home-path
     | path join '.*'
     | glob $in --no-dir --exclude [ '.CFUserTextEncoding' ]
-    | each {|i| cp --update $i ('~/.config/dot_home_dir' | path expand)}
+    | each {|i| cp --update $i $dot_dir}
 
+    let paths = [
+            '~/.config/nushell'
+            '~/.config/'
+            '~/.visidata/'
+        ]
+        | path expand
+
+    for $dir in $paths {
+        try {
+            print $dir '';
+            cd $dir;
+            git add --all
+            git commit -a -m $message
+        }
+    }
+}
+
+export def backup-history [] {
     let hist_backups_dir = '~/.config/nushell/history-backups/'
         | path expand
 
@@ -30,20 +51,4 @@ export def 'main' [
 
     sqlite3 $history_back_file ".dump history"
     | save ($hist_backups_dir | path join 'history_back.sql') -f
-
-    let paths = [
-            '~/.config/nushell'
-            '~/.config/'
-            '~/.visidata/'
-        ]
-        | path expand
-
-    for $dir in $paths {
-        try {
-            print $dir '';
-            cd $dir;
-            git add --all
-            git commit -a -m $message
-        }
-    }
 }
