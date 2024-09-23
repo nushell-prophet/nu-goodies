@@ -5,9 +5,9 @@ export def 'main' [
     let $message = $message
         | default (date now | format date "%Y-%m-%d")
 
-    glob $'("~" | path expand)/.*' --no-dir --exclude [
-        '.CFUserTextEncoding'
-    ]
+    $nu.home-path
+    | path join '.*'
+    | glob $in --no-dir --exclude [ '.CFUserTextEncoding' ]
     | each {|i| cp --update $i ('~/.config/dot_home_dir' | path expand)}
 
     let hist_backups_dir = '~/.config/nushell/history-backups/'
@@ -29,7 +29,7 @@ export def 'main' [
     sqlite3 $nu.history-path $'.backup ($history_back_file)'
 
     sqlite3 $history_back_file ".dump history"
-    | save ($temp_hist_folder | path join 'history_back.sql') -f
+    | save ($hist_backups_dir | path join 'history_back.sql') -f
 
     let paths = [
             '~/.config/nushell'
