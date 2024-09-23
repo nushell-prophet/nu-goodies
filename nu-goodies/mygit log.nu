@@ -10,9 +10,6 @@ export def 'main' [
     ]
     | each {|i| cp --update $i ('~/.config/dot_home_dir' | path expand)}
 
-    open $nu.history-path
-    | query db 'PRAGMA wal_checkpoint(FULL);'
-
     let temp_hist_folder = date now
         | format date '%F_%T_%f'
         | str replace -ra '([^\d_])' ''
@@ -21,7 +18,8 @@ export def 'main' [
 
     mkdir $temp_hist_folder
 
-    sqlite3 $nu.history-path $'.backup ($temp_hist_folder)/hist.db'
+    sqlite3 $nu.history-path 'PRAGMA wal_checkpoint(FULL);'
+    sqlite3 $nu.history-path $'.backup ($temp_hist_folder)/history3.sqlite'
 
     # cp ~/.config/nushell/history.sqlite* $temp_hist_folder
 
