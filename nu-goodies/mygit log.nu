@@ -16,10 +16,13 @@ export def 'main' [
         | $'~/.config/nushell/history-backups/($in)/'
         | path expand
 
+    let $history_back_file = $'($temp_hist_folder)/history.sqlite3'
+
     mkdir $temp_hist_folder
 
     sqlite3 $nu.history-path 'PRAGMA wal_checkpoint(FULL);'
-    sqlite3 $nu.history-path $'.backup ($temp_hist_folder)/history3.sqlite'
+    sqlite3 $nu.history-path $'.backup ($history_back_file)'
+    sqlite3 $history_back_file ".dump history" | save history_back.sql
 
     # cp ~/.config/nushell/history.sqlite* $temp_hist_folder
 
