@@ -10,8 +10,8 @@ export def 'main' [
 
     $nu.home-path
     | path join '.*'
-    | glob $in --no-dir --exclude [ '.CFUserTextEncoding' ]
-    | each {|i| cp --update $i $dot_dir}
+    | glob $in -d 1 --no-dir --exclude [ '.CFUserTextEncoding' ]
+    | par-each {|i| cp --update $i $dot_dir}
 
     let paths = [
             '~/.config/nushell'
