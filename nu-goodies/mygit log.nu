@@ -46,7 +46,7 @@ export def backup-history [] {
 
     mkdir $temp_hist_folder
 
-    sqlite3 $nu.history-path 'PRAGMA wal_checkpoint(FULL);'
+    # sqlite3 $nu.history-path 'PRAGMA wal_checkpoint(FULL);'
     sqlite3 $nu.history-path $'.backup ($history_back_file)'
 
     sqlite3 $history_back_file ".dump history"
