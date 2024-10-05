@@ -18,7 +18,7 @@ export def 'main' [
     let paths = [
             '~/.config/nushell'
             '~/.config/'
-            '~/.visidata/'
+            # '~/.visidata/'
         ]
         | path expand
 
