@@ -13,6 +13,8 @@ export def 'main' [
     | glob $in -d 1 --no-dir --exclude [ '.CFUserTextEncoding' ]
     | par-each {|i| cp --update $i $dot_dir}
 
+    backup-history
+
     let paths = [
             '~/.config/nushell'
             '~/.config/'
