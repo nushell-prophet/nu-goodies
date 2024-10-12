@@ -24,7 +24,7 @@ export def 'main' [
 
     for $dir in $paths {
         try {
-            print $dir '';
+            print (ansi yellow) $dir (ansi reset) '';
             cd $dir;
             git add --all
             git commit -a -m $message
