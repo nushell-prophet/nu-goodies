@@ -19,6 +19,7 @@ export def install [
     mkdir $cargo_test_path
     $env.CARGO_HOME = $cargo_test_path
 
+    # I install polars first to add it later to already updated nushell
     if $polars or not $nushell {
         cargo install --path ([$nushell_repo_path crates nu_plugin_polars] | path join)
 
@@ -35,11 +36,15 @@ export def install [
 }
 
 export def launch [
-    --with-plugin
+    --no-plugin
 ] {
-    if $with_plugin {
-        ^('/Users/user/.cargo_test/' | path join bin nu) --plugin-config '/Users/user/.test_config/nushell/polars_test.msgpackz'
-    } else {
-        ^('/Users/user/.cargo_test/' | path join bin nu)
-    }
+    let $exec = '/Users/user/.cargo_test/' | path join bin nu
+    let $params = [
+            "--execute" "$env.PATH = ($env.PATH | prepend '/Users/user/.cargo_test/bin/')"
+        ]
+        | if $no_plugin {} else {
+           prepend ['--plugin-config' '/Users/user/.test_config/nushell/polars_test.msgpackz']
+        }
+
+    ^$exec ...$params
 }
