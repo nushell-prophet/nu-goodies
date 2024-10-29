@@ -2,7 +2,7 @@
 export def main [
     command: string = ''
     --filename: path
-    --font-family: string = "JetBrainsMono Nerd Font Mono"
+    --font-family: string = "Iosevka Extended"
     --font-size: int = 20
     --ascinema # copy ascinema here too
 ] {
