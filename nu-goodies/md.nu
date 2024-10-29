@@ -13,5 +13,4 @@ export def --env main [
 
     mkdir $dir
     cd $dir
-    wezterm cli set-tab-title ($dir | path basename)
 }
