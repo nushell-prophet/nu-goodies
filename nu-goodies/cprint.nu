@@ -49,9 +49,7 @@ export def wrapit [
     $indent
 ] {
     str replace -r -a '(?m)^[\t ]+' ''
-    | if $keep_single_breaks { } else {
-        remove_single_nls
-    }
+    | if $keep_single_breaks { } else { remove_single_nls }
     | str replace -r -a '[\t ]+$' ''
     | str replace -r -a $"\(.{1,($width_safe)}\)\(\\s|$\)|\(.{1,($width_safe)}\)" "$1$3\n"
     | str replace -r $'(char nl)$' '' # trailing new line
@@ -97,9 +95,7 @@ export def alignit [
     $width_safe
 ] {
     lines
-    | each {
-        fill --alignment $alignment --width $width_safe
-    }
+    | fill --alignment $alignment --width $width_safe
     | str join (char nl)
 }
 
