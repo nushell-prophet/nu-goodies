@@ -8,7 +8,13 @@ null
 ```
 
 ```nu
-width-safe
+width-safe 20 10
+```
+
+Output:
+
+```
+10
 ```
 
 ```nu
