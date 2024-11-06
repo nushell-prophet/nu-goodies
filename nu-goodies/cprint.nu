@@ -48,16 +48,16 @@ export def wrapit [
     $width_safe
     $indent
 ] {
-    str replace -r -a '(?m)^[\t ]+' ''
+    str replace -arm '^[\t ]+' ''
     | if $keep_single_breaks { } else { remove_single_nls }
-    | str replace -r -a '[\t ]+$' ''
-    | str replace -r -a $"\(.{1,($width_safe)}\)\(\\s|$\)|\(.{1,($width_safe)}\)" "$1$3\n"
-    | str replace -r $'(char nl)$' '' # trailing new line
+    | str replace -arm '[\t ]+$' ''
+    | str replace -arm $"\(.{1,($width_safe)}\)\(\\s|$\)|\(.{1,($width_safe)}\)" "$1$3\n"
+    | str replace -r $'\s+$' '' # trailing new line
 }
 
 export def remove_single_nls [] {
-    str replace -r -a '(\n[\t ]*(\n[\t ]*)+)' '⏎'
-    | str replace -r -a '\n' ' ' # remove single line breaks used for code formatting
+    str replace -r -a '(\n[\t ]*){2,}' '⏎'
+    | str replace -arm '(?<!⏎)\n' ' ' # remove single line breaks used for code formatting
     | str replace -a '⏎' "\n\n"
 }
 
@@ -86,7 +86,7 @@ export def colorit [
     $highlight_color
     $color
 ] {
-    str replace -r -a '\*([\s\S]+?)\*' $'(ansi reset)(ansi $highlight_color)$1(ansi reset)(ansi $color)'
+    str replace -r -a '\*([^*]+?)\*' $'(ansi reset)(ansi $highlight_color)$1(ansi reset)(ansi $color)'
     | $'(ansi $color)($in)(ansi reset)'
 }
 
@@ -99,11 +99,10 @@ export def alignit [
     | str join (char nl)
 }
 
-
 export def indentit [
     $indent
 ] {
-    str replace -r -a '(?m)^(.)' $'((char sp) | str repeat $indent)$1'
+    str replace -arm '^' (char sp | str repeat $indent)
 }
 
 def 'str repeat' [
