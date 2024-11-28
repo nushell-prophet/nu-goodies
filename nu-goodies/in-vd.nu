@@ -37,6 +37,8 @@ export def 'history' [ ] {
     where command !~ 'in-vd history'
     | to csv
     | vd --save-filetype csv --filetype csv -o -
+    | complete
+    | get stdout
     | if ($in == null) { return } else { }
     | from csv
     | get command
