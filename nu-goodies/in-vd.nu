@@ -19,9 +19,13 @@ export def main [
         to csv
         | ansi strip
         | vd --save-filetype json --filetype csv -o -
+        | complete
+        | get stdout
     } else {
         to json --raw
         | vd --save-filetype json --filetype json -o -
+        | complete
+        | get stdout
     }
     | from json  # vd will output the final sheet `ctrl + shift + q`
     | if ($in != null) {
