@@ -15,7 +15,7 @@ export def main [
     if ($in | describe | $in =~ 'FrameCustomValue') {
         polars into-nu
     } else { }
-    | if $csv or (not ($in | has_hier) and (not $json)) {
+    | if $csv or not (($in | has_hier) or $json) {
         to csv
         | ansi strip
         | vd --save-filetype json --filetype csv -o -
