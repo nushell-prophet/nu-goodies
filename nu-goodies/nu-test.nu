@@ -48,3 +48,36 @@ export def launch [
 
     ^$exec ...$params
 }
+
+const nightly_path = '~/temp/nu-nightly' | path expand
+
+export def --env download-nushell-nightly [
+  --arch (-a): string = 'x86_64-unknown-linux-gnu'    # archicture as specified in nushell/nightly repo
+  --ext (-e): string = '.tar.gz'                      # extension, including the leading dot (e.g. '.tar.gz')
+  --destination_dir (-d): directory = $nightly_path   # destination directory in which to save the download
+] {
+  let most_recent_nightly = (http get https://api.github.com/repos/nushell/nightly/releases | get 0)
+  let nightly_name = ($most_recent_nightly.name | str replace -r '^Nu-nightly-' '')
+  let asset = http get $most_recent_nightly.assets_url
+  | where name =~ $arch
+  | where name =~ $'($ext)$'
+  | get 0
+
+  let filename = (
+    $asset.name
+    | str replace -r $ext $'-($nightly_name)($ext)'
+    | str replace -r '^nu-' 'nu-nightly-'
+  )
+
+  let destination_file = ($destination_dir | path join $filename)
+
+  print $"Downloading to:(char lf)($destination_file)"
+
+  http get $asset.browser_download_url | save $destination_file
+  tar -C $nightly_path -xzf $destination_file
+}
+
+export def launch-downloaded [] {
+  let path = glob ($nightly_path | path join *darwin *nu) | sort | last
+  ^$path
+}
