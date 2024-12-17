@@ -52,7 +52,7 @@ export def launch [
 const nightly_path = '~/temp/nu-nightly' | path expand
 
 export def --env download-nushell-nightly [
-  --arch (-a): string = 'x86_64-unknown-linux-gnu'    # archicture as specified in nushell/nightly repo
+  --arch (-a): string = 'aarch64-apple-darwin'    # archicture as specified in nushell/nightly repo
   --ext (-e): string = '.tar.gz'                      # extension, including the leading dot (e.g. '.tar.gz')
   --destination_dir (-d): directory = $nightly_path   # destination directory in which to save the download
 ] {
@@ -79,5 +79,5 @@ export def --env download-nushell-nightly [
 
 export def launch-downloaded [] {
   let path = glob ($nightly_path | path join *darwin *nu) | sort | last
-  ^$path
+  commandline edit -r $path
 }
