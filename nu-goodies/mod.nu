@@ -35,4 +35,5 @@ export module "to-temp-file.nu"
 export module "wez-to-ansi.nu"
 export module "wez-to-gif.nu"
 export module "wez-to-png.nu"
+export module "z.nu"
 export use "cprint.nu" main
