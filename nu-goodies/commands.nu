@@ -1479,25 +1479,52 @@ export def replace-in-all-files [
     $find
     $replace
     --quiet # don't outuput stats
+    --no-git-check
 ] {
     let $files = glob --no-dir **/*{nu,md}
+
+    let $files_found = $files
+        | each {|i|
+            open $i
+            | if ($in | str contains $find) {$i}
+        }
+        | compact
 
     mut $rec = {
         'files nu and md files total count': ($files | length)
         'updated': 0
     }
 
-    for $i in $files {
-        $i
-        | open
-        | if ($in | str contains $find) {
-            str replace -a $find $replace
-            | str replace -r '\n*$' (char nl)
-            | save -f $i
+    for $i in $files_found {
+        if not $no_git_check {check-clean-working-tree $i}
 
-            $rec.updated += 1
-        }
+        $i | open
+        | str replace -a $find $replace
+        | str replace -r '\n*$' (char nl)
+        | save -f $i
+
+        $rec.updated += 1
     }
 
     if not $quiet {$rec}
+}
+
+export def check-clean-working-tree [
+    $module_path: path
+] {
+    cd ( $module_path | path dirname )
+
+    let git_status = git status --short
+
+    $git_status
+    | lines
+    | parse '{s} {m} {f}'
+    | where f =~ $'( $module_path | path basename )$'
+    | is-not-empty
+    | if $in {
+        error make --unspanned {
+            msg: ( "Working tree isn't empty. Please commit or stash changed files, " +
+                    "or use `--no-git-check` flag. Uncommited files:\n" + $git_status )
+        }
+    }
 }
