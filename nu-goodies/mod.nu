@@ -1,39 +1,40 @@
-export module "bar.nu"
-export module "bye.nu"
-export module "center.nu"
-export module "copy-cmd.nu"
-export module "dfr enumerate.nu"
-export module "example.nu"
-export module "fill non-exist.nu"
-export module "format profile.nu"
-export module "gradient-screen.nu"
-export module "hist.nu"
-export module "hs.nu"
-export module "in-fx.nu"
-export module "in-hx.nu"
-export module "in-vd.nu"
-export module "L.nu"
-export module "ln-for-preview.nu"
-export module "mc.nu"
-export module "md.nu"
-export module "mv1.nu"
-export module "mygit log.nu"
-export module "normalize.nu"
-export module "nu-test.nu"
-export module "number-col-format.nu"
-export module "number-format.nu"
-export module "O.nu"
-export module "orbita.nu"
-export module "print-and-pass.nu"
-export module "ramdisk-create.nu"
-export module "select-i.nu"
-export module "side-by-side.nu"
-export module "str.nu"
-export module "transcribe.nu"
-export module "to-safe-filename.nu"
-export module "to-temp-file.nu"
-export module "wez-to-ansi.nu"
-export module "wez-to-gif.nu"
-export module "wez-to-png.nu"
-export module "z.nu"
-export use "cprint.nu" main
+export use commands.nu [bar
+    bye
+    center
+    copy-cmd
+    cprint
+    'dfr enumerate'
+    example
+    'fill non-exist'
+    'format profile'
+    gradient-screen
+    hist
+    hs
+    in-fx
+    in-hx
+    in-vd
+    L
+    ln-for-preview
+    mc
+    md
+    mv1
+    'mygit log'
+    normalize
+    # nu-test
+    number-col-format
+    number-format
+    O
+    orbita
+    print-and-pass
+    ramdisk-create
+    select-i
+    side-by-side
+    # str
+    transcribe
+    to-safe-filename
+    to-temp-file
+    wez-to-ansi
+    wez-to-gif
+    wez-to-png
+    z
+]
