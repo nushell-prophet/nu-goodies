@@ -1476,16 +1476,28 @@ export def --env z [
 }
 
 export def replace-in-all-files [
-    $find $replace
+    $find
+    $replace
+    --quiet # don't outuput stats
 ] {
-    glob **/*{nu,md}
-    | each {|i|
+    let $files = glob --no-dir **/*{nu,md}
+
+    mut $rec = {
+        'files nu and md files total count': ($files | length)
+        'updated': 0
+    }
+
+    for $i in $files {
         $i
         | open
         | if ($in | str contains $find) {
             str replace -a $find $replace
             | str replace -r '\n*$' (char nl)
             | save -f $i
+
+            $rec.updated += 1
         }
     }
+
+    if not $quiet {$rec}
 }

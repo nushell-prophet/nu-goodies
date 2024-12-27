@@ -37,4 +37,5 @@ export use commands.nu [bar
     wez-to-gif
     wez-to-png
     z
+    replace-in-all-files
 ]
