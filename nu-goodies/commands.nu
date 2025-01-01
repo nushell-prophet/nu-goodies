@@ -924,7 +924,7 @@ export def launch-downloaded [] {
 }
 
 ###file number-col-format.nu
-use number-format.nu
+# use number-format.nu
 
 # Format number column in a table using number-format
 #
