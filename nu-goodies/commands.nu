@@ -1456,6 +1456,7 @@ def last-commands [
 export def --env z [
     ...rest: string
     --interactive(-i)
+    --current-tab(-c)
 ]: nothing -> nothing {
   let $query = $rest | str join ' '
 
@@ -1470,7 +1471,12 @@ export def --env z [
       }
       | path expand
 
-    zellij action rename-tab $query
+    if $current_tab {
+        zellij action rename-tab $query
+    } else {
+        zellij action new-tab --layout default --cwd $path --name $query
+        return
+    }
 
     cd $path
 }
