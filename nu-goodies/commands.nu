@@ -728,6 +728,9 @@ export def --env md [
     )
 
     mkdir $dir
+    if $env.ZELLIJ? != null {
+        ^zellij action rename-tab ($target_dir | path basename)
+    }
     cd $dir
 }
 
