@@ -1463,28 +1463,28 @@ export def --env z [
 ]: nothing -> nothing {
     let $query = $rest | str join ' '
 
-    let $interactive_query = {
-        fzf --scheme=path -q $query
-    }
-
-    let path = open $nu.history-path
+    let $cwds = open $nu.history-path
         | query db "select distinct(cwd) from history order by id desc"
         | get cwd
         | to text
-        | if $interactive {
+
+    let $interactive_query = {
+        $cwds | fzf --scheme=path -q $query
+    }
+
+
+    let $path = if $interactive {
             do $interactive_query
         } else {
-            let $input = $in
-
-            $input
+            $cwds
             | fzf --scheme=path -f $query
             | lines
             | get 0?
             | if $in == null {
-                $input | do $interactive_query
+                do $interactive_query
             } else {}
         }
-        | if ($in | is-empty) {return} else {path expand}
+        | if ($in | is-empty) { return } else { path expand }
 
     if $current_tab {
         zellij action rename-tab $query
