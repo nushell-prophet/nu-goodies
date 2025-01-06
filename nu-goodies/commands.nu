@@ -1461,18 +1461,30 @@ export def --env z [
     --interactive(-i)
     --current-tab(-c)
 ]: nothing -> nothing {
-  let $query = $rest | str join ' '
+    let $query = $rest | str join ' '
 
-  let path = open $nu.history-path
-      | query db "select distinct(cwd) from history order by id desc"
-      | get cwd
-      | to text
-      | if $interactive {
-          fzf --scheme=path -q $query
-      } else {
-          fzf --scheme=path -f $query | lines | first
-      }
-      | path expand
+    let $interactive_query = {
+        fzf --scheme=path -q $query
+    }
+
+    let path = open $nu.history-path
+        | query db "select distinct(cwd) from history order by id desc"
+        | get cwd
+        | to text
+        | if $interactive {
+            do $interactive_query
+        } else {
+            let $input = $in
+
+            $input
+            | fzf --scheme=path -f $query
+            | lines
+            | get 0?
+            | if $in == null {
+                $input | do $interactive_query
+            } else {}
+        }
+        | if ($in | is-empty) {return} else {path expand}
 
     if $current_tab {
         zellij action rename-tab $query
