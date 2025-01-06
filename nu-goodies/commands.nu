@@ -1459,7 +1459,7 @@ def last-commands [
 export def --env z [
     ...rest: string
     --interactive(-i)
-    --current-tab(-c)
+    --new-tab(-n)
 ]: nothing -> nothing {
     let $query = $rest | str join ' '
 
@@ -1486,14 +1486,13 @@ export def --env z [
         }
         | if ($in | is-empty) { return } else { path expand }
 
-    if $current_tab {
-        zellij action rename-tab $query
-    } else {
+    if $new_tab {
         zellij action new-tab --layout default --cwd $path --name $query
-        return
+    } else {
+        zellij action rename-tab $query
+        cd $path
     }
 
-    cd $path
 }
 
 export def replace-in-all-files [
