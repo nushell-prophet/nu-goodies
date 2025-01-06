@@ -1480,7 +1480,7 @@ export def --env z [
             | fzf --scheme=path -f $query
             | lines
             | get 0?
-            | if $in == null {
+            | if $in == null { # nothing has been found - launch interactive
                 do $interactive_query
             } else {}
         }
