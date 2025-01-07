@@ -104,11 +104,17 @@ export def center [
 ###file copy-cmd.nu
 # copy this command to clipboard
 export def copy-cmd [] {
-    history
-    | last
+    let commands = history
+    | last 2
     | get command
-    | str replace -r '\| copy-cmd.*' ''
     | str trim
+
+    $commands
+    | last
+    | if $in == 'copy-cmd' {
+        $commands | first
+    } else { }
+    | str replace -r '\s*\| copy-cmd.*' ''
     | pbcopy
 }
 
