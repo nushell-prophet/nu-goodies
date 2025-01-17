@@ -583,7 +583,7 @@ export def in-hx [
 
 ###file in-vd.nu
 # https://github.com/nushell-prophet/nu-kv
-use /Users/user/git/nushell-kv/kv.nu
+use /Users/user/git/nushell-kv/kv/
 
 # Open data in VisiData🔥
 #
