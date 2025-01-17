@@ -585,6 +585,9 @@ export def in-hx [
 # https://github.com/nushell-prophet/nu-kv
 use /Users/user/git/nushell-kv/kv/
 
+# for other users use kv in nu-goodies
+# use kv
+
 # Open data in VisiData🔥
 #
 # The suitable format is detected automatically.
