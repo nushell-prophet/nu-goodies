@@ -387,7 +387,7 @@ export def --env gradient-screen [
     | each {str join | ansi gradient --fgstart $colors.0 --fgend $colors.1}
     | str join
     | if $echo {} else {
-        print; sleep 0.2sec;
+        print; sleep 2sec;
     }
 }
 
