@@ -1495,13 +1495,16 @@ export def --env z [
         }
         | if ($in | is-empty) { return } else { path expand }
 
-    if $new_tab {
-        zellij action new-tab --layout default --cwd $path --name $query
-    } else {
-        zellij action rename-tab $query
-        cd $path
+    if ($env.ZELLIJ? | is-not-empty) {
+        if $new_tab {
+            zellij action new-tab --layout default --cwd $path --name $query
+            return
+        } else {
+            zellij action rename-tab $query
+        }
     }
 
+    cd $path
 }
 
 export def replace-in-all-files [
