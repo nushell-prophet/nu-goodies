@@ -852,7 +852,7 @@ export def 'normalize' [
 
 ###file nu-test.nu
 # install nushell or polars from the HEAD or the specified PR
-export def 'install' [
+export def 'nu-test install' [
     --nushell # update nushell only
     --polars # update polars plugin only
     --nushell-repo-path: path = '/Users/user/git/nushell/'
@@ -888,7 +888,7 @@ export def 'install' [
     commandline edit -r $'^($cargo_test_path | path join bin nu) --plugin-config ($plugin_config)'
 }
 
-export def 'launch' [
+export def 'nu-test launch' [
     --no-plugin
 ] {
     let $exec = '/Users/user/.cargo_test/' | path join bin nu

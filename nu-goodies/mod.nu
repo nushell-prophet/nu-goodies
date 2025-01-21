@@ -23,6 +23,8 @@ export use commands.nu [bar
     # nu-test
     number-col-format
     number-format
+    'nu-test install'
+    'nu-test launch'
     O
     orbita
     print-and-pass
