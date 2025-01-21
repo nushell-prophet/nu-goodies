@@ -1,6 +1,6 @@
 ###file L.nu
 # open table in Less
-export def L [
+export def 'L' [
     --abbreviated(-a): int = 1000
     --bat(-b) # use bat instead of less
 ] {
@@ -14,7 +14,7 @@ def nu-complete-macos-apps [] {
 
 # Open a file in the specified macOS application or reveal it in Finder (--app flag supports completions)
 # > O O.nu --app "Sublime Text"
-export def O [
+export def 'O' [
     filepath?: path
     --app (-a): string@'nu-complete-macos-apps' = 'Snagit 2022.app' # app to open at
     --reveal (-r) # reveal app in finder
@@ -37,7 +37,7 @@ export def O [
 # █
 # > bar 0.71
 # ███▌
-export def bar [
+export def 'bar' [
     percentage: float
     --background (-b): string = 'default'
     --foreground (-f): string = 'default'
@@ -73,7 +73,7 @@ export def bar [
 ###file bye.nu
 # use gradient-screen.nu
 
-export def bye [
+export def 'bye' [
     ...strings: string
     --no_date # don't append date
     -n # don't quit
@@ -84,7 +84,7 @@ export def bye [
 
 ###file cb.nu
 # shortcut for pbpaste and pbcopy. But is it needed?
-export def cb [
+export def 'cb' [
     --paste
 ] {
     if $paste or ($in == null) {
@@ -95,7 +95,7 @@ export def cb [
 }
 
 ###file center.nu
-export def center [
+export def 'center' [
     --factor: int = 1
 ] {
     fill -a center --width ((term size).columns // $factor)
@@ -103,7 +103,7 @@ export def center [
 
 ###file copy-cmd.nu
 # copy this command to clipboard
-export def copy-cmd [] {
+export def 'copy-cmd' [] {
     let commands = history
     | last 2
     | get command
@@ -120,7 +120,7 @@ export def copy-cmd [] {
 
 ###file cprint.nu
 # Print a string colorfully with bells and whistles
-export def cprint [
+export def 'cprint' [
     text?: string # text to format, if omitted stdin will be used
     --color (-c): string@'nu-complete-colors' = 'default' # color to use for the cprint text
     --highlight_color (-H): string@'nu-complete-colors' = 'green_bold' # color to use for highlighting text enclosed in asterisks
@@ -153,7 +153,7 @@ export def cprint [
 # I `export` commands here to make them available for testing, yet to be included
 # in the same file, so cprint could be easily copied to other projects
 
-export def width-safe [
+export def 'width-safe' [
     $width
     $indent
 ] {
@@ -164,7 +164,7 @@ export def width-safe [
     | [$in 1] | math max # term size gives 0 in tests
 }
 
-export def wrapit [
+export def 'wrapit' [
     $keep_single_breaks
     $width_safe
     $indent
@@ -176,20 +176,20 @@ export def wrapit [
     | str replace -r $'\s+$' '' # trailing new line
 }
 
-export def remove_single_nls [] {
+export def 'remove_single_nls' [] {
     str replace -r -a '(\n[\t ]*){2,}' '⏎'
     | str replace -arm '(?<!⏎)\n' ' ' # remove single line breaks used for code formatting
     | str replace -a '⏎' "\n\n"
 }
 
-export def newlineit [
+export def 'newlineit' [
     $before
     $after
 ] {
     $"((char nl) | str repeat $before)($in)((char nl) | str repeat $after)"
 }
 
-export def frameit [
+export def 'frameit' [
     $width_safe
     $frame
     $frame_color
@@ -203,7 +203,7 @@ export def frameit [
     | $in + "\n" + $input + "\n" + $in
 }
 
-export def colorit [
+export def 'colorit' [
     $highlight_color
     $color
 ] {
@@ -211,7 +211,7 @@ export def colorit [
     | $'(ansi $color)($in)(ansi reset)'
 }
 
-export def alignit [
+export def 'alignit' [
     $alignment: string
     $width_safe
 ] {
@@ -220,7 +220,7 @@ export def alignit [
     | str join (char nl)
 }
 
-export def indentit [
+export def 'indentit' [
     $indent
 ] {
     str replace -arm '^' (char sp | str repeat $indent)
@@ -248,7 +248,7 @@ export def 'dfr enumerate' [
 # │ nu-goodies/cb.nu         │ file │  170 B │
 # │ nu-goodies/abbreviate.nu │ file │  898 B │
 # ╰───────────name───────────┴─type─┴──size──╯
-export def example [
+export def 'example' [
     --dont_copy (-C)
     --dont_comment (-H)
     --indentation_spaces (-i): int = 1
@@ -424,7 +424,7 @@ alias core_hist = history
 # use in-vd.nu
 
 # Filter history with regex and convenient flags, add useful columns
-export def hist [
+export def 'hist' [
     ...query: string # a regex to search for
     --entries: int = 5000 # a number of last entries to work with
     --all (-a) # return all the history
@@ -560,7 +560,7 @@ export def --wrapped in-fx [
 
 ###file in-hx.nu
 # open piped-in results in hx, output back the saved file
-export def in-hx [
+export def 'in-hx' [
     --path (-p) # output path of the file
 ] {
     let $input = $in
@@ -595,7 +595,7 @@ use /Users/user/git/nushell-kv/kv/
 #
 # Examples:
 # > history | in-vd
-export def in-vd [
+export def 'in-vd' [
     --json (-j) # force to use msgpack for piping data in-vd
     --csv (-c) # force to use csv for piping data in-vd
 ] {
@@ -746,7 +746,7 @@ export def --env md [
 
 ###file mv1.nu
 # toggle suffix `_back` for a file
-export def mv1 [
+export def 'mv1' [
     file: path
 ] {
     if ($file | str ends-with '_back') {
@@ -791,7 +791,7 @@ export def 'mygit log' [
     }
 }
 
-export def backup-history [] {
+export def 'backup-history' [] {
     let hist_backups_dir = '~/.config/nushell/history-backups/'
         | path expand
 
@@ -823,7 +823,7 @@ export def backup-history [] {
 # │ 3 │ 4 │    1 │    1 │
 # │ a │   │ a    │      │
 # ╰───┴───┴──────┴──────╯
-export def normalize [
+export def 'normalize' [
     ...column_names
     --suffix = '_norm'
 ] {
@@ -852,7 +852,7 @@ export def normalize [
 
 ###file nu-test.nu
 # install nushell or polars from the HEAD or the specified PR
-export def install [
+export def 'install' [
     --nushell # update nushell only
     --polars # update polars plugin only
     --nushell-repo-path: path = '/Users/user/git/nushell/'
@@ -888,7 +888,7 @@ export def install [
     commandline edit -r $'^($cargo_test_path | path join bin nu) --plugin-config ($plugin_config)'
 }
 
-export def launch [
+export def 'launch' [
     --no-plugin
 ] {
     let $exec = '/Users/user/.cargo_test/' | path join bin nu
@@ -930,7 +930,7 @@ export def --env download-nushell-nightly [
   tar -C $nightly_path -xzf $destination_file
 }
 
-export def launch-downloaded [] {
+export def 'launch-downloaded' [] {
   let path = glob ($nightly_path | path join *darwin *nu) | sort | last
   commandline edit -r $path
 }
@@ -945,7 +945,7 @@ export def launch-downloaded [] {
 # │ 123_000.00wt │
 # │   2_340.00wt │
 # ╰──────────────╯
-export def number-col-format [
+export def 'number-col-format' [
     column_name: string # A column name to format
     --thousands_delim (-t) = '_' # Thousands delimiter: number-format 1000 -t ': 1'000
     --decimals (-d) = 0 # Number of digits after decimal delimiter: number-format 1000.1234 -d 2: 1000.12
@@ -1001,7 +1001,7 @@ export def number-col-format [
 #
 # > number-format 1000 --denom 'Wt'
 # 1_000Wt
-export def number-format [
+export def 'number-format' [
     num? # Number to format
     --thousands_delim (-t): string = '_' # Thousands delimiter
     --integers (-i): int = 0 # Length of padding whole-part digits
@@ -1046,7 +1046,7 @@ export def number-format [
 }
 
 ###file orbita.nu
-export def orbita [] {
+export def 'orbita' [] {
     1..14 | each {line ' '}
 }
 
@@ -1058,7 +1058,7 @@ def line [
 
 ###file print-and-pass.nu
 # An alternative to `inspect` that doesn't break debugging output
-export def print-and-pass [
+export def 'print-and-pass' [
     callback?: closure
 ] {
     let $input = $in
@@ -1074,7 +1074,7 @@ export def print-and-pass [
 
 ###file ramdisk-create.nu
 # Create ramdisk in MacOS
-export def ramdisk-create [
+export def 'ramdisk-create' [
     size: filesize = 4194304kb
 ] {
     let $vol = (hdiutil attach -nobrowse -nomount $'ram://($size | into int | $in * 1.024 / 1000 * 2)' | str trim);
@@ -1088,7 +1088,7 @@ export def ramdisk-create [
 # by @melmass at discord
 
 # interactively select columns from a table
-export def select-i [] {
+export def 'select-i' [] {
     let tgt = $in
     let $choices = $tgt
         | columns
@@ -1103,7 +1103,7 @@ export def select-i [] {
 }
 
 ###file side-by-side.nu
-export def side-by-side [
+export def 'side-by-side' [
     r
     --delimiter: string = ' ' # delimiter between left and right
     --collapse # use collapsed table representation
@@ -1180,7 +1180,7 @@ export def side-by-side [
 #
 # > 1sec / 3 | significant-digits
 # 333ms
-export def significant-digits [
+export def 'significant-digits' [
     n: int = 3 # a number of significant digits
 ]: [int -> int, float -> float, duration -> duration] {
     let $input = $in
@@ -1286,9 +1286,9 @@ export def 'str prepend' [
     $"( $text | str join $rest_el )($concatenator)($input)"
 }
 
-export def indent [] {}
+export def 'indent' [] {}
 
-export def dedent [] {}
+export def 'dedent' [] {}
 
 export def 'escape-regex' [] {
     str replace --all --regex '(\\|\.|\^|\$|\*|\+|\?|\{|\}|\(|\)|\[|\]|\||\/)' '\$1'
@@ -1299,9 +1299,9 @@ export def 'escape-escapes' [] {
 }
 
 ###file testcd.nu
-export def testcd --env [destination] {cd $destination}
+export def 'testcd' --env [destination] {cd $destination}
 
-export def to-safe-filename [
+export def 'to-safe-filename' [
     --prefix: string = ''
     --suffix: string = ''
     --regex: string = '[^A-Za-z0-9_А-Яа-я+]' # symbols to keep
@@ -1327,7 +1327,7 @@ export def to-safe-filename [
 # the stdin first. If no stdin is used closure takes no argument & the output is
 # used as the file content. If there is stdin closure takes the file name as an
 # argument & operates on it.
-export def to-temp-file [
+export def 'to-temp-file' [
     content?     # Commands used to generate the content of the file.
 ] {
     let content = if $content == null {} else {$content}
@@ -1340,7 +1340,7 @@ export def to-temp-file [
 }
 
 ###file transcribe.nu
-export def transcribe [file: path] {
+export def 'transcribe' [file: path] {
     let $file = $file
         | if $in =~ '\.wav$' {} else {
             let $f = $in + '.wav';
@@ -1354,7 +1354,7 @@ export def transcribe [file: path] {
 }
 
 ###file wez-to-ansi.nu
-export def wez-to-ansi [
+export def 'wez-to-ansi' [
     $n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
     --regex: string = '^>' # Regex to separate prompts from outputs. Default is ''.
     --lines_before_top_of_term: int = 100 # Lines from top of scrollback in Wezterm to capture.
@@ -1381,7 +1381,7 @@ export def wez-to-ansi [
 
 ###file wez-to-gif.nu
 #wez-to-gif
-export def wez-to-gif [
+export def 'wez-to-gif' [
     command: string = ''
     --filename: path
     --font-family: string = "Iosevka Extended"
@@ -1422,7 +1422,7 @@ export def wez-to-gif [
 # use wez-to-ansi.nu
 
 # capture wezterm scrollback, split by prompts, output chosen ones to an image file
-export def wez-to-png [
+export def 'wez-to-png' [
     $n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
     --output_path: path = '' # Path for saving output images.
 ] {
@@ -1507,7 +1507,7 @@ export def --env z [
     cd $path
 }
 
-export def replace-in-all-files [
+export def 'replace-in-all-files' [
     $find
     $replace
     --quiet # don't outuput stats
@@ -1541,7 +1541,7 @@ export def replace-in-all-files [
     if not $quiet {$rec}
 }
 
-export def check-clean-working-tree [
+export def 'check-clean-working-tree' [
     $module_path: path
 ] {
     cd ( $module_path | path dirname )
