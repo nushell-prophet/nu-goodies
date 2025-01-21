@@ -862,7 +862,7 @@ export def 'nu-test install' [
 ] {
     cd $nushell_repo_path
 
-    git checkout nu-test
+    git checkout main
     git pull
 
     if $pr != null {
