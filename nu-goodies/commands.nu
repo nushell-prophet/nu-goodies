@@ -438,6 +438,8 @@ export def 'hist' [
         | if $session { where session_id == (history session) } else {}
         | if $folder { where cwd == (pwd) } else {}
         | if ($entries == 0) or $all {} else { last $entries }
+        | where command !~ '^hist '
+        | where exit_status == 0
     }
     | if $last_x != null {
         where start_timestamp > ((date now) - $last_x | format date '%F %X')
