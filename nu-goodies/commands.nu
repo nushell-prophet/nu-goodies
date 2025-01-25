@@ -615,7 +615,7 @@ export def 'in-vd' [
         if ($in | columns) == [''] {
             get ''
         } else {}
-        | kv set vd
+        | kv set vd -p
     }
 }
 
