@@ -454,7 +454,7 @@ export def 'hist' [
         insert duration_s {|i| $i.duration | into int | $in / (10 ** 9)}
         | reject -i item_id duration hostname
         | move start_timestamp --after command
-        | upsert pipes {|i| $i.command | split row -r '\s\|\s' | length}
+        | upsert pipes {|i| ast --flatten $i.command | where shape == shape_pipe | length}
     }
     | if $not_in_vd {} else { in-vd history }
 }
