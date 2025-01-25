@@ -456,9 +456,7 @@ export def 'hist' [
         | move start_timestamp --after command
         | upsert pipes {|i| $i.command | split row -r '\s\|\s' | length}
     }
-    | if $not_in_vd {} else {
-        in-vd history
-    }
+    | if $not_in_vd {} else { in-vd history }
 }
 
 ###file hs.nu
