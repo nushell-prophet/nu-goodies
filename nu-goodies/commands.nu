@@ -1496,7 +1496,12 @@ export def --env 'z' [
             zellij action new-tab --layout default --cwd $path --name $query
             return
         } else {
-            zellij action rename-tab $query
+            if $query in (zellij action query-tab-names | lines) {
+                zellij action go-to-tab-name $query
+                return
+            } else {
+                zellij action rename-tab $query
+            }
         }
     }
 
