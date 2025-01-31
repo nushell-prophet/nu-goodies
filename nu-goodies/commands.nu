@@ -1461,7 +1461,7 @@ def last-commands [
 
 
 ###file z.nu
-export def --env z [
+export def --env 'z' [
     ...rest: string
     --interactive(-i)
     --new-tab(-n)
