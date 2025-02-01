@@ -1465,12 +1465,26 @@ export def --env 'z' [
     ...rest: string
     --interactive(-i)
     --new-tab(-n)
+    --update-dead-dirs
 ]: nothing -> nothing {
     let $query = $rest | str join ' '
 
-    let $cwds = open $nu.history-path
+    let $all_cwds = open $nu.history-path
         | query db "select distinct(cwd) from history order by id desc"
         | get cwd
+
+    let $dead_cwds_path = $nu.data-dir | path join dead_cwds_in_history.nuon
+    let $dead_cwds = if $update_dead_dirs {
+            let $dead_cwds = $all_cwds
+                | filter {|i| try {$i | path exists | not $in} catch {true}}
+
+            $dead_cwds | save $dead_cwds_path -f
+
+            $dead_cwds
+        } else { open $dead_cwds_path }
+
+    let $cwds = $all_cwds
+        | where $it not-in $dead_cwds
         | to text
 
     let $interactive_query = {
@@ -1498,7 +1512,6 @@ export def --env 'z' [
         } else {
             if $query in (zellij action query-tab-names | lines) {
                 zellij action go-to-tab-name $query
-                return
             } else {
                 zellij action rename-tab $query
             }
