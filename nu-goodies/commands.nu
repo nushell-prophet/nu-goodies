@@ -1462,13 +1462,11 @@ def last-commands [
 
 ###file z.nu
 export def --env 'z' [
-    ...rest: string
+    $query: string@'nu-completions-cwds'
     --interactive(-i)
     --new-tab(-n)
     --update-dead-dirs
 ]: nothing -> nothing {
-    let $query = $rest | str join ' '
-
     let $all_cwds = open $nu.history-path
         | query db "select distinct(cwd) from history order by id desc"
         | get cwd
@@ -1519,6 +1517,26 @@ export def --env 'z' [
     }
 
     cd $path
+}
+
+export def 'nu-completions-cwds' [] {
+    let variants = open $nu.history-path
+    | query db "SELECT DISTINCT(cwd) FROM history ORDER BY id DESC"
+    | get CWD
+    | each {
+        path relative-to $nu.home-path
+        | if ($in has ' ') { $'"($in)"' } else {}
+    }
+
+    {
+        options: {
+            case_sensitive: false,
+            completion_algorithm: fuzzy,
+            positional: false,
+            sort: false,
+        },
+        completions: $variants
+    }
 }
 
 export def 'replace-in-all-files' [
