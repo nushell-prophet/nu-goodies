@@ -1503,15 +1503,17 @@ export def --env 'z' [
         }
         | if ($in | is-empty) { return } else { path expand }
 
+    let $query_name = $query | path split | last
+
     if ($env.ZELLIJ? | is-not-empty) {
         if $new_tab {
-            zellij action new-tab --layout default --cwd $path --name $query
+            zellij action new-tab --layout default --cwd $path --name $query_name
             return
         } else {
-            if $query in (zellij action query-tab-names | lines) {
-                zellij action go-to-tab-name $query
+            if $query_name in (zellij action query-tab-names | lines) {
+                zellij action go-to-tab-name $query_name
             } else {
-                zellij action rename-tab $query
+                zellij action rename-tab $query_name
             }
         }
     }
