@@ -1524,8 +1524,7 @@ export def 'nu-completions-cwds' [] {
     | query db "SELECT DISTINCT(cwd) FROM history ORDER BY id DESC"
     | get CWD
     | each {
-        path relative-to $nu.home-path
-        | if ($in has ' ') { $'"($in)"' } else {}
+        if ($in has ' ') { $'"($in)"' } else {}
     }
 
     {
