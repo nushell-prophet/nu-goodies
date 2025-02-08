@@ -1512,6 +1512,8 @@ export def --env 'z' [
         } else {
             if $query_name in (zellij action query-tab-names | lines) {
                 zellij action go-to-tab-name $query_name
+                exit
+                return
             } else {
                 zellij action rename-tab $query_name
             }
