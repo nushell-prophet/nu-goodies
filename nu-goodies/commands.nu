@@ -1494,7 +1494,7 @@ export def --env 'z' [
             do $interactive_query
         } else {
             $cwds
-            | fzf --scheme=path -f $query
+            | fzf --no-sort -f $query
             | lines
             | get 0?
             | if $in == null { # nothing has been found - launch interactive
