@@ -1490,7 +1490,9 @@ export def --env 'z' [
     }
 
 
-    let $path = if $interactive {
+    let $path = if ($query | path exists) {
+            $query
+        } else if $interactive {
             do $interactive_query
         } else {
             $cwds
