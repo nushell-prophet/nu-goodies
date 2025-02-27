@@ -36,7 +36,7 @@ def kv-path [
 
 # Load the KV store, creating it and the values folder if they don't exist
 def load-kv [] : nothing -> record {
-    let $kv_file = kv-path
+    let kv_file = kv-path
     if not ($kv_file | path exists) {
         # Create the values folder and initialize an empty KV store
         mkdir (kv-path --values_folder)
@@ -58,12 +58,12 @@ export def set [
     -p                            # Output the input value back to the pipeline
     --extension (-e): string = '' # Specify the file extension for saving
 ]: any -> any {
-    let $input = $in # we store input here as it might be needed to return at the end of this command
-    let $value_to_store = if $value == null { $input } else { $value }
-    let $value_type = $value_to_store | describe
+    let input = $in # we store input here as it might be needed to return at the end of this command
+    let value_to_store = if $value == null { $input } else { $value }
+    let value_type = $value_to_store | describe
 
     # Determine the file extension based on the value type
-    let $file_extension = if $extension != '' {
+    let file_extension = if $extension != '' {
             $extension
         } else if $value_type =~ 'table|list|record|binary' {
             'msgpackz'
@@ -74,7 +74,7 @@ export def set [
         }
 
     # Generate a unique filename for the value
-    let $file_path = kv-path --values_folder
+    let file_path = kv-path --values_folder
         | path join $"($key)_(date-now).($file_extension)"
 
     # Save the value to the file
@@ -136,8 +136,8 @@ export def push [
     -p                          # Output the input value back to the pipeline
     -u                          # Ensure uniqueness in the list
 ]: any -> any {
-    let $input = $in
-    let $value_to_push = if $value != null {
+    let input = $in
+    let value_to_push = if $value != null {
             $value
         } else if $input != null {
             $input
@@ -145,7 +145,7 @@ export def push [
             error make { msg: "No value provided to push" }
         }
 
-    let $kv_store = load-kv
+    let kv_store = load-kv
 
     if not ($key in $kv_store) {
         # Key does not exist; create a new list with the value
@@ -154,12 +154,12 @@ export def push [
         | save -f (kv-path)
     } else {
         # Key exists; retrieve and update the list
-        let $stored_list = $kv_store | core get $key
+        let stored_list = $kv_store | core get $key
         if not ($stored_list | describe | str starts-with 'list') {
             error make { msg: $"Key '($key)' is not associated with a list" }
         }
 
-        let $updated_list = if $u {
+        let updated_list = if $u {
                 # Ensure uniqueness
                 $stored_list | where {|x| $x != $value_to_push} | append $value_to_push
             } else {
@@ -192,8 +192,8 @@ export def push [
 export def "pop" [
     key  # Key to get
 ] {
-    let $stored = get $key
-    let $value = $stored
+    let stored = get $key
+    let value = $stored
         | if ($in | length) == 0 { return } else { last }
 
     if ($stored | length) > 0 { set $key ($stored | drop) }

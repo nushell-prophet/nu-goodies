@@ -45,8 +45,8 @@ export def 'bar' [
     --width (-w): int = 5
 ] {
     let blocks = [null "▏" "▎" "▍" "▌" "▋" "▊" "▉" "█"]
-    let $whole_part = (($blocks | last) | repeat ($percentage * $width // 1 | into int)) | str join
-    let $fraction = (
+    let whole_part = (($blocks | last) | repeat ($percentage * $width // 1 | into int)) | str join
+    let fraction = (
         $blocks
         | get (
             ($percentage * $width) mod 1
@@ -134,9 +134,9 @@ export def 'cprint' [
     --indent (-i): int = 0 # indent output by number of spaces
     --align: string = 'left' # alignment of text
 ]: [string -> nothing nothing -> nothing nothing -> string string -> string] {
-    let $text = if $text == null { } else { $text }
+    let text = if $text == null { } else { $text }
 
-    let $width_safe = width-safe $width $indent
+    let width_safe = width-safe $width $indent
 
     $text
     | wrapit $keep_single_breaks $width_safe $indent
@@ -194,7 +194,7 @@ export def 'frameit' [
     $frame
     $frame_color
 ] {
-    let $input = $in
+    let input = $in
 
     $frame
     | str repeat $width_safe
@@ -254,7 +254,7 @@ export def 'example' [
     --indentation_spaces (-i): int = 1
     --abbreviated: int = 10
 ] {
-    let $input = table --abbreviated $abbreviated
+    let input = table --abbreviated $abbreviated
     | if $dont_comment { } else { ansi strip }
 
     history
@@ -271,7 +271,7 @@ export def 'example' [
         | str join (char nl)
     }
     | if $dont_copy { } else {
-        let $i = $in
+        let i = $in
         $i | pbcopy
         $i
     }
@@ -289,7 +289,7 @@ export def 'example' [
 export def 'fill non-exist' [
     value_to_replace: any = ''
 ] {
-    let $table = $in
+    let table = $in
 
     $table
     | columns
@@ -334,7 +334,7 @@ export def --env gradient-screen [
     --echo
     --rows: int
 ] {
-    let $strings = $strings
+    let strings = $strings
     | if $in == [] {
         $env.gradient-screen?.texts?
         | default [
@@ -344,34 +344,34 @@ export def --env gradient-screen [
         ]
     } else { }
 
-    let $screen_size = term size
+    let screen_size = term size
     | if $rows == null { values } else {
         $in.columns * $rows
     }
     | math product
 
-    let $1_list = $strings.0 | split chars
-    let $1_len = $1_list | length
-    let $date_text = date now | format date "%Y%m%d_%H%M%S"
+    let 1_list = $strings.0 | split chars
+    let 1_len = $1_list | length
+    let date_text = date now | format date "%Y%m%d_%H%M%S"
 
     let colors = rand_hex_col2
 
     $env.gradient-screen-last-colors = $colors
 
-    let $other_strings = $strings
+    let other_strings = $strings
     | skip
     | each {|i|
         $'($i)($1_list | last ($1_len - ($i | str length) mod $1_len) | str join)'
     }
     | append ''
 
-    let $other_len = $other_strings
+    let other_len = $other_strings
     | str length
     | math sum
 
-    let $n_chunks = ($screen_size - $other_len) // $1_len
+    let n_chunks = ($screen_size - $other_len) // $1_len
 
-    let $base = seq 0 $n_chunks
+    let base = seq 0 $n_chunks
     | each { $strings.0 }
 
     $other_strings
@@ -448,7 +448,7 @@ export def 'hist' [
         where start_timestamp > ((date now) - $last_x | format date '%F %X')
     } else { }
     | if $query == [] { } else {
-        let $inp = $in
+        let inp = $in
 
         $query
         | reduce -f $inp {|it acc|
@@ -474,7 +474,7 @@ export def 'hs' [
     --all # Save all history into .nu file
     --directory_hist # get history for a directory instead of session
 ] {
-    let $path = if $dir == null {
+    let path = if $dir == null {
         [
             (pwd)
             "/Users/user/git/nushell_playing/"
@@ -500,15 +500,15 @@ export def 'hs' [
     } else { $dir }
     | path expand
 
-    let $session = history session
-    let $hist_raw = history -l
+    let session = history session
+    let hist_raw = history -l
     | if $directory_hist {
         where cwd == (pwd)
     } else {
         where session_id == $session
     }
 
-    let $name = $filename
+    let name = $filename
     | if ($in != null) { } else {
         [
             ($"history($session)")
@@ -519,10 +519,10 @@ export def 'hs' [
         } else { }
     }
 
-    let $filepath = $path
+    let filepath = $path
     | path join $"($name).nu"
 
-    let $hist = $hist_raw
+    let hist = $hist_raw
     | get command
     | each {|i| $i | str replace -ar $';(char nl)\$.*? in-vd' '' }
 
@@ -562,9 +562,9 @@ export def --wrapped in-fx [
 export def 'in-hx' [
     --path (-p) # output path of the file
 ] {
-    let $input = $in
-    let $type = $input | describe
-    let $filename = $nu.temp-path | path join (date now | format date "%Y%m%d_%H%M%S" | $in + '.nu')
+    let input = $in
+    let type = $input | describe
+    let filename = $nu.temp-path | path join (date now | format date "%Y%m%d_%H%M%S" | $in + '.nu')
 
     $input
     | if ($type =~ '(table|record|list)') { to nuon } else { }
@@ -655,8 +655,8 @@ def has_hier [] {
 export def --env ln-for-preview [
     --first: int = 500
 ]: [list -> nothing table -> nothing] {
-    let $input = $in
-    let $temp_path = [
+    let input = $in
+    let temp_path = [
         $nu.temp-path
         'hard_links'
         (date now | format date "%Y%m%d_%H%M%S")
@@ -707,7 +707,7 @@ export def --env mc [
     path1?: path
     path2?: path
 ] {
-    let $path = ($nu.temp-path | path join (random chars))
+    let path = ($nu.temp-path | path join (random chars))
     if $path2 != null {
         ^mc --nosubshell $path1 $path2 -P $path
     } else if $path1 != null {
@@ -728,7 +728,7 @@ export def --env md [
     -d # use standard directory
     --dest_dir: path = '/Users/user/temp'
 ] {
-    let $dir = (
+    let dir = (
         if $d or ($dest_dir != '/Users/user/temp') {
             $dest_dir | path join ($target_dir | str replace -a ' ' '_')
         } else { $target_dir }
@@ -759,10 +759,10 @@ export def 'mv1' [
 export def 'mygit log' [
     --message (-m): string
 ] {
-    let $message = $message
+    let message = $message
     | default (date now | format date "%Y-%m-%d")
 
-    let $dot_dir = '~/.config/dot_home_dir'
+    let dot_dir = '~/.config/dot_home_dir'
     | path expand
 
     $nu.home-path
@@ -800,7 +800,7 @@ export def 'backup-history' [] {
     let temp_hist_folder = $hist_backups_dir
     | path join $date_uniq
 
-    let $history_back_file = $temp_hist_folder
+    let history_back_file = $temp_hist_folder
     | path join 'history.sqlite3'
 
     mkdir $temp_hist_folder
@@ -828,7 +828,7 @@ export def 'normalize' [
     mut $table = ($in)
 
     for column in $column_names {
-        let $max_value = $table
+        let max_value = $table
         | get $column
         | where ($it | describe | $in in ['int' 'float'])
         | math max
@@ -889,8 +889,8 @@ export def 'nu-test install' [
 export def 'nu-test launch' [
     --no-plugin
 ] {
-    let $exec = '/Users/user/.cargo_test/' | path join bin nu
-    let $params = [
+    let exec = '/Users/user/.cargo_test/' | path join bin nu
+    let params = [
         "--execute"
         "$env.PATH = ($env.PATH | prepend '/Users/user/.cargo_test/bin/')"
     ]
@@ -951,15 +951,15 @@ export def 'number-col-format' [
     --denom (-D) = '' # Denom `--denom "Wt": number-format 1000 --denom 'Wt': 1000Wt
     --significant_digits: int = 0 # The number of first digits to display, others will become 0
 ] {
-    let $input = $in
+    let input = $in
 
     if $column_name not-in ($input | columns) {
         error make {'msg': $'There is no ($column_name) in columns'}
     }
 
-    let $thousands_delim_length = $thousands_delim | str length --grapheme-clusters
+    let thousands_delim_length = $thousands_delim | str length --grapheme-clusters
 
-    let $integers = $input
+    let integers = $input
     | get $column_name
     | math max
     | split row '.'
@@ -1010,7 +1010,7 @@ export def 'number-format' [
     --denom (-D): string = '' # Denom
     --color: string = 'green'
 ] {
-    let $in_num = $in
+    let in_num = $in
 
     let parts = $num
     | default $in_num
@@ -1021,7 +1021,7 @@ export def 'number-format' [
     | split chars
     | split list '.'
 
-    let $whole_part = $parts.0
+    let whole_part = $parts.0
     | reverse
     | window 3 -s 3 --remainder
     | each { reverse | str join }
@@ -1061,7 +1061,7 @@ def line [
 export def 'print-and-pass' [
     callback?: closure
 ] {
-    let $input = $in
+    let input = $in
 
     if $callback == null {
         print $input
@@ -1077,7 +1077,7 @@ export def 'print-and-pass' [
 export def 'ramdisk-create' [
     size: filesize = 4194304kb
 ] {
-    let $vol = (hdiutil attach -nobrowse -nomount $'ram://($size | into int | $in * 1.024 / 1000 * 2)' | str trim);
+    let vol = (hdiutil attach -nobrowse -nomount $'ram://($size | into int | $in * 1.024 / 1000 * 2)' | str trim);
     sleep 2sec
     (^diskutil erasevolume HFS+ RAMDisk $vol)
     cd /Volumes/RAMDisk
@@ -1090,7 +1090,7 @@ export def 'ramdisk-create' [
 # interactively select columns from a table
 export def 'select-i' [] {
     let tgt = $in
-    let $choices = $tgt
+    let choices = $tgt
     | columns
     | input list -m "Pick columns to get: "
     | str join " "
@@ -1122,15 +1122,15 @@ export def 'side-by-side' [
         $r = ([$" (ansi yellow)($r_header)(ansi reset) "] | append $r)
     }
 
-    let $l_strip = $l | ansi strip
-    let $l_str_len_max = $l_strip | str length --grapheme-clusters | math max
-    let $l_n_lines = $l_strip | length
+    let l_strip = $l | ansi strip
+    let l_str_len_max = $l_strip | str length --grapheme-clusters | math max
+    let l_n_lines = $l_strip | length
 
-    let $r_strip = $r | ansi strip
-    let $r_str_len_max = $r_strip | str length --grapheme-clusters | math max
-    let $r_n_lines = $r_strip | length
+    let r_strip = $r | ansi strip
+    let r_str_len_max = $r_strip | str length --grapheme-clusters | math max
+    let r_n_lines = $r_strip | length
 
-    let $res = $l | append (
+    let res = $l | append (
         seq 1 ($r_n_lines - $l_n_lines)
         | each { seq 1 $l_str_len_max | each { ' ' } | str join }
     )
@@ -1144,7 +1144,7 @@ export def 'side-by-side' [
     | each {|i| $i.0 + $delimiter + $i.1 }
     | str join (char nl)
 
-    let $width = term size | get columns
+    let width = term size | get columns
 
     $res
     | if ($r_str_len_max + $l_str_len_max + ($delimiter | str length)) > $width {
@@ -1183,10 +1183,10 @@ export def 'side-by-side' [
 export def 'significant-digits' [
     n: int = 3 # a number of significant digits
 ]: [int -> int float -> float duration -> duration] {
-    let $input = $in
-    let $type = $input | describe
+    let input = $in
+    let type = $input | describe
 
-    let $num = match $type {
+    let num = match $type {
         'duration' => { $input | into int }
         _ => { $input }
     }
@@ -1239,7 +1239,7 @@ alias std_prepend = prepend
 export def 'str repeat' [
     $n
 ] {
-    let $text = $in
+    let text = $in
     seq 1 $n | each { $text } | str join
 }
 
@@ -1252,8 +1252,8 @@ export def 'str append' [
     --concatenator (-c): string = '' # input and rest concatenator
     --rest_el: string = ' ' # rest elements concatenator
 ] {
-    let $input = $in
-    let $concatenator = $"(
+    let input = $in
+    let concatenator = $"(
         if $new_line { (char nl) }
     )(
         if $tab { (char tab) }
@@ -1277,8 +1277,8 @@ export def 'str prepend' [
     --concatenator (-c): string = '' # input and rest concatenator
     --rest_el: string = ' ' # rest elements concatenator
 ] {
-    let $input = $in
-    let $concatenator = $"(
+    let input = $in
+    let concatenator = $"(
         if $new_line { (char nl) }
     )(
         if $tab { (char tab) }
@@ -1348,9 +1348,9 @@ export def 'to-temp-file' [
 
 ###file transcribe.nu
 export def 'transcribe' [file: path] {
-    let $file = $file
+    let file = $file
     | if $in =~ '\.wav$' { } else {
-        let $f = $in + '.wav';
+        let f = $in + '.wav';
         ffmpeg -i $file -ar 16000 $f;
         $f
     }
@@ -1370,7 +1370,7 @@ export def 'wez-to-ansi' [
     --min_term_width: int = 0
 ] {
 
-    # let $regex = '^' + (ansi green_italic) + '>'
+    # let regex = '^' + (ansi green_italic) + '>'
 
     ^wezterm cli get-text --escapes --start-line ($lines_before_top_of_term * -1)
     | str replace -a $"\n(ansi blue_bold)> " "\n>"
@@ -1397,7 +1397,7 @@ export def 'wez-to-gif' [
     --font-size: int = 20
     --ascinema # copy ascinema here too
 ] {
-    let $wezrec = ^wezterm record --cwd (pwd) -- $nu.current-exe --execute $'source $nu.env-path; clear; ($command)'
+    let wezrec = ^wezterm record --cwd (pwd) -- $nu.current-exe --execute $'source $nu.env-path; clear; ($command)'
     | complete
     | get stderr
     | str replace -r '.*\n.*\/var' '/var'
@@ -1407,7 +1407,7 @@ export def 'wez-to-gif' [
     | path join $'gif_(pwd | path split | last)'
     | $'($in)(mkdir $in)'
 
-    let $gif_name = $target_folder
+    let gif_name = $target_folder
     | path join (
         $filename
         | default $'_wez_gif_(date now | format date `%s`).gif'
@@ -1436,7 +1436,7 @@ export def 'wez-to-png' [
     $n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
     --output_path: path = '' # Path for saving output images.
 ] {
-    let $output_path = $output_path
+    let output_path = $output_path
     | if $in != '' { } else {
         let filename = last-commands $n_last_commands
         | to-safe-filename --prefix 'wez-out-' --suffix '.png' --date
@@ -1480,13 +1480,13 @@ export def --env 'z' [
     --new-tab (-n)
     --update-dead-dirs
 ]: nothing -> nothing {
-    let $all_cwds = open $nu.history-path
+    let all_cwds = open $nu.history-path
     | query db "select distinct(cwd) from history order by id desc"
     | get cwd
 
-    let $dead_cwds_path = $nu.data-dir | path join dead_cwds_in_history.nuon
-    let $dead_cwds = if $update_dead_dirs {
-        let $dead_cwds = $all_cwds
+    let dead_cwds_path = $nu.data-dir | path join dead_cwds_in_history.nuon
+    let dead_cwds = if $update_dead_dirs {
+        let dead_cwds = $all_cwds
         | filter {|i| try { $i | path exists | not $in } catch { true } }
 
         $dead_cwds | save $dead_cwds_path -f
@@ -1494,15 +1494,15 @@ export def --env 'z' [
         $dead_cwds
     } else { open $dead_cwds_path }
 
-    let $cwds = $all_cwds
+    let cwds = $all_cwds
     | where $it not-in $dead_cwds
     | to text
 
-    let $interactive_query = {
+    let interactive_query = {
         $cwds | fzf --scheme=path -q $query
     }
 
-    let $path = if ($query | path exists) {
+    let path = if ($query | path exists) {
         $query
     } else if $interactive {
         do $interactive_query
@@ -1518,7 +1518,7 @@ export def --env 'z' [
     }
     | if ($in | is-empty) { return } else { path expand }
 
-    let $query_name = $query | path split | last
+    let query_name = $query | path split | last
 
     if ($env.ZELLIJ? | is-not-empty) {
         if $new_tab {
@@ -1562,11 +1562,11 @@ export def 'replace-in-all-files' [
     --quiet # don't outuput stats
     --no-git-check
 ] {
-    # let $files = glob --no-dir **/*{nu,md}
-    let $files = glob --no-dir **/* # fix for topiary
+    # let files = glob --no-dir **/*{nu,md}
+    let files = glob --no-dir **/* # fix for topiary
     | where $it =~ '\.(nu|md)$'
 
-    let $files_found = $files
+    let files_found = $files
     | each {|i|
         open $i
         | if ($in | str contains $find) { $i }
