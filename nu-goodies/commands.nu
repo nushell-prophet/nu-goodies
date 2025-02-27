@@ -1549,7 +1549,9 @@ export def 'replace-in-all-files' [
     --quiet # don't outuput stats
     --no-git-check
 ] {
-    let $files = glob --no-dir **/*{nu,md}
+    # let $files = glob --no-dir **/*{nu,md}
+    let $files = glob --no-dir **/* # fix for topiary
+    | where $it =~ '\.(nu|md)$'
 
     let $files_found = $files
         | each {|i|
