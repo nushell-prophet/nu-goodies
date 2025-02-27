@@ -1295,7 +1295,7 @@ export def 'escape-escapes' [] {
 }
 
 ###file testcd.nu
-export def 'testcd' --env [destination] {cd $destination}
+export def --env 'testcd' [destination] {cd $destination}
 
 export def 'to-safe-filename' [
     --prefix: string = ''
