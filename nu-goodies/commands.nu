@@ -567,7 +567,7 @@ export def 'in-hx' [
     let filename = $nu.temp-path | path join (date now | format date "%Y%m%d_%H%M%S" | $in + '.nu')
 
     $input
-    | if ($type =~ '(table|record|list)') { to nuon } else { }
+    | if ($type =~ '(table|record|list)') { to nuon --indent 4 } else { }
     | if ($type =~ '(raw type|string)') { ansi strip } else { }
     | save $filename
 
