@@ -1629,26 +1629,25 @@ def 'insert-new-lines' [] {
     | str join
 }
 
-# format nushell code in commandline using topiary
+# format piped in nushell code, or previous command from history using topiary
 export def 'nu-format' [
-    cmd?: string
     --no-new-lines (-n) # don't insert new lines
 ] {
-    let $cmd_1 = if $cmd == null { $in } else { $cmd }
+    let input = $in
 
-    let $cmd_2 = if $cmd_1 == null {
+    let cmd = if $input == null {
         history
         | last 2
         | first
         | get command
-    } else { $cmd_1 }
+    } else { $input }
 
-    $cmd_2
+    $cmd
     | if $no_new_lines { } else {
         insert-new-lines
     }
     | topiary format --language nu
-    | if $cmd_1 == null {
+    | if $input == null {
         commandline edit -r $in
         return
     } else { }
