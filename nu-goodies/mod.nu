@@ -1,4 +1,5 @@
-export use commands.nu [bar
+export use commands.nu [
+    bar
     bye
     center
     copy-cmd
@@ -32,6 +33,7 @@ export use commands.nu [bar
     select-i
     side-by-side
     # str
+    nu-format
     transcribe
     to-safe-filename
     to-temp-file

@@ -1611,3 +1611,44 @@ export def 'check-clean-working-tree' [
         }
     }
 }
+
+def 'insert-new-lines' [] {
+    let $cmd = $in
+
+    ast --flatten $cmd
+    | filter {|it| $it.shape == shape_pipe or ($it.shape == 'shape_internalcall' and $it.content in [let mut]) }
+    | insert new_lines {|i| if $i.shape == shape_pipe { "\n" } else { "\n\n" } }
+    | update span { get start }
+    | select span new_lines
+    | reverse
+    | reduce --fold (
+        $cmd
+        | split chars
+    ) {|i| insert $i.span $i.new_lines }
+    | str join
+}
+
+# format nushell code in commandline using topiary
+export def 'nu-format' [
+    cmd?: string
+    --no-new-lines (-n) # don't insert new lines
+] {
+    let $cmd_1 = if $cmd == null { $in } else { $cmd }
+
+    let $cmd_2 = if $cmd_1 == null {
+        history
+        | last 2
+        | first
+        | get command
+    } else { $cmd_1 }
+
+    $cmd_2
+    | if $no_new_lines { } else {
+        insert-new-lines
+    }
+    | topiary format --language nu
+    | if $cmd_1 == null {
+        commandline edit -r $in
+        return
+    } else { }
+}
