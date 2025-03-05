@@ -311,6 +311,9 @@ export def 'format profile' [] {
     | update depth {|i| $i.depth - 1 }
     | normalize duration_ms
     | update duration_ms_norm { bar $in --width 16 }
+    | if 'span' not-in ($in | columns) {
+        error make --unspanned {msg: 'use debug profile --spans'}
+    } else { }
     | insert fullspan {|i|
         view span $i.span.start $i.span.end
         | str replace -ar '(^|\n)\s+' ''
