@@ -45,24 +45,25 @@ export def 'bar' [
     --width (-w): int = 5
 ] {
     let blocks = [null "▏" "▎" "▍" "▌" "▋" "▊" "▉" "█"]
-    let full_bar = ($blocks | last)
-    let whole_part = $full_bar | str repeat ($percentage * $width // 1 | into int) | str join
-    let fraction = (
-        $blocks
-        | get (
-            ($percentage * $width) mod 1
-            | $in * ($blocks | length | $in - 1)
-            | math round
-        )
+    let full_bar = $blocks | last
+    let whole_part = ($percentage * $width) // 1
+    | into int
+    | seq 1 $in
+    | each { $full_bar }
+    | str join
+
+    let fraction =  $blocks
+    | get (
+        ($percentage * $width) mod 1
+        | $in * ($blocks | length | $in - 1)
+        | math round
     )
 
-    let result = (
-        $"($whole_part)($fraction)"
-        | fill --character $' ' -w $width
-        | if ($foreground == 'default') and ($background == 'default') { } else {
-            $"(ansi -e {fg: ($foreground) bg: ($background)})($in)(ansi reset)"
-        }
-    )
+    let result = $"($whole_part)($fraction)"
+    | fill --character $' ' -w $width
+    | if ($foreground == 'default') and ($background == 'default') { } else {
+        $"(ansi -e {fg: ($foreground) bg: ($background)})($in)(ansi reset)"
+    }
 
     if $progress {
         print -n $"($result)\r"
