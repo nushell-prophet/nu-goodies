@@ -1629,7 +1629,7 @@ def 'insert-new-lines' [] {
     | str join
 }
 
-# format piped in nushell code, or previous command from history using topiary
+# Format piped in Nushell code or previous command from history using Topiary.
 export def 'nu-format' [
     --no-new-lines (-n) # don't insert new lines
 ]: [nothing -> nothing string -> string] {
