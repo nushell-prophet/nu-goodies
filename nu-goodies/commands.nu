@@ -35,6 +35,7 @@ export def 'O' [
 # https://github.com/nushell/nu_scripts/blob/bar/sourced/progress_bar/bar.nu
 # > bar 0.2
 # █
+#
 # > bar 0.71
 # ███▌
 export def 'bar' [
