@@ -1612,6 +1612,7 @@ export def 'check-clean-working-tree' [
     }
 }
 
+# Insert new lines before the pipe symbol and let/mut
 def 'insert-new-lines' [] {
     let $cmd = $in
 
