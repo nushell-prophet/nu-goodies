@@ -832,23 +832,22 @@ export def 'normalize' [
     --suffix = '_norm'
 ] {
     mut $table = ($in)
+    let $allowed_types = ['int' 'float' 'filesize']
 
     for column in $column_names {
         let max_value = $table
         | get $column
-        | where ($it | describe | $in in ['int' 'float'])
+        | where ($it | describe | $in in $allowed_types)
         | math max
 
-        $table = (
-            $table
-            | upsert $'($column)($suffix)' {|i|
-                $i
-                | get $column
-                | if ($in | describe | $in in ['int' 'float']) {
-                    $in / $max_value
-                } else { }
-            }
-        )
+        $table = $table
+        | upsert $'($column)($suffix)' {|i|
+            $i
+            | get $column
+            | if ($in | describe | $in in $allowed_types) {
+                $in / $max_value
+            } else { }
+        }
     }
 
     $table
