@@ -45,7 +45,8 @@ export def 'bar' [
     --width (-w): int = 5
 ] {
     let blocks = [null "▏" "▎" "▍" "▌" "▋" "▊" "▉" "█"]
-    let whole_part = (($blocks | last) | str repeat ($percentage * $width // 1 | into int)) | str join
+    let full_bar = ($blocks | last)
+    let whole_part = $full_bar | str repeat ($percentage * $width // 1 | into int) | str join
     let fraction = (
         $blocks
         | get (
