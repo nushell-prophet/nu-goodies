@@ -588,7 +588,7 @@ export def 'in-hx' [
 
 ###file in-vd.nu
 # https://github.com/nushell-prophet/nu-kv
-use /Users/user/git/nushell-kv/kv/
+use kv
 
 # for other users use kv in nu-goodies
 # use kv
