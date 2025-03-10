@@ -6,5 +6,8 @@ export use commands.nu [
     del,
     reset,
     push,
-    pop
+    pop,
+    init
 ]
+
+export def main [] {ls}
