@@ -503,11 +503,11 @@ export def 'hist-to-script' [
         filter {|i|
             $i =~ '(^(let|def|export) )|#|\b(save|source|mkdir|polars to-csv|polars to-avro|polars to-jsonl|polars to-arrow|polars to-parquet)\b'
         }
-        | append "\n\n"
-        | prepend $"#($filepath)"
     }
+    | str join "\n\n"
+    | $"\n#($filepath)\n($in)\n#---\n"
 
-    $buffer | str join "\n\n" | save -a $filepath
+    $buffer | save -a $filepath
 
     if not $dont_open {
         commandline edit -r $'($env.EDITOR) ($filepath)'
