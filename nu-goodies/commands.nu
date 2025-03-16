@@ -483,7 +483,7 @@ export def 'hist-to-script' [
     let filepath = $filename
     | if ($in != null) { } else { $"history($session)" }
     | path parse
-    | update extension { $'($in).nu' }
+    | update extension 'nu'
     | path join
 
     let hist = history -l
