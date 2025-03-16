@@ -549,7 +549,7 @@ export def 'hist-to-script' [
     $buffer | save -a $filepath
 
     if not $dont_open {
-        code -n $filepath
+        hx $filepath
     }
 }
 
