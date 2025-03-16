@@ -479,12 +479,6 @@ export def 'hist-to-script' [
     --directory_hist # get history for a directory instead of session
 ] {
     let session = history session
-    let hist_raw = history -l
-    | if $directory_hist {
-        where cwd == (pwd)
-    } else {
-        where session_id == $session
-    }
 
     let filepath = $filename
     | if ($in != null) { } else { $"history($session)" }
@@ -492,17 +486,21 @@ export def 'hist-to-script' [
     | update extension { $'($in).nu' }
     | path join
 
-    let hist = $hist_raw
+    let hist = history -l
+    | if $directory_hist {
+        where cwd == (pwd)
+    } else {
+        where session_id == $session
+    }
     | get command
     | str replace -ar $';(char nl)\$.*? in-vd' ''
+    | drop 1
 
     let buffer = if $up > 1 {
         $hist
         | last ($up + 1)
-        | drop 1
     } else if $all {
         $hist
-        | drop 1
     } else {
         $hist
         | filter {|i| $i =~ '(^(let|def|export) )|#|\b(save|source|mkdir|polars to-csv|polars to-avro|polars to-jsonl|polars to-arrow|polars to-parquet)\b' }
