@@ -470,11 +470,9 @@ export def 'hist' [
     | if $not_in_vd { } else { in-vd history }
 }
 
-###file hs.nu
 # Save significant or all current session history entries into a .nu file. If the .nu file already exists, data will be appended.
 export def 'hist-to-script' [
     filename?: path
-    --dir: string # where to save history file
     --dont_open (-O) # don't open the save history file in editor
     --up (-u): int = 0 # set number of last events to save
     --all # Save all history into .nu file
