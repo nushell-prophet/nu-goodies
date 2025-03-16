@@ -496,7 +496,7 @@ export def 'hist-to-script' [
 
     let hist = $hist_raw
     | get command
-    | each {|i| $i | str replace -ar $';(char nl)\$.*? in-vd' '' }
+    | str replace -ar $';(char nl)\$.*? in-vd' ''
 
     let buffer = if $up > 1 {
         $hist
