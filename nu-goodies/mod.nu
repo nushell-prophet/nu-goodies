@@ -10,7 +10,7 @@ export use commands.nu [
     'format profile'
     gradient-screen
     hist
-    hs
+    hist-to-script
     in-fx
     in-hx
     in-vd

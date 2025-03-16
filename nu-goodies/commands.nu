@@ -472,7 +472,7 @@ export def 'hist' [
 
 ###file hs.nu
 # Save significant or all current session history entries into a .nu file. If the .nu file already exists, data will be appended.
-export def 'hs' [
+export def 'hist-to-script' [
     filename?
     --dir: string # where to save history file
     --dont_open (-O) # don't open the save history file in editor
