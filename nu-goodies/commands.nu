@@ -496,19 +496,18 @@ export def 'hist-to-script' [
     | str replace -ar $';(char nl)\$.*? in-vd' ''
     | drop 1
 
-    let buffer = if $up > 1 {
-        $hist
-        | last ($up + 1)
-    } else if $all {
-        $hist
-    } else {
-        $hist
-        | filter {|i| $i =~ '(^(let|def|export) )|#|\b(save|source|mkdir|polars to-csv|polars to-avro|polars to-jsonl|polars to-arrow|polars to-parquet)\b' }
+    let buffer = $hist
+    | if $up > 1 {
+        last ($up + 1)
+    } else if $all { } else {
+        filter {|i|
+            $i =~ '(^(let|def|export) )|#|\b(save|source|mkdir|polars to-csv|polars to-avro|polars to-jsonl|polars to-arrow|polars to-parquet)\b'
+        }
         | append "\n\n"
-        | prepend $"#($name)"
+        | prepend $"#($filepath)"
     }
 
-    $buffer | save -a $filepath
+    $buffer | str join "\n\n" | save -a $filepath
 
     if not $dont_open {
         hx $filepath
