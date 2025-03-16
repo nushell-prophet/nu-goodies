@@ -510,7 +510,7 @@ export def 'hist-to-script' [
     $buffer | str join "\n\n" | save -a $filepath
 
     if not $dont_open {
-        hx $filepath
+        commandline edit -r $'($env.EDITOR) ($filepath)'
     }
 }
 
