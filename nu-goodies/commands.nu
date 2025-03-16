@@ -473,39 +473,13 @@ export def 'hist' [
 ###file hs.nu
 # Save significant or all current session history entries into a .nu file. If the .nu file already exists, data will be appended.
 export def 'hist-to-script' [
-    filename?
+    filename?: path
     --dir: string # where to save history file
     --dont_open (-O) # don't open the save history file in editor
     --up (-u): int = 0 # set number of last events to save
     --all # Save all history into .nu file
     --directory_hist # get history for a directory instead of session
 ] {
-    let path = if $dir == null {
-        [
-            (pwd)
-            "/Users/user/git/nushell_playing/"
-            'type your variant'
-            'use gum'
-        ]
-        | input list 'choose directory'
-        | if ($in | path exists) { } else {
-            match $in {
-                'type your variant' => { input 'type your variant' }
-                'use gum' => {
-                    gum file --directory (pwd)
-                    | str trim -c (char nl)
-                    | if ($in | path type) == 'file' {
-                        path basename
-                    } else { }
-                }
-            }
-        }
-        | if ($in | path exists) { } else {
-            error make {msg: $"the path ($in) doesn't exist"}
-        }
-    } else { $dir }
-    | path expand
-
     let session = history session
     let hist_raw = history -l
     | if $directory_hist {
@@ -514,19 +488,11 @@ export def 'hist-to-script' [
         where session_id == $session
     }
 
-    let name = $filename
-    | if ($in != null) { } else {
-        [
-            ($"history($session)")
-            'type your variant'
-        ] | input list
-        | if ($in == 'type your variant') {
-            input 'type your variant: '
-        } else { }
-    }
-
-    let filepath = $path
-    | path join $"($name).nu"
+    let filepath = $filename
+    | if ($in != null) { } else { $"history($session)" }
+    | path parse
+    | update extension { $'($in).nu' }
+    | path join
 
     let hist = $hist_raw
     | get command
