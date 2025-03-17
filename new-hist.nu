@@ -44,7 +44,7 @@ export def 'hist' [
     let regex_filters = $query
 
     # Order by and limit
-    $sql_query = $sql_query + " ORDER BY start_timestamp DESC"
+    # $sql_query = $sql_query + " ORDER BY start_timestamp DESC"
 
     # Apply limit if not --all
     if not ($all or $entries == 0) {
