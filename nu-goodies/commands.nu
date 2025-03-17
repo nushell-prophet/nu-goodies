@@ -442,9 +442,6 @@ export def 'hist' [
     --last-x: duration # duration for the period to check commands
     --not-in-vd (-V) # disable opening command in visidata
 ] {
-    # Get path to the history database
-    let db_path = $nu.history-path
-
     # Start building the SQL query
     mut sql_query = "SELECT command_line as command, start_timestamp, session_id, hostname, cwd,
                     duration_ms / 1000000.0 as duration_s, exit_status FROM history WHERE 1=1"
@@ -458,14 +455,12 @@ export def 'hist' [
 
     # Session filter
     if $session {
-        let current_session = (history session | into string)
-        $sql_query = $sql_query + " AND session_id = " + $current_session
+        $sql_query = $sql_query + " AND session_id = " + (history session | into string)
     }
 
     # Folder filter
     if $folder {
-        let current_dir = (pwd | into string)
-        $sql_query = $sql_query + " AND cwd = '" + $current_dir + "'"
+        $sql_query = $sql_query + " AND cwd = '" + (pwd) + "'"
     }
 
     # Time filter
@@ -486,7 +481,7 @@ export def 'hist' [
     }
 
     # Execute the query
-    let results = open $db_path | query db $sql_query
+    let results = open $nu.history-path | query db $sql_query
 
     # Apply regex filters in Nushell (SQLite doesn't support all regex features)
     let filtered_results = if $regex_filters == [] {
