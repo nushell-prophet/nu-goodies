@@ -64,10 +64,8 @@ export def 'hist' [
     }
 
     # Format timestamps as human readable
-    let formatted_results = $filtered_results | update start_timestamp {|row|
-        # Convert nanoseconds to seconds and format
-        $row.start_timestamp // 1000000000 | into datetime
-    }
+    # Convert nanoseconds to seconds and format
+    let formatted_results = $filtered_results | into datetime --format '%s' start_timestamp
 
     # Add pipe count column
     let final_results = $formatted_results | insert pipes {|i|
