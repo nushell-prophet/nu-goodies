@@ -72,8 +72,10 @@ export def 'hist' [
     # Add pipe count column
     $formatted_results
     | insert pipes {|i|
-        ast --flatten $i.command
-        | where shape == shape_pipe
+        # ast --flatten $i.command
+        # | where shape == shape_pipe
+        $i.command
+        | parse -r '(\s\|)'
         | length
     }
     # Display in visidata or return
