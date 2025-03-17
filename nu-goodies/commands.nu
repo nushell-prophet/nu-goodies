@@ -442,31 +442,77 @@ export def 'hist' [
     --last-x: duration # duration for the period to check commands
     --not-in-vd (-V) # disable opening command in visidata
 ] {
-    if $in != null { } else {
-        core_hist -l
-        | if $session { where session_id == (history session) } else { }
-        | if $folder { where cwd == (pwd) } else { }
-        | if ($entries == 0) or $all { } else { last $entries }
-        | where command !~ '^hist '
-        | where exit_status == 0
-    }
-    | if $last_x != null {
-        where start_timestamp > ((date now) - $last_x | format date '%F %X')
-    } else { }
-    | if $query == [] { } else {
-        let inp = $in
+    # Get path to the history database
+    let db_path = $nu.history-path
 
-        $query
-        | reduce -f $inp {|it acc|
-            $acc | filter {|i| $i.command =~ $it }
+    # Start building the SQL query
+    mut sql_query = "SELECT command_line as command, start_timestamp, session_id, hostname, cwd,
+                    duration_ms / 1000000.0 as duration_s, exit_status FROM history WHERE 1=1"
+
+    # Build where clauses based on parameters
+    # Exclude 'hist' commands
+    $sql_query = $sql_query + " AND command_line NOT LIKE 'hist %'"
+
+    # Only successful commands
+    $sql_query = $sql_query + " AND exit_status = 0"
+
+    # Session filter
+    if $session {
+        let current_session = (history session | into string)
+        $sql_query = $sql_query + " AND session_id = " + $current_session
+    }
+
+    # Folder filter
+    if $folder {
+        let current_dir = (pwd | into string)
+        $sql_query = $sql_query + " AND cwd = '" + $current_dir + "'"
+    }
+
+    # Time filter
+    if $last_x != null {
+        let timestamp = ((date now) - $last_x | format date '%s') | into int
+        $sql_query = $sql_query + " AND start_timestamp > " + $timestamp + "000000000" # Convert to nanoseconds
+    }
+
+    # Query regex filters
+    let regex_filters = $query
+
+    # Order by and limit
+    # $sql_query = $sql_query + " ORDER BY start_timestamp DESC"
+
+    # Apply limit if not --all
+    if not ($all or $entries == 0) {
+        $sql_query = $sql_query + " LIMIT " + $'($entries)'
+    }
+
+    # Execute the query
+    let results = open $db_path | query db $sql_query
+
+    # Apply regex filters in Nushell (SQLite doesn't support all regex features)
+    let filtered_results = if $regex_filters == [] {
+        $results
+    } else {
+        $regex_filters
+        | reduce -f $results {|pattern, acc|
+            $acc
+            | where command =~ $pattern
         }
     }
-    | if 'duration_s' in ...($in | columns) { } else {
-        insert duration_s {|i| $i.duration | into int | $in / (10 ** 9) }
-        | reject -i item_id duration hostname
-        | move start_timestamp --after command
-        | upsert pipes {|i| ast --flatten $i.command | where shape == shape_pipe | length }
+
+    # Format timestamps as human readable
+    # Convert nanoseconds to seconds and format
+    let formatted_results = $filtered_results | into datetime --format '%s' start_timestamp
+
+    # Add pipe count column
+    $formatted_results
+    | insert pipes {|i|
+        # ast --flatten $i.command
+        # | where shape == shape_pipe
+        $i.command
+        | parse -r '(\s\|)'
+        | length
     }
+    # Display in visidata or return
     | if $not_in_vd { } else { in-vd history }
 }
 
