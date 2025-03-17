@@ -459,6 +459,7 @@ export def 'hist' [
         # Time filter
         append $" AND start_timestamp > ((date now) - $last_x | into int)" # Convert to nanoseconds
     } else { }
+    | append ' ORDER BY id DESC'
     | if not ($all or $entries == 0) {
         # Apply limit if not --all
         append $" LIMIT ($entries)"
