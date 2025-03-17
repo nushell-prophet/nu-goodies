@@ -52,7 +52,7 @@ export def 'hist' [
     }
 
     # Execute the query
-    let results = (^sqlite3 -json $db_path $sql_query | from json)
+    let results = open $db_path | query db $sql_query
 
     # Apply regex filters in Nushell (SQLite doesn't support all regex features)
     let filtered_results = if $regex_filters == [] {
