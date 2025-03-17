@@ -434,7 +434,7 @@ alias core_hist = history
 
 # Filter history with regex and convenient flags, add useful columns
 export def 'hist' [
-    ...query: string # a regex to search for
+    ...regex_filters: string # a regex to search for
     --entries: int = 5000 # a number of last entries to work with
     --all (-a) # return all the history
     --session (-s) # show only entries from the current session
@@ -443,42 +443,27 @@ export def 'hist' [
     --not-in-vd (-V) # disable opening command in visidata
 ] {
     # Start building the SQL query
-    mut sql_query = "SELECT command_line as command, start_timestamp, session_id, hostname, cwd,
+    let sql_query = "SELECT command_line as command, start_timestamp, session_id, hostname, cwd,
                     duration_ms / 1000000.0 as duration_s, exit_status FROM history WHERE 1=1"
-
-    # Build where clauses based on parameters
-    # Exclude 'hist' commands
-    $sql_query = $sql_query + " AND command_line NOT LIKE 'hist %'"
-
-    # Only successful commands
-    $sql_query = $sql_query + " AND exit_status = 0"
-
-    # Session filter
-    if $session {
-        $sql_query = $sql_query + " AND session_id = " + (history session | into string)
-    }
-
-    # Folder filter
-    if $folder {
-        $sql_query = $sql_query + " AND cwd = '" + (pwd) + "'"
-    }
-
-    # Time filter
-    if $last_x != null {
-        let timestamp = ((date now) - $last_x | format date '%s') | into int
-        $sql_query = $sql_query + " AND start_timestamp > " + $timestamp + "000000000" # Convert to nanoseconds
-    }
-
-    # Query regex filters
-    let regex_filters = $query
-
-    # Order by and limit
-    # $sql_query = $sql_query + " ORDER BY start_timestamp DESC"
-
-    # Apply limit if not --all
-    if not ($all or $entries == 0) {
-        $sql_query = $sql_query + " LIMIT " + $'($entries)'
-    }
+    | append " AND command_line NOT LIKE 'hist %'" # Build where clauses based on parameters Exclude 'hist' commands
+    | append " AND exit_status = 0" # Only successful commands
+    | if $session {
+        # Session filter
+        append $" AND session_id = (history session)"
+    } else { }
+    | if $folder {
+        # Folder filter
+        append $" AND cwd = '(pwd)'"
+    } else { }
+    | if $last_x != null {
+        # Time filter
+        append $" AND start_timestamp > ((date now) - $last_x | into int)" # Convert to nanoseconds
+    } else { }
+    | if not ($all or $entries == 0) {
+        # Apply limit if not --all
+        append $" LIMIT ($entries)"
+    } else { }
+    | str join
 
     # Execute the query
     let results = open $nu.history-path | query db $sql_query
