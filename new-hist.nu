@@ -5,8 +5,8 @@ export def 'hist' [
     --all (-a) # return all the history
     --session (-s) # show only entries from the current session
     --folder # show only entries from the current folder
-    --last_x: duration # duration for the period to check commands
-    --not_in_vd (-V) # disable opening command in visidata
+    --last-x: duration # duration for the period to check commands
+    --not-in-vd (-V) # disable opening command in visidata
 ] {
     # Get path to the history database
     let db_path = $nu.history-path
