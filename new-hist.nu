@@ -55,7 +55,7 @@ export def 'hist' [
     let results = open $db_path | query db $sql_query
 
     # Apply regex filters in Nushell (SQLite doesn't support all regex features)
-    let filtered_results = if $regex_filters == [] {
+    if $regex_filters == [] {
         $results
     } else {
         $regex_filters
@@ -64,13 +64,10 @@ export def 'hist' [
             | where command =~ $pattern
         }
     }
-
     # Format timestamps as human readable
     # Convert nanoseconds to seconds and format
-    let formatted_results = $filtered_results | into datetime --format '%s' start_timestamp
-
+    | into datetime --format '%s' start_timestamp
     # Add pipe count column
-    $formatted_results
     | insert pipes {|i|
         # ast --flatten $i.command
         # | where shape == shape_pipe
