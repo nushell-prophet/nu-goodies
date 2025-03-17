@@ -58,8 +58,10 @@ export def 'hist' [
     let filtered_results = if $regex_filters == [] {
         $results
     } else {
-        $regex_filters | reduce -f $results {|pattern, acc|
-            $acc | where command =~ $pattern
+        $regex_filters
+        | reduce -f $results {|pattern, acc|
+            $acc
+            | where command =~ $pattern
         }
     }
 
@@ -68,16 +70,14 @@ export def 'hist' [
     let formatted_results = $filtered_results | into datetime --format '%s' start_timestamp
 
     # Add pipe count column
-    let final_results = $formatted_results | insert pipes {|i|
-        ast --flatten $i.command | where shape == shape_pipe | length
+    $formatted_results
+    | insert pipes {|i|
+        ast --flatten $i.command
+        | where shape == shape_pipe
+        | length
     }
-
     # Display in visidata or return
-    if $not_in_vd {
-        $final_results
-    } else {
-        $final_results | in-vd history
-    }
+    | if $not_in_vd { } else { in-vd history }
 }
 
 export def 'in-vd history' [] {
