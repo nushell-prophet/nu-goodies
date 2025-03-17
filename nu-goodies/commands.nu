@@ -443,7 +443,7 @@ export def 'hist' [
     --not-in-vd (-V) # disable opening command in visidata
 ] {
     # Start building the SQL query
-    let sql_query = "SELECT command_line as command, start_timestamp, session_id, hostname, cwd,
+    let sql_query = "SELECT command_line as command, start_timestamp / 1000 as start_timestamp, session_id, hostname, cwd,
                     duration_ms / 1000000.0 as duration_s, exit_status FROM history WHERE 1=1"
     | append " AND command_line NOT LIKE 'hist %'" # Build where clauses based on parameters Exclude 'hist' commands
     | append " AND exit_status = 0" # Only successful commands
