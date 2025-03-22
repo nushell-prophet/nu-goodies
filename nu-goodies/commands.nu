@@ -1499,8 +1499,10 @@ def add-dead-dir [
     init-dead-cwds-table
 
     # Insert new directory if it doesn't exist
+    # Escape single quotes in the path by doubling them
+    let escaped_dir = $dir | str replace --all "'" "''"
     open $nu.history-path
-    | query db $"INSERT OR IGNORE INTO dead_cwds (path) VALUES ('($dir)')"
+    | query db $"INSERT OR IGNORE INTO dead_cwds (path) VALUES ('($escaped_dir)')"
 }
 
 # Helper function to remove a directory from dead dirs
@@ -1511,8 +1513,10 @@ def remove-dead-dir [
     init-dead-cwds-table
 
     # Delete the directory
+    # Escape single quotes in the path by doubling them
+    let escaped_dir = $dir | str replace --all "'" "''"
     open $nu.history-path
-    | query db $"DELETE FROM dead_cwds WHERE path = '($dir)'"
+    | query db $"DELETE FROM dead_cwds WHERE path = '($escaped_dir)'"
 }
 
 # Helper function to handle dead directories
