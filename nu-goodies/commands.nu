@@ -1500,7 +1500,7 @@ def add-dead-dir [
 
     # Insert new directory if it doesn't exist
     open $nu.history-path
-    | query db $"INSERT OR IGNORE INTO dead_cwds (path) VALUES ('($dir)')"
+    | query db $"INSERT OR IGNORE INTO dead_cwds \(path\) VALUES \('($dir)'\)"
 }
 
 # Helper function to remove a directory from dead dirs
