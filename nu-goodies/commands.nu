@@ -1472,6 +1472,7 @@ def get-history-dirs []: nothing -> list<string> {
     open $nu.history-path
     | query db "SELECT DISTINCT(cwd) FROM history ORDER BY id DESC"
     | get cwd
+    | compact
 }
 
 # Helper function to initialize dead_cwds table if it doesn't exist
