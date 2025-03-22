@@ -1509,7 +1509,7 @@ def handle-dead-dirs [
         let dead_cwds_path = $nu.data-dir | path join dead_cwds_in_history.txt
         let all_cwds = get-history-dirs
         let dead_cwds = $all_cwds
-        | filter {|dir| try { $dir | path exists | not $in } catch { true } }
+        | filter {|dir| $dir | path exists | not $in }
 
         # Save the updated list (one directory per line)
         $dead_cwds | str join "\n" | save $dead_cwds_path -f
@@ -1559,16 +1559,10 @@ def select-dir [
         # Find the first result that actually exists
         let existing_path = $fuzzy_results
         | where {|path|
-            try {
-                if ($path | path exists) {
-                    true
-                } else {
-                    # Add non-existing dir to dead dirs list
-                    add-dead-dir $path
-                    false
-                }
-            } catch {
-                # Add problematic dir to dead dirs list
+            if ($path | path exists) {
+                true
+            } else {
+                # Add non-existing dir to dead dirs list
                 add-dead-dir $path
                 false
             }
