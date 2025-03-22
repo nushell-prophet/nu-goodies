@@ -1470,7 +1470,7 @@ def last-commands [
 # Helper function to get all unique directories from command history
 def get-history-dirs []: nothing -> list<string> {
     open $nu.history-path
-    | query db "select distinct(cwd) from history order by id desc"
+    | query db "SELECT DISTINCT(cwd) FROM history ORDER BY id DESC"
     | get cwd
 }
 
@@ -1529,12 +1529,12 @@ def handle-dead-dirs [
         init-dead-cwds-table
         open $nu.history-path
         | query db "DELETE FROM dead_cwds"
-
+        
         # Insert each dead directory
         $dead_cwds | each {|dir|
             add-dead-dir $dir
         }
-
+        
         $dead_cwds
     } else {
         # Load existing dead directories list
@@ -1633,7 +1633,7 @@ def handle-zellij [
 
 # Main z command
 export def --env 'z' [
-    $query: string@'nu-completions-cwds' # Directory query to search for
+    $query?: string@'nu-completions-cwds' # Directory query to search for (optional)
     --interactive (-i) # Force interactive mode
     --new-tab (-n) # Open directory in a new Zellij tab
     --update-dead-dirs (-u) # Refresh the list of non-existent directories
@@ -1641,25 +1641,56 @@ export def --env 'z' [
 ]: nothing -> nothing {
     # Handle update dead dirs
     if $update_dead_dirs {
+        print "Updating dead directories list..."
         handle-dead-dirs --update=true
         return
     }
-
+    
     # Handle cleaning dead dirs that now exist
     if $clean {
         let dead_dirs = read-dead-dirs
         let existing_dirs = $dead_dirs | filter {|dir| $dir | path exists }
-
+        
+        if ($existing_dirs | is-empty) {
+            print "No directories to clean from the dead list."
+            return
+        }
+        
         # Remove existing dirs from dead list
-        $existing_dirs | each {|dir|
+        $existing_dirs | each {|dir| 
             remove-dead-dir $dir
             print $"Removed ($dir) from dead directories list"
         }
-
+        
+        return
+    }
+    
+    # Handle case when no query is provided
+    if ($query | is-empty) {
+        # Default to interactive mode
+        let target_path = select-dir "" --interactive=true
+        
+        # Exit if no path was selected
+        if ($target_path | is-empty) { return }
+        
+        # Expand the path to full format
+        let expanded_path = $target_path | path expand
+        
+        # Get directory name for tab naming
+        let dir_name = $target_path | path split | last
+        
+        # Handle Zellij integration
+        let zellij_handled = handle-zellij $expanded_path $dir_name --new-tab=$new_tab
+        
+        # Change to the target directory if not handled by Zellij new tab
+        if not $zellij_handled {
+            cd $expanded_path
+        }
+        
         return
     }
 
-    # Get target path
+    # Get target path with query
     let target_path = select-dir $query --interactive=$interactive
 
     # Exit if no path was selected
