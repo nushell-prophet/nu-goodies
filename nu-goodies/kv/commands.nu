@@ -14,7 +14,7 @@ export def ls [] {
     | insert modified {|item|
         core_ls $item.filename | core_get 0.modified
     }
-    | sort-by modified --reverse
+    | reverse # files in the store are stored chronologically
     | update modified { date humanize }
     | select name modified
 }
@@ -23,17 +23,20 @@ export def ls [] {
 def kv-path [
     --values_folder # Return the path to the values folder instead of the KV file
 ]: nothing -> path {
-    $env.kv?.path?
+    let main_path = $env.kv?.path?
     | if $in != null { } else {
-        $nu.home-path
-        | path join '.config' 'nushell' 'kv'
+        $nu.data-dir | path join 'kv'
     }
-    | if $values_folder {
-        # Return the path to the 'values' folder
-        path join 'values'
+
+    let values_path = $main_path | path join 'values'
+
+    $values_path | if not ($in | path exists) { mkdir $in }
+
+    if $values_folder {
+        $values_path
     } else {
         # Return the path to the 'kv.nuon' file
-        path join 'kv.nuon'
+        $main_path | path join 'kv.nuon'
     }
 }
 
@@ -72,17 +75,18 @@ export def set [
 ]: any -> any {
     let input = $in # we store input here as it might be needed to return at the end of this command
     let value_to_store = if $value == null { $input } else { $value }
-    let value_type = $value_to_store | describe
 
     # Determine the file extension based on the value type
     let file_extension = if $extension != '' {
         $extension
-    } else if $value_type =~ 'table|list|record|binary' {
-        'msgpackz'
-    } else if $value_type == 'string' {
-        'txt' # 'msgpackz' can't store primitives in some versions
     } else {
-        'nuon'
+        let value_type = $value_to_store | describe
+
+        if $value_type == 'string' {
+            'txt' # 'msgpackz' can't store primitives in some versions
+        } else {
+            'nuon' # I use Nuon here only for storing variables in version control.
+        }
     }
 
     # Generate a unique filename for the value
@@ -97,6 +101,10 @@ export def set [
     | reject $key -i # Remove existing key to sort chronologically
     | insert $key $file_path
     | save -f (kv-path)
+
+    if $env.kv?.print-tables? == true {
+        print $'You can preview this variable with `kv get ($key)`' ($value_to_store | table -e)
+    }
 
     # Output the input value if -p is specified
     if $return_to_stdout { return $input }
