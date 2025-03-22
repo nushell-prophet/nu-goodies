@@ -1467,68 +1467,99 @@ def last-commands [
     | str join '_'
 }
 
-###file z.nu
 export def --env 'z' [
-    $query: string@'nu-completions-cwds'
-    --interactive (-i)
-    --new-tab (-n)
-    --update-dead-dirs
+    $query: string@'nu-completions-cwds' # Directory query to search for
+    --interactive (-i) # Force interactive mode
+    --new-tab (-n) # Open directory in a new Zellij tab
+    --update-dead-dirs # Refresh the list of non-existent directories
 ]: nothing -> nothing {
-    let all_cwds = open $nu.history-path
+    # Paths for data storage
+    let history_path = $nu.history-path
+    let dead_cwds_path = $nu.data-dir | path join dead_cwds_in_history.nuon
+
+    # Get all unique directories from history
+    let all_cwds = open $history_path
     | query db "select distinct(cwd) from history order by id desc"
     | get cwd
 
-    let dead_cwds_path = $nu.data-dir | path join dead_cwds_in_history.nuon
+    # Handle dead directories
     let dead_cwds = if $update_dead_dirs {
-        let dead_cwds = $all_cwds
-        | filter {|i| try { $i | path exists | not $in } catch { true } }
+        # Check which directories no longer exist
+        let new_dead_cwds = $all_cwds
+        | filter {|dir| try { $dir | path exists | not $in } catch { true } }
 
-        $dead_cwds | save $dead_cwds_path -f
+        # Save the updated list
+        $new_dead_cwds | save $dead_cwds_path -f
+        $new_dead_cwds
+    } else {
+        # Load existing dead directories list
+        try { open $dead_cwds_path } catch { [] }
+    }
 
-        $dead_cwds
-    } else { open $dead_cwds_path }
-
-    let cwds = $all_cwds
+    # Filter out dead directories
+    let valid_cwds = $all_cwds
     | where $it not-in $dead_cwds
     | to text
 
-    let interactive_query = {
-        $cwds | fzf --scheme=path -q $query
+    # Function to run interactive directory selection
+    let select_interactive = {
+        $valid_cwds | fzf --scheme=path -q $query
     }
 
-    let path = if ($query | path exists) {
+    # Determine the target path based on input and flags
+    let target_path = if ($query | path exists) {
+        # Direct path exists - use it
         $query
     } else if $interactive {
-        do $interactive_query
+        # Interactive mode requested
+        do $select_interactive
     } else {
-        $cwds
+        # Try fuzzy finding first
+        let fuzzy_result = $valid_cwds
         | fzf --no-sort -f $query
         | lines
         | get 0?
-        | if $in == null {
-            # nothing has been found - launch interactive
-            do $interactive_query
-        } else { }
+
+        if ($fuzzy_result | is-empty) {
+            # No match found - fall back to interactive
+            do $select_interactive
+        } else {
+            $fuzzy_result
+        }
     }
-    | if ($in | is-empty) { return } else { path expand }
 
-    let query_name = $query | path split | last
+    # Exit if no path was selected
+    if ($target_path | is-empty) { return }
 
+    # Expand the path to full format
+    let expanded_path = $target_path | path expand
+
+    # Get directory name for tab naming
+    let dir_name = $query | path split | last
+
+    # Handle Zellij integration if available
     if ($env.ZELLIJ? | is-not-empty) {
         if $new_tab {
-            zellij action new-tab --layout default --cwd $path --name $query_name
+            # Create new tab with the directory
+            zellij action new-tab --layout default --cwd $expanded_path --name $dir_name
             return
         } else {
-            if $query_name in (zellij action query-tab-names | lines) {
-                zellij action go-to-tab-name $query_name
-                print -n 'switching to tab ' $query_name
+            # Check if tab with this name already exists
+            let existing_tabs = zellij action query-tab-names | lines
+
+            if $dir_name in $existing_tabs {
+                # Switch to existing tab
+                zellij action go-to-tab-name $dir_name
+                print -n 'Switching to tab ' $dir_name
             } else {
-                zellij action rename-tab $query_name
+                # Rename current tab
+                zellij action rename-tab $dir_name
             }
         }
     }
 
-    cd $path
+    # Change to the target directory
+    cd $expanded_path
 }
 
 export def 'nu-completions-cwds' [] {
