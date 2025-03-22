@@ -1527,17 +1527,21 @@ def select-dir [
         # Interactive mode requested
         do $select_interactive
     } else {
-        # Try fuzzy finding first
-        let fuzzy_result = $valid_cwds
+        # Try fuzzy finding and return first existing directory
+        let fuzzy_results = $valid_cwds
         | fzf -f $query
         | lines
+
+        # Find the first result that actually exists
+        let existing_path = $fuzzy_results
+        | where {|path| try { $path | path exists } catch { false } }
         | get 0?
 
-        if ($fuzzy_result | is-empty) {
-            # No match found - fall back to interactive
+        if ($existing_path | is-empty) {
+            # No valid match found - fall back to interactive
             do $select_interactive
         } else {
-            $fuzzy_result
+            $existing_path
         }
     }
 }
