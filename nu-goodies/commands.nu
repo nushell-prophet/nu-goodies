@@ -1474,30 +1474,45 @@ def get-history-dirs []: nothing -> list<string> {
     | get cwd
 }
 
-# Helper function to read dead directories from text file
-def read-dead-dirs []: nothing -> list<string> {
-    let dead_cwds_path = $nu.data-dir | path join dead_cwds_in_history.txt
-
-    if ($dead_cwds_path | path exists) {
-        open $dead_cwds_path | lines
-    } else {
-        []
-    }
+# Helper function to initialize dead_cwds table if it doesn't exist
+def init-dead-cwds-table []: nothing -> nothing {
+    open $nu.history-path
+    | query db "CREATE TABLE IF NOT EXISTS dead_cwds (path TEXT PRIMARY KEY, added_date TEXT DEFAULT CURRENT_TIMESTAMP)"
 }
 
-# Helper function to add a dead directory to the list
+# Helper function to read dead directories from SQLite
+def read-dead-dirs []: nothing -> list<string> {
+    # Ensure table exists
+    init-dead-cwds-table
+
+    # Get all dead directories
+    open $nu.history-path
+    | query db "SELECT path FROM dead_cwds"
+    | get path
+}
+
+# Helper function to add a dead directory to the table
 def add-dead-dir [
     $dir: string # Directory to add to dead dirs list
 ]: nothing -> nothing {
-    let dead_cwds_path = $nu.data-dir | path join dead_cwds_in_history.txt
+    # Ensure table exists
+    init-dead-cwds-table
 
-    # Read existing dead directories
-    let dead_cwds = read-dead-dirs
+    # Insert new directory if it doesn't exist
+    open $nu.history-path
+    | query db $"INSERT OR IGNORE INTO dead_cwds (path) VALUES ('($dir)')"
+}
 
-    # Add new directory if it's not already in the list
-    if $dir not-in $dead_cwds {
-        $dir | save --append $dead_cwds_path
-    }
+# Helper function to remove a directory from dead dirs
+def remove-dead-dir [
+    $dir: string # Directory to remove from dead dirs list
+]: nothing -> nothing {
+    # Ensure table exists
+    init-dead-cwds-table
+
+    # Delete the directory
+    open $nu.history-path
+    | query db $"DELETE FROM dead_cwds WHERE path = '($dir)'"
 }
 
 # Helper function to handle dead directories
@@ -1506,13 +1521,20 @@ def handle-dead-dirs [
 ]: nothing -> list<string> {
     if $update {
         # Check which directories no longer exist and update list
-        let dead_cwds_path = $nu.data-dir | path join dead_cwds_in_history.txt
         let all_cwds = get-history-dirs
         let dead_cwds = $all_cwds
         | filter {|dir| $dir | path exists | not $in }
 
-        # Save the updated list (one directory per line)
-        $dead_cwds | str join "\n" | save $dead_cwds_path -f
+        # Clear existing dead_cwds table and insert new values
+        init-dead-cwds-table
+        open $nu.history-path
+        | query db "DELETE FROM dead_cwds"
+
+        # Insert each dead directory
+        $dead_cwds | each {|dir|
+            add-dead-dir $dir
+        }
+
         $dead_cwds
     } else {
         # Load existing dead directories list
@@ -1614,8 +1636,29 @@ export def --env 'z' [
     $query: string@'nu-completions-cwds' # Directory query to search for
     --interactive (-i) # Force interactive mode
     --new-tab (-n) # Open directory in a new Zellij tab
-    --update-dead-dirs # Refresh the list of non-existent directories
+    --update-dead-dirs (-u) # Refresh the list of non-existent directories
+    --clean (-c) # Remove directories from dead list that now exist
 ]: nothing -> nothing {
+    # Handle update dead dirs
+    if $update_dead_dirs {
+        handle-dead-dirs --update=true
+        return
+    }
+
+    # Handle cleaning dead dirs that now exist
+    if $clean {
+        let dead_dirs = read-dead-dirs
+        let existing_dirs = $dead_dirs | filter {|dir| $dir | path exists }
+
+        # Remove existing dirs from dead list
+        $existing_dirs | each {|dir|
+            remove-dead-dir $dir
+            print $"Removed ($dir) from dead directories list"
+        }
+
+        return
+    }
+
     # Get target path
     let target_path = select-dir $query --interactive=$interactive
 
@@ -1641,8 +1684,8 @@ export def 'nu-completions-cwds' [] {
     let variants = open $nu.history-path
     | query db "SELECT DISTINCT(cwd) FROM history ORDER BY id DESC"
     | get CWD
-    | each {
-        if ($in has ' ') { $'"($in)"' } else { }
+    | each {|entry|
+        if ($entry has ' ') { $'"($entry)"' } else { $entry }
     }
 
     {
