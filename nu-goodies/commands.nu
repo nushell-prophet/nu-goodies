@@ -254,7 +254,6 @@ export def 'dfr enumerate' [
 export def 'example' [
     --dont_copy (-C)
     --dont_comment (-H)
-    --indentation_spaces (-i): int = 1
     --abbreviated: int = 10
 ] {
     let input = table --abbreviated $abbreviated
@@ -267,10 +266,10 @@ export def 'example' [
     | if $dont_comment {
         nu-highlight # for making screnshots
     } else { }
-    | $'#(char nl)> ($in)(char nl)($input)'
+    | $'#(char nl)($in)(char nl)($input)'
     | if $dont_comment { } else {
         lines
-        | each {|i| $'#(seq 1 $indentation_spaces | each { " " } | str join '')($i)' }
+        | each { $'# => ($in)' }
         | str join (char nl)
     }
     | if $dont_copy { } else {
@@ -443,8 +442,10 @@ export def 'hist' [
     --not-in-vd (-V) # disable opening command in visidata
 ] {
     # Start building the SQL query
-    let sql_query = "SELECT command_line as command, start_timestamp / 1000 as start_timestamp, session_id, hostname, cwd,
-                    duration_ms / 1000000.0 as duration_s, exit_status FROM history WHERE 1=1"
+    let sql_query = "
+        SELECT command_line as command, start_timestamp / 1000 as start_timestamp, session_id, hostname, cwd,
+        duration_ms / 1000000.0 as duration_s, exit_status FROM history WHERE 1=1
+    "
     | append " AND command_line NOT LIKE 'hist %'" # Build where clauses based on parameters Exclude 'hist' commands
     | append " AND exit_status = 0" # Only successful commands
     | if $session {
