@@ -1558,15 +1558,17 @@ def select-dir [
 
         # Find the first result that actually exists
         let existing_path = $fuzzy_results
-        | where {|path|
+        | first 10
+        | par-each --keep-order {|path|
             if ($path | path exists) {
-                true
+                $path
             } else {
                 # Add non-existing dir to dead dirs list
                 add-dead-dir $path
-                false
+                null
             }
         }
+        | compact
         | get 0?
 
         if ($existing_path | is-empty) {
