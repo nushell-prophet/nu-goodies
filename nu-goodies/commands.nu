@@ -1474,24 +1474,49 @@ def get-history-dirs []: nothing -> list<string> {
     | get cwd
 }
 
+# Helper function to read dead directories from text file
+def read-dead-dirs []: nothing -> list<string> {
+    let dead_cwds_path = $nu.data-dir | path join dead_cwds_in_history.txt
+
+    if ($dead_cwds_path | path exists) {
+        open $dead_cwds_path | lines
+    } else {
+        []
+    }
+}
+
+# Helper function to add a dead directory to the list
+def add-dead-dir [
+    $dir: string # Directory to add to dead dirs list
+]: nothing -> nothing {
+    let dead_cwds_path = $nu.data-dir | path join dead_cwds_in_history.txt
+
+    # Read existing dead directories
+    let dead_cwds = read-dead-dirs
+
+    # Add new directory if it's not already in the list
+    if $dir not-in $dead_cwds {
+        $dir | save --append $dead_cwds_path
+    }
+}
+
 # Helper function to handle dead directories
 def handle-dead-dirs [
     --update (-u) # Force update of dead directories list
 ]: nothing -> list<string> {
-    let dead_cwds_path = $nu.data-dir | path join dead_cwds_in_history.nuon
-
     if $update {
         # Check which directories no longer exist and update list
+        let dead_cwds_path = $nu.data-dir | path join dead_cwds_in_history.txt
         let all_cwds = get-history-dirs
-        let new_dead_cwds = $all_cwds
+        let dead_cwds = $all_cwds
         | filter {|dir| try { $dir | path exists | not $in } catch { true } }
 
-        # Save the updated list
-        $new_dead_cwds | save $dead_cwds_path -f
-        $new_dead_cwds
+        # Save the updated list (one directory per line)
+        $dead_cwds | str join "\n" | save $dead_cwds_path -f
+        $dead_cwds
     } else {
         # Load existing dead directories list
-        try { open $dead_cwds_path } catch { [] }
+        read-dead-dirs
     }
 }
 
@@ -1507,7 +1532,6 @@ def get-valid-dirs [
     | to text
 }
 
-# Helper function to select a directory path
 # Helper function to select a directory path
 def select-dir [
     $query: string # The search query
@@ -1534,7 +1558,21 @@ def select-dir [
 
         # Find the first result that actually exists
         let existing_path = $fuzzy_results
-        | where {|path| try { $path | path exists } catch { false } }
+        | where {|path|
+            try {
+                if ($path | path exists) {
+                    true
+                } else {
+                    # Add non-existing dir to dead dirs list
+                    add-dead-dir $path
+                    false
+                }
+            } catch {
+                # Add problematic dir to dead dirs list
+                add-dead-dir $path
+                false
+            }
+        }
         | get 0?
 
         if ($existing_path | is-empty) {
