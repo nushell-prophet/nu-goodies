@@ -1386,7 +1386,7 @@ export def 'wez-to-ansi' [
 export def 'wez-to-gif' [
     command: string = ''
     --filename: path
-    --font-family: string = "Iosevka Extended"
+    --font-family: string = "ZedMono Nerd Font"
     --font-size: int = 20
     --ascinema # copy ascinema here too
 ] {
