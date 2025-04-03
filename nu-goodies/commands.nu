@@ -552,7 +552,6 @@ export def --wrapped in-fx [
     | ^fx ...$rest
 }
 
-###file in-hx.nu
 # open piped-in results in hx, output back the saved file
 export def 'in-hx' [
     --path (-p) # output path of the file
@@ -571,7 +570,7 @@ export def 'in-hx' [
     if $path {
         print $path
     } else {
-        commandline edit -r (open $filename)
+        commandline edit -r $"r######'(open $filename)'######"
     }
 }
 
