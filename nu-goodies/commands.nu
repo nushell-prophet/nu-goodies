@@ -266,7 +266,7 @@ export def 'example' [
     } else { }
     | $'($in)(char nl)'
 
-    $input 
+    $input
     | if $dont_comment { } else {
         lines
         | each { $'# => ($in)' }
@@ -286,7 +286,7 @@ def get-last-commands-from-sql [n: int = 1] {
     | get command_line
     | if $n == 1 {
         get 0
-    } else {} 
+    } else { }
 }
 
 ###file fill non-exist.nu
@@ -1493,9 +1493,9 @@ def get-history-dirs [
     } else {
         # Return only directories that are not in dead_cwds table
         open $nu.history-path
-        | query db "SELECT DISTINCT(h.cwd) FROM history h 
-                   LEFT JOIN dead_cwds d ON h.cwd = d.path 
-                   WHERE d.path IS NULL 
+        | query db "SELECT DISTINCT(h.cwd) FROM history h
+                   LEFT JOIN dead_cwds d ON h.cwd = d.path
+                   WHERE d.path IS NULL
                    ORDER BY h.id DESC"
         | get cwd
         | compact
@@ -1550,7 +1550,7 @@ def handle-dead-dirs [
     if $update {
         # Get all directories including those already marked as dead
         let all_cwds = get-history-dirs --include-dead
-        
+
         # Check which directories no longer exist
         let dead_cwds = $all_cwds
         | filter {|dir| $dir | path exists | not $in }
@@ -1559,12 +1559,12 @@ def handle-dead-dirs [
         init-dead-cwds-table
         open $nu.history-path
         | query db "DELETE FROM dead_cwds"
-        
+
         # Insert each dead directory
         $dead_cwds | each {|dir|
             add-dead-dir $dir
         }
-        
+
         $dead_cwds
     } else {
         # Load existing dead directories list
@@ -1581,7 +1581,7 @@ def get-valid-dirs [
         # Update dead directories first
         handle-dead-dirs --update=true | ignore
     }
-    
+
     # Get valid directories with SQL-level filtering
     get-history-dirs
     | to text
@@ -1666,7 +1666,7 @@ def handle-zellij [
 
 # Main z command
 export def --env 'z' [
-    $query?: string@'nu-completions-cwds' # Directory query to search for (optional)
+    query?: string@'nu-completions-cwds' # Directory query to search for (optional)
     --interactive (-i) # Force interactive mode
     --new-tab (-n) # Open directory in a new Zellij tab
     --update-dead-dirs (-u) # Refresh the list of non-existent directories
@@ -1678,48 +1678,48 @@ export def --env 'z' [
         handle-dead-dirs --update=true
         return
     }
-    
+
     # Handle cleaning dead dirs that now exist
     if $clean {
         let dead_dirs = read-dead-dirs
         let existing_dirs = $dead_dirs | filter {|dir| $dir | path exists }
-        
+
         if ($existing_dirs | is-empty) {
             print "No directories to clean from the dead list."
             return
         }
-        
+
         # Remove existing dirs from dead list
-        $existing_dirs | each {|dir| 
+        $existing_dirs | each {|dir|
             remove-dead-dir $dir
             print $"Removed ($dir) from dead directories list"
         }
-        
+
         return
     }
-    
+
     # Handle case when no query is provided
     if ($query | is-empty) {
         # Default to interactive mode
         let target_path = select-dir "" --interactive=true
-        
+
         # Exit if no path was selected
         if ($target_path | is-empty) { return }
-        
+
         # Expand the path to full format
         let expanded_path = $target_path | path expand
-        
+
         # Get directory name for tab naming
         let dir_name = $target_path | path split | last
-        
+
         # Handle Zellij integration
         let zellij_handled = handle-zellij $expanded_path $dir_name --new-tab=$new_tab
-        
+
         # Change to the target directory if not handled by Zellij new tab
         if not $zellij_handled {
             cd $expanded_path
         }
-        
+
         return
     }
 
@@ -1747,11 +1747,11 @@ export def --env 'z' [
 export def 'nu-completions-cwds' [] {
     # Using SQL-level filtering for completions as well
     init-dead-cwds-table
-    
+
     let variants = open $nu.history-path
-    | query db "SELECT DISTINCT(h.cwd) FROM history h 
-               LEFT JOIN dead_cwds d ON h.cwd = d.path 
-               WHERE d.path IS NULL 
+    | query db "SELECT DISTINCT(h.cwd) FROM history h
+               LEFT JOIN dead_cwds d ON h.cwd = d.path
+               WHERE d.path IS NULL
                ORDER BY h.id DESC"
     | get cwd
     | each {|entry|
