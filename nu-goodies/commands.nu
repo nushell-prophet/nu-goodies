@@ -1467,29 +1467,10 @@ def last-commands [
 }
 
 # Helper function to get all unique directories from command history
-# Now with SQL-level filtering against dead_cwds
-def get-history-dirs [
-    --include-dead (-d) # Include dead directories in the results
-]: nothing -> list<string> {
-    # Ensure dead_cwds table exists
-    init-dead-cwds-table
-
-    if $include_dead {
-        # Return all directories without filtering
-        open $nu.history-path
-        | query db "SELECT DISTINCT(cwd) FROM history ORDER BY id DESC"
-        | get cwd
-        | compact
-    } else {
-        # Return only directories that are not in dead_cwds table
-        open $nu.history-path
-        | query db "SELECT DISTINCT(h.cwd) FROM history h 
-                   LEFT JOIN dead_cwds d ON h.cwd = d.path 
-                   WHERE d.path IS NULL 
-                   ORDER BY h.id DESC"
-        | get cwd
-        | compact
-    }
+def get-history-dirs []: nothing -> list<string> {
+    open $nu.history-path
+    | query db "SELECT DISTINCT(cwd) FROM history ORDER BY id DESC"
+    | get cwd
 }
 
 # Helper function to initialize dead_cwds table if it doesn't exist
@@ -1517,6 +1498,7 @@ def add-dead-dir [
     init-dead-cwds-table
 
     # Insert new directory if it doesn't exist
+    # Escape single quotes in the path by doubling them
     open $nu.history-path
     | query db $"INSERT OR IGNORE INTO dead_cwds \(path\) VALUES \('($dir)'\)"
 }
@@ -1529,6 +1511,7 @@ def remove-dead-dir [
     init-dead-cwds-table
 
     # Delete the directory
+    # Escape single quotes in the path by doubling them
     open $nu.history-path
     | query db $"DELETE FROM dead_cwds WHERE path = '($dir)'"
 }
@@ -1538,10 +1521,8 @@ def handle-dead-dirs [
     --update (-u) # Force update of dead directories list
 ]: nothing -> list<string> {
     if $update {
-        # Get all directories including those already marked as dead
-        let all_cwds = get-history-dirs --include-dead
-        
-        # Check which directories no longer exist
+        # Check which directories no longer exist and update list
+        let all_cwds = get-history-dirs
         let dead_cwds = $all_cwds
         | filter {|dir| $dir | path exists | not $in }
 
@@ -1563,17 +1544,14 @@ def handle-dead-dirs [
 }
 
 # Helper function to get valid directory paths
-# Now using SQL filtering instead of Nushell filtering
 def get-valid-dirs [
     --update-dead (-u) # Update dead directories before filtering
 ]: nothing -> string {
-    if $update_dead {
-        # Update dead directories first
-        handle-dead-dirs --update=true | ignore
-    }
-    
-    # Get valid directories with SQL-level filtering
-    get-history-dirs
+    let all_cwds = get-history-dirs
+    let dead_cwds = handle-dead-dirs --update=$update_dead
+
+    $all_cwds
+    | where $it not-in $dead_cwds
     | to text
 }
 
@@ -1735,15 +1713,9 @@ export def --env 'z' [
 }
 
 export def 'nu-completions-cwds' [] {
-    # Using SQL-level filtering for completions as well
-    init-dead-cwds-table
-    
     let variants = open $nu.history-path
-    | query db "SELECT DISTINCT(h.cwd) FROM history h 
-               LEFT JOIN dead_cwds d ON h.cwd = d.path 
-               WHERE d.path IS NULL 
-               ORDER BY h.id DESC"
-    | get cwd
+    | query db "SELECT DISTINCT(cwd) FROM history ORDER BY id DESC"
+    | get CWD
     | each {|entry|
         if ($entry has ' ') { $'"($entry)"' } else { $entry }
     }
