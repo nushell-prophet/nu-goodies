@@ -259,24 +259,34 @@ export def 'example' [
     let input = table --abbreviated $abbreviated
     | if $dont_comment { } else { ansi strip }
 
-    history
-    | last
-    | get command
+    let command = get-last-commands-from-sql 1
     | str replace -r '\| example.*' ''
     | if $dont_comment {
         nu-highlight # for making screnshots
     } else { }
-    | $'#(char nl)($in)(char nl)($input)'
+    | $'($in)(char nl)'
+
+    $input 
     | if $dont_comment { } else {
         lines
         | each { $'# => ($in)' }
-        | str join (char nl)
     }
+    | prepend $command
+    | str join (char nl)
     | if $dont_copy { } else {
         let i = $in
         $i | pbcopy
         $i
     }
+}
+
+def get-last-commands-from-sql [n: int = 1] {
+    open $nu.history-path
+    | query db "select command_line from history order by id desc limit ?" -p [$n]
+    | get command_line
+    | if $n == 1 {
+        get 0
+    } else {} 
 }
 
 ###file fill non-exist.nu
