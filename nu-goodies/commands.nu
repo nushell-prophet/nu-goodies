@@ -1865,3 +1865,17 @@ export def 'nu-format' [
         return
     } else { }
 }
+
+def nu-completions-files-modified [] {
+    ls
+    | sort-by modified -r
+    | select name modified
+    | update modified { date humanize }
+    | rename value description
+}
+
+export def files [...files: path@nu-completions-files-modified] {
+    $files
+    | uniq
+    | if ($in | length) == 1 { first } else { }
+}

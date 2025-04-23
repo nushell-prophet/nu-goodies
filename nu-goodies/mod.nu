@@ -8,6 +8,7 @@ export use commands.nu [
     example
     'fill non-exist'
     'format profile'
+    files
     gradient-screen
     hist
     hist-to-script
