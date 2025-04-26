@@ -1872,6 +1872,15 @@ def nu-completions-files-modified [] {
     | select name modified
     | update modified { date humanize }
     | rename value description
+    | {
+        options: {
+            case_sensitive: false
+            completion_algorithm: fuzzy
+            positional: false
+            sort: false
+        }
+        completions: $in
+    }
 }
 
 export def files [...files: path@nu-completions-files-modified] {
