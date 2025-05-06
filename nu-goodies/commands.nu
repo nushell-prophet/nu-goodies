@@ -1888,3 +1888,19 @@ export def files [...files: path@nu-completions-files-modified] {
     | uniq
     | if ($in | length) == 1 { first } else { }
 }
+
+export def 'llm message' [
+    --first: int = 20
+] {
+    open ~/short_log.yaml
+    | reverse
+    | first $first
+    | select content
+    | insert content_short {|i|
+        $i.content
+        | str replace -ar (char nl) '·' | str substring 0..(
+            term size | get columns | $in - 5
+        )
+    } | input list --display content_short
+    | get content
+}
