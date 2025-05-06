@@ -447,7 +447,7 @@ export def 'hist' [
     --entries: int = 5000 # a number of last entries to work with
     --all (-a) # return all the history
     --session (-s) # show only entries from the current session
-    --folder # show only entries from the current folder
+    --cwd # show only entries from the current folder
     --last-x: duration # duration for the period to check commands
     --not-in-vd (-V) # disable opening command in visidata
 ] {
@@ -462,7 +462,7 @@ export def 'hist' [
         # Session filter
         append $" AND session_id = (history session)"
     } else { }
-    | if $folder {
+    | if $cwd {
         # Folder filter
         append $" AND cwd = '(pwd)'"
     } else { }
