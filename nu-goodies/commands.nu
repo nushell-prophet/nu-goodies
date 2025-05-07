@@ -202,7 +202,7 @@ export def 'frameit' [
     $frame
     | str repeat $width_safe
     | str substring --grapheme-clusters 1..($width_safe) # in case that frame has more than 1 chars
-    | $'(ansi $frame_color)($in)(ansi reset)'
+    | str c (ansi $frame_color) $in (ansi reset)
     | $in + "\n" + $input + "\n" + $in
 }
 
@@ -211,7 +211,7 @@ export def 'colorit' [
     $color
 ] {
     str replace -r -a '\*([^*]+?)\*' $'(ansi reset)(ansi $highlight_color)$1(ansi reset)(ansi $color)'
-    | $'(ansi $color)($in)(ansi reset)'
+    | str c (ansi $color) $in (ansi reset)
 }
 
 export def 'alignit' [
@@ -264,12 +264,12 @@ export def 'example' [
     | if $dont_comment {
         nu-highlight # for making screnshots
     } else { }
-    | $'($in)(char nl)'
+    | str c $in (char nl)
 
     $input
     | if $dont_comment { } else {
         lines
-        | each { $'# => ($in)' }
+        | each { str c '# => ' $in }
     }
     | prepend $command
     | str join (char nl)
@@ -376,7 +376,7 @@ export def --env gradient-screen [
     let other_strings = $strings
     | skip
     | each {|i|
-        $'($i)($1_list | last ($1_len - ($i | str length) mod $1_len) | str join)'
+        str c $i ($1_list | last ($1_len - ($i | str length) mod $1_len) | str join)
     }
     | append ''
 
@@ -548,7 +548,7 @@ export def 'hist-to-script' [
     $buffer | save -a $filepath
 
     if not $dont_open {
-        commandline edit -r $'($env.EDITOR) ($filepath)'
+        commandline edit -r (str c $env.EDITOR $filepath)
     }
 }
 
@@ -1324,7 +1324,7 @@ export def 'to-safe-filename' [
     } else if (($in | str length) > 30) {
         $'($in | str substring ..30)($in | hash sha256 | str substring ..10)' # make string uniq
     } else { }
-    | $'($prefix)($in)($suffix)'
+    | str c $prefix $in $suffix
 }
 
 ###file to-temp-file.nu
@@ -1919,7 +1919,7 @@ export def 'completion-llm-message' [
         | str replace -ar (char nl) '·' | str substring --grapheme-clusters 0..(
             term size | get columns | $in - 19
         )
-        | $'($in):($i.content-hash)'
+        | str c $in $i.content-hash
         | str replace -a '"' "'"        
         | to nuon
     }
