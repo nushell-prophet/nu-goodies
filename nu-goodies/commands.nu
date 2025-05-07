@@ -1934,3 +1934,6 @@ export def 'completion-llm-message' [
     }
 
 }
+
+# Experiment to Escape String Interpolation
+export def 'str c' [...$rest] {$rest | into string | str join}

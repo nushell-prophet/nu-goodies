@@ -54,6 +54,7 @@ export use commands.nu [
     "side-by-side"
     # "significant-digits"
     # "str append"
+    "str c"
     # "str prepend"
     # "str repeat"
     # "testcd"
