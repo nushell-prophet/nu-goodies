@@ -1748,6 +1748,8 @@ export def 'nu-completions-cwds' [] {
     # Using SQL-level filtering for completions as well
     init-dead-cwds-table
 
+    let termsize = term size | get columns | $in - 5
+
     let variants = open $nu.history-path
     | query db "SELECT DISTINCT(h.cwd) FROM history h
                LEFT JOIN dead_cwds d ON h.cwd = d.path
@@ -1757,6 +1759,7 @@ export def 'nu-completions-cwds' [] {
     | each {|entry|
         if ($entry has ' ') { $'"($entry)"' } else { $entry }
     }
+    | where ($it | str length --grapheme-clusters) < $termsize
 
     {
         options: {
