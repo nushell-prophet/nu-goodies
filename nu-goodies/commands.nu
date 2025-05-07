@@ -1903,8 +1903,8 @@ export def 'llm message' [
 
 export def 'llm-open-log' [] {
     open ~/short_log.yaml
-    | reverse
     | uniq-by content-hash
+    | sort-by timestamp -r 
 }
 
 export def 'completion-llm-message' [
@@ -1920,4 +1920,14 @@ export def 'completion-llm-message' [
         | str replace -a '"' "'"        
         | to nuon
     }
+    | {
+        options: {
+            case_sensitive: false
+            completion_algorithm: fuzzy
+            positional: false
+            sort: false
+        }
+        completions: $in
+    }
+
 }
