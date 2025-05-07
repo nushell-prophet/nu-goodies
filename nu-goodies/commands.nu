@@ -1890,17 +1890,34 @@ export def files [...files: path@nu-completions-files-modified] {
 }
 
 export def 'llm message' [
-    --first: int = 20
+    ...rest: string@completion-llm-message
 ] {
+    let dict = llm-open-log
+
+    $rest
+    | parse -r '(.{4})$'
+    | get capture0
+    | each {|i| $dict | where content-hash == $i | last | get content}
+    | str join "\n\n---\n\n"
+}
+
+export def 'llm-open-log' [] {
     open ~/short_log.yaml
     | reverse
-    | first $first
-    | select content
-    | insert content_short {|i|
+    | uniq-by content-hash
+}
+
+export def 'completion-llm-message' [
+    --first: int = 200
+] {
+    llm-open-log
+    | each {|i|
         $i.content
-        | str replace -ar (char nl) '·' | str substring 0..(
-            term size | get columns | $in - 5
+        | str replace -ar (char nl) '·' | str substring --grapheme-clusters 0..(
+            term size | get columns | $in - 19
         )
-    } | input list --display content_short
-    | get content
+        | $'($in):($i.content-hash)'
+        | str replace -a '"' "'"        
+        | to nuon
+    }
 }
