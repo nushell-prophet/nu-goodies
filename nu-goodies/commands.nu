@@ -1935,5 +1935,6 @@ export def 'completion-llm-message' [
 
 }
 
-# Experiment to Escape String Interpolation
+# concatenate rest parameters into a string
+@example escape-interpolation { 1 + 1 | str c 'result is ' $in } --result 'result is 2'
 export def 'str c' [...$rest] {$rest | into string | str join}
