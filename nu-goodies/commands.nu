@@ -1652,10 +1652,15 @@ def handle-zellij [
     } else {
         # Check if tab with this name already exists
         let existing_tabs = zellij action query-tab-names | lines
-        if $dir_name in $existing_tabs {
+
+        $existing_tabs
+        | where $it =~ $'^($dir_name)'
+        | if $dir_name != [] {
             # Switch to existing tab
-            zellij action go-to-tab-name $dir_name
-            print -n 'Switching to tab ' $dir_name
+            let name = first
+
+            zellij action go-to-tab-name $name
+            print -n 'Switching to tab ' $name
         } else {
             # Rename current tab
             zellij action rename-tab $dir_name
