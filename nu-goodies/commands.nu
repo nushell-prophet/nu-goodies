@@ -1655,7 +1655,7 @@ def handle-zellij [
 
         $existing_tabs
         | where $it =~ $'^($dir_name)'
-        | if $dir_name != [] {
+        | if $in != [] {
             # Switch to existing tab
             let name = first
 
