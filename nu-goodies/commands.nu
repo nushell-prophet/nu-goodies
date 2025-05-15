@@ -1654,7 +1654,7 @@ def handle-zellij [
         let existing_tabs = zellij action query-tab-names | lines
 
         $existing_tabs
-        | where $it =~ $'^($dir_name)'
+        | where $it =~ $"^($dir_name)\(·|$)"
         | if $in != [] {
             # Switch to existing tab
             let name = first
