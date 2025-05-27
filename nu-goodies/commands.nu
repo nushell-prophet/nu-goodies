@@ -1392,15 +1392,10 @@ export def 'wez-to-ansi' [
     | str join (char nl)
 }
 
-###file wez-to-gif.nu
-#wez-to-gif
-export def 'wez-to-gif' [
+export def 'wez-to-asciicast' [
     command: string = ''
     --filename: path
-    --font-family: string = "ZedMono Nerd Font"
-    --font-size: int = 20
-    --ascinema # copy ascinema here too
-] {
+]: nothing -> path {
     let wezrec = ^wezterm record --cwd (pwd) -- $nu.current-exe --execute $'source $nu.env-path; clear; ($command)'
     | complete
     | get stderr
@@ -1411,15 +1406,25 @@ export def 'wez-to-gif' [
     | path join $'gif_(pwd | path split | last)'
     | $'($in)(mkdir $in)'
 
-    let gif_name = $target_folder
+    mv $wezrec $target_folder
+
+    $target_folder | path join ($wezrec | path basename)
+}
+
+export def 'wez-to-gif' [
+    --filename: path
+    --font-family: string = "ZedMono Nerd Font"
+    --font-size: int = 20
+] {
+
+    let wezrec = wez-to-asciicast
+
+    let gif_name = $wezrec 
+    | path dirname
     | path join (
         $filename
         | default $'_wez_gif_(date now | format date `%s`).gif'
     )
-
-    print $wezrec
-
-    cp $wezrec $target_folder
 
     ^agg --font-family $font_family --font-size $font_size -v $wezrec $gif_name
     print ''
