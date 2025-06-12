@@ -539,7 +539,7 @@ export def 'hist-to-script' [
     | if $up > 1 {
         last ($up + 1)
     } else if $all { } else {
-        filter {|i|
+        where {|i|
             $i =~ '(^(let|def|export) )|#|\b(save|source|mkdir|polars to-csv|polars to-avro|polars to-jsonl|polars to-arrow|polars to-parquet)\b'
         }
     }
@@ -1554,7 +1554,7 @@ def handle-dead-dirs [
 
         # Check which directories no longer exist
         let dead_cwds = $all_cwds
-        | filter {|dir| $dir | path exists | not $in }
+        | where {|dir| $dir | path exists | not $in }
 
         # Clear existing dead_cwds table and insert new values
         init-dead-cwds-table
@@ -1688,7 +1688,7 @@ export def --env 'z' [
     # Handle cleaning dead dirs that now exist
     if $clean {
         let dead_dirs = read-dead-dirs
-        let existing_dirs = $dead_dirs | filter {|dir| $dir | path exists }
+        let existing_dirs = $dead_dirs | where {|dir| $dir | path exists }
 
         if ($existing_dirs | is-empty) {
             print "No directories to clean from the dead list."
@@ -1839,7 +1839,7 @@ def 'insert-new-lines' [] {
     let $cmd = $in
 
     ast --flatten $cmd
-    | filter {|it| $it.shape == shape_pipe or ($it.shape == 'shape_internalcall' and $it.content in [let mut]) }
+    | where {|it| $it.shape == shape_pipe or ($it.shape == 'shape_internalcall' and $it.content in [let mut]) }
     | insert new_lines {|i| if $i.shape == shape_pipe { "\n" } else { "\n\n" } }
     | update span { get start }
     | select span new_lines
