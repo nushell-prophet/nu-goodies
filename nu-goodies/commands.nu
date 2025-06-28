@@ -1944,3 +1944,27 @@ export def 'completion-llm-message' [
 # concatenate rest parameters into a string
 @example escape-interpolation { 1 + 1 | str c 'result is ' $in } --result 'result is 2'
 export def 'str c' [...$rest] {$rest | into string | str join}
+
+# helper function initially from nupm/utils/dirs.nu
+# 
+# Try to find the package root directory by looking for nupm.nuon in parent
+# directories.
+export def find-root [dir: path]: [ nothing -> path, nothing -> nothing] {
+    let root_candidate = 1..($dir | path split | length)
+        | reduce -f $dir {|_, acc|
+            if ($acc | path join nupm.nuon | path exists) {
+                $acc
+            } else {
+                $acc | path dirname
+            }
+        }
+
+    # We need to do the last check in case the reduce loop ran to the end
+    # without finding nupm.nuon
+    if ($root_candidate | path join nupm.nuon | path type) == 'file' {
+        $root_candidate
+    } else {
+        null
+    }
+}
+
