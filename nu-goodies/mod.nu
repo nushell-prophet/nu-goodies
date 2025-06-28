@@ -63,6 +63,7 @@ export use commands.nu [
     "to-safe-filename"
     "to-temp-file"
     "transcribe"
+    "wez-to-asciicast"
     "wez-to-ansi"
     "wez-to-gif"
     "wez-to-png"
