@@ -1949,10 +1949,12 @@ export def 'str c' [...$rest] {$rest | into string | str join}
 # 
 # Try to find the package root directory by looking for nupm.nuon in parent
 # directories.
-export def find-root [dir: path]: [ nothing -> path, nothing -> nothing] {
-    let root_candidate = 1..($dir | path split | length)
-        | reduce -f $dir {|_, acc|
-            if ($acc | path join nupm.nuon | path exists) {
+export def find-root [dir?: path]: [ nothing -> path, nothing -> nothing] {
+    let dir2 = $dir | default {pwd} 
+
+    let root_candidate = 1..($dir2 | path split | length)
+        | reduce -f $dir2 {|_, acc|
+            if ($acc | path join '.git' | path exists) {
                 $acc
             } else {
                 $acc | path dirname
@@ -1961,7 +1963,7 @@ export def find-root [dir: path]: [ nothing -> path, nothing -> nothing] {
 
     # We need to do the last check in case the reduce loop ran to the end
     # without finding nupm.nuon
-    if ($root_candidate | path join nupm.nuon | path type) == 'file' {
+    if ($root_candidate | path join '.git' | path type) == 'dir' {
         $root_candidate
     } else {
         null

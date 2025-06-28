@@ -17,6 +17,7 @@ export use commands.nu [
     "example"
     "files"
     "fill non-exist"
+    "find-root"
     "format profile"
     # "frameit"
     "gradient-screen"
