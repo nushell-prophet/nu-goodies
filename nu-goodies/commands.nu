@@ -1970,3 +1970,6 @@ export def find-root [dir?: path]: [ nothing -> path, nothing -> nothing] {
     }
 }
 
+export def --env cd-root [dir?: path]: [nothing -> nothing] {
+    cd (find-root)
+    }

@@ -9,6 +9,7 @@ export use commands.nu [
     # "colorit"
     "copy-cmd"
     "cprint"
+    "cd-root"
     # "dedent"
     "dfr enumerate"
     # "download-nushell-nightly"
