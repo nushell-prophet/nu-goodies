@@ -485,7 +485,7 @@ export def 'hist' [
         $results
     } else {
         $regex_filters
-        | reduce -f $results {|pattern, acc|
+        | reduce -f $results {|pattern acc|
             $acc
             | where command =~ $pattern
         }
@@ -1419,7 +1419,7 @@ export def 'wez-to-gif' [
 
     let wezrec = wez-to-asciicast
 
-    let gif_name = $wezrec 
+    let gif_name = $wezrec
     | path dirname
     | path join (
         $filename
@@ -1911,14 +1911,18 @@ export def 'llm message' [
     $rest
     | parse -r '(.{4})$'
     | get capture0
-    | each {|i| $dict | where content-hash == $i | last | get content}
+    | each {|i|
+        $dict
+        | where 'content-hash' == $i
+        | last | get content
+    }
     | str join "\n\n---\n\n"
 }
 
 export def 'llm-open-log' [] {
     open ~/short_log.yaml
     | uniq-by content-hash
-    | sort-by timestamp -r 
+    | sort-by timestamp -r
 }
 
 export def 'completion-llm-message' [
@@ -1931,7 +1935,7 @@ export def 'completion-llm-message' [
             term size | get columns | $in - 19
         )
         | str c $in $i.content-hash
-        | str replace -a '"' "'"        
+        | str replace -a '"' "'"
         | to nuon
     }
     | {
@@ -1943,28 +1947,27 @@ export def 'completion-llm-message' [
         }
         completions: $in
     }
-
 }
 
 # concatenate rest parameters into a string
 @example escape-interpolation { 1 + 1 | str c 'result is ' $in } --result 'result is 2'
-export def 'str c' [...$rest] {$rest | into string | str join}
+export def 'str c' [...$rest] { $rest | into string | str join }
 
 # helper function initially from nupm/utils/dirs.nu
 # 
 # Try to find the package root directory by looking for nupm.nuon in parent
 # directories.
-export def find-root [dir?: path]: [ nothing -> path, nothing -> nothing] {
-    let dir2 = $dir | default {pwd} 
+export def find-root [dir?: path]: [nothing -> path nothing -> nothing] {
+    let dir2 = $dir | default { pwd }
 
     let root_candidate = 1..($dir2 | path split | length)
-        | reduce -f $dir2 {|_, acc|
-            if ($acc | path join '.git' | path exists) {
-                $acc
-            } else {
-                $acc | path dirname
-            }
+    | reduce -f $dir2 {|_ acc|
+        if ($acc | path join '.git' | path exists) {
+            $acc
+        } else {
+            $acc | path dirname
         }
+    }
 
     # We need to do the last check in case the reduce loop ran to the end
     # without finding nupm.nuon
@@ -1977,4 +1980,4 @@ export def find-root [dir?: path]: [ nothing -> path, nothing -> nothing] {
 
 export def --env cd-root [dir?: path]: [nothing -> nothing] {
     cd (find-root)
-    }
+}
