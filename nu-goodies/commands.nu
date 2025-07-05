@@ -1788,8 +1788,9 @@ export def 'replace-in-all-files' [
     $replace
     --quiet # don't outuput stats
     --no-git-check
+    --extensions = '{nu,md}' # might be '{nu,md} or single ext like `py`
 ] {
-    let files = glob --no-dir '**/*{nu,md}'
+    let files = glob --no-dir $'**/*.($extensions)'
 
     let files_found = $files
     | each {|i|
@@ -1799,7 +1800,7 @@ export def 'replace-in-all-files' [
     | compact
 
     mut $rec = {
-        'files nu and md files total count': ($files | length)
+        $'total .($extensions) files': ($files | length)
         'updated': 0
     }
 
