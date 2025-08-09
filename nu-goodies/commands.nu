@@ -359,7 +359,9 @@ export def --env gradient-screen [
         ]
     } else { }
 
-    let screen_size = term size
+    let term_size = term size
+
+    let screen_size = $term_size
     | if $rows == null { values } else {
         $in.columns * $rows
     }
@@ -389,7 +391,7 @@ export def --env gradient-screen [
     let base = seq 0 $n_chunks
     | each { $strings.0 }
 
-    $other_strings
+    let output = $other_strings
     | reduce -f $base {|i acc|
         $acc
         | insert (random int 3..$n_chunks) $i
@@ -404,9 +406,26 @@ export def --env gradient-screen [
     | window $1_len --stride $1_len --remainder
     | each { str join | ansi gradient --fgstart $colors.0 --fgend $colors.1 }
     | str join
+
+    split-ansi-chars $output
+    | window $term_size.columns --stride $term_size.columns
+    | each { str join }
+    | str join (char nl)
     | if $echo { } else {
         print; sleep 2sec;
     }
+}
+
+def split-ansi-chars [s: string] {
+    # Pattern to match: escape sequence + one character (no reset needed for gradients)
+    let pat = "(\e\\[[0-9;]*m)+(.)"
+
+    let nul = char nul
+
+    $s
+    | str replace -ar $pat $'$1$2($nul)' # capture color + char, add delimiter
+    | split row $nul
+    | compact --empty
 }
 
 def generate_colors [] { 1..3 | each { (random int 0..255) } }
