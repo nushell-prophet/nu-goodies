@@ -359,9 +359,7 @@ export def --env gradient-screen [
         ]
     } else { }
 
-    let term_size = term size
-
-    let screen_size = $term_size
+    let screen_size = term size
     | if $rows == null { values } else {
         $in.columns * $rows
     }
@@ -391,7 +389,7 @@ export def --env gradient-screen [
     let base = seq 0 $n_chunks
     | each { $strings.0 }
 
-    let output = $other_strings
+    $other_strings
     | reduce -f $base {|i acc|
         $acc
         | insert (random int 3..$n_chunks) $i
@@ -406,15 +404,6 @@ export def --env gradient-screen [
     | window $1_len --stride $1_len --remainder
     | each { str join | ansi gradient --fgstart $colors.0 --fgend $colors.1 }
     | str join
-
-    let esc = char --integer 27
-
-    $output
-    | split row $esc
-    | each { $'($esc)($in)' }
-    | window $term_size.columns --stride $term_size.columns
-    | each { str join }
-    | str join (char nl)
     | if $echo { } else {
         print; sleep 2sec;
     }
