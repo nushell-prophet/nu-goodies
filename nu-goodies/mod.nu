@@ -71,3 +71,5 @@ export use commands.nu [
     # "wrapit"
     "z"
 ]
+
+export use update-public-git.nu
