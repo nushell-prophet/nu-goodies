@@ -411,6 +411,7 @@ export def --env gradient-screen [
     | window $term_size.columns --stride $term_size.columns
     | each { str join }
     | str join (char nl)
+    | $'($in)(ansi reset)'
     | if $echo { } else {
         print; sleep 2sec;
     }
