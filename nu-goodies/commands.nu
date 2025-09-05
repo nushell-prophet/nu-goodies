@@ -2014,4 +2014,9 @@ export def figlet-demo [text: string] {
         | wrap $i
     }
     | reduce {|i| merge $i }
-}
+
+    # rename zellij tab
+    export def rename-tab [name: string = ''] {
+        if $name == '' { pwd | path basename | str replace -r '^-+' '' } else { $name }
+        | ^zellij action rename-tab $in
+    }

@@ -53,6 +53,7 @@ export use commands.nu [
     "ramdisk-create"
     # "remove_single_nls"
     "replace-in-all-files"
+    "rename-tab"
     "select-i"
     "side-by-side"
     # "significant-digits"
