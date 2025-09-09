@@ -1905,9 +1905,11 @@ def nu-completions-files-modified [context: string] {
     $context
     | split row ' '
     | last
-    | if ($in | path type) == 'dir' {
-        ls ...(glob ($in | path join '*') | path relative-to (pwd))
-    } else { ls }
+    | if ($in | path type) == 'dir' and $in != '' {
+        ls ...(
+            glob ($in | path join '*' | path relative-to (pwd))
+        )
+    } else if $in =~ '\*' { ls ...(glob $in) } else { ls }
     | sort-by modified -r
     | select name modified
     | update modified { date humanize }
