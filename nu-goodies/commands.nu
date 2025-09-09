@@ -2020,3 +2020,19 @@ export def figlet-demo [text: string] {
         if $name == '' { pwd | path basename | str replace -r '^-+' '' } else { $name }
         | ^zellij action rename-tab $in
     }
+}
+
+# rename zellij tab
+export def rename-tab [name: string = ''] {
+    let name = if $name == '' { pwd | path basename | str replace -r '^-+' '' } else { $name }
+
+    let name_with_index = zellij action query-tab-names
+    | lines
+    | where $it =~ $"^($name)\(·|\$)"
+    | | [($in | length) ($in | parse --regex '(\d+)$' | get -o capture0 | default 0 | into int)]
+    | flatten
+    | math max
+    | if $in > 0 { $'($name)·($in + 1)' } else { $name }
+
+    ^zellij action rename-tab $name_with_index
+}
