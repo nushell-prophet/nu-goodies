@@ -1901,8 +1901,13 @@ export def 'nu-format' [
     } else { }
 }
 
-def nu-completions-files-modified [] {
-    ls
+def nu-completions-files-modified [context: string] {
+    $context
+    | split row ' '
+    | last
+    | if ($in | path type) == 'dir' {
+        ls ...(glob ($in | path join '*') | path relative-to (pwd))
+    } else { ls }
     | sort-by modified -r
     | select name modified
     | update modified { date humanize }
