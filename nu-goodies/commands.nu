@@ -1997,7 +1997,7 @@ export def find-root [dir?: path]: [nothing -> path nothing -> nothing] {
 
     # We need to do the last check in case the reduce loop ran to the end
     # without finding nupm.nuon
-    if ($root_candidate | path join '.git' | path type) == 'dir' {
+    if ($root_candidate | path join '.git' | path exists) {
         $root_candidate
     } else {
         null
