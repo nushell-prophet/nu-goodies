@@ -2002,3 +2002,16 @@ export def find-root [dir?: path]: [nothing -> path nothing -> nothing] {
 export def --env cd-root [dir?: path]: [nothing -> nothing] {
     cd (find-root)
 }
+
+export def figlet-demo [text: string] {
+    glob /opt/homebrew/Cellar/figlet/2.2.5/share/figlet/fonts/*.flf
+    | par-each {|i|
+        let $i = $i
+        | path basename;
+
+        $text
+        | figlet -f $i -C utf8
+        | wrap $i
+    }
+    | reduce {|i| merge $i }
+}

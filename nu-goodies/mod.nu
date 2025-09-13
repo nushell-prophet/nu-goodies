@@ -19,6 +19,7 @@ export use commands.nu [
     "files"
     "fill non-exist"
     "find-root"
+    "figlet-demo"
     "format profile"
     # "frameit"
     "gradient-screen"
