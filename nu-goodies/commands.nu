@@ -825,15 +825,15 @@ export def 'backup-history' [] {
     let temp_hist_folder = $hist_backups_dir
     | path join $date_uniq
 
-    let history_back_file = $temp_hist_folder
-    | path join 'history.sqlite3'
+    # let history_back_file = $temp_hist_folder
+    # | path join 'history.sqlite3'
 
     mkdir $temp_hist_folder
 
-    # sqlite3 $nu.history-path 'PRAGMA wal_checkpoint(FULL);'
-    sqlite3 $nu.history-path $'.backup ($history_back_file)'
+    # # sqlite3 $nu.history-path 'PRAGMA wal_checkpoint(FULL);'
+    # sqlite3 $nu.history-path $'.backup ($history_back_file)'
 
-    sqlite3 $history_back_file ".dump history"
+    sqlite3 $nu.history-path ".dump history"
     | save ($hist_backups_dir | path join 'history_back.sql') -f
 }
 
