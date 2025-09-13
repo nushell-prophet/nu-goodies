@@ -1,6 +1,6 @@
 export use commands.nu [
     # "alignit"
-    # "backup-history"
+    "backup-history"
     "bar"
     "bye"
     # "cb"
