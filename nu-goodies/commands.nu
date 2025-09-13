@@ -53,7 +53,7 @@ export def 'bar' [
     | each { $full_bar }
     | str join
 
-    let fraction =  $blocks
+    let fraction = $blocks
     | get (
         ($percentage * $width) mod 1
         | $in * ($blocks | length | $in - 1)
