@@ -1906,7 +1906,7 @@ def nu-completions-files-modified [context: string] {
     | split row ' '
     | last
     | if ($in | path type) == 'dir' and $in != '' {
-        ls ...(glob ($in | path join '*') | path relative-to (pwd))
+        ls ($in | path join '*' | into glob)
     } else { ls }
     | sort-by modified -r
     | select name modified
