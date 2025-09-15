@@ -1923,7 +1923,7 @@ def nu-completions-files-modified [context: string] {
     }
 }
 
-export def 'files' [...files: path@nu-completions-files-modified] {
+export def 'fs' [...files: path@nu-completions-files-modified] {
     $files
     | uniq
     | if ($in | length) == 1 { first } else { }

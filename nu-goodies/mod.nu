@@ -16,7 +16,7 @@ export use commands.nu [
     # "escape-escapes"
     # "escape-regex"
     "example"
-    "files"
+    "fs"
     "fill non-exist"
     "find-root"
     "figlet-demo"
