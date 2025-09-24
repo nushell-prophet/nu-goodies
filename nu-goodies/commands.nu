@@ -1322,7 +1322,10 @@ export def 'indent' [] { }
 export def 'dedent' [] { }
 
 export def 'escape-regex' [] {
-    str replace --all --regex '(\\|\.|\^|\$|\*|\+|\?|\{|\}|\(|\)|\[|\]|\||\/)' '\$1'
+    let input = $in
+    let regex = '\.^$*+?{}()[]|/' | split chars | each { $'\($in)' } | str join '|' | $"\(($in))"
+
+    $input | str replace --all --regex $regex '\$1'
 }
 
 export def 'escape-escapes' [] {
