@@ -1328,7 +1328,7 @@ export def 'escape-regex' [] {
     $input | str replace --all --regex $regex '\$1'
 }
 
-export def 'escape-escapes' [] {
+export def 'escape-nushell-escapes' [] {
     str replace --all --regex '(\\|\"|\/|\(|\)|\{|\}|\$|\^|\#|\||\~)' '\$1'
 }
 

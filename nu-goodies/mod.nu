@@ -13,7 +13,7 @@ export use commands.nu [
     # "dedent"
     "dfr enumerate"
     # "download-nushell-nightly"
-    # "escape-escapes"
+    # "escape-nushell-escapes"
     # "escape-regex"
     "example"
     "files"
