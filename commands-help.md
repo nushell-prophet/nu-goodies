@@ -708,12 +708,12 @@
 //   ╰─#─┴─input─┴─output─╯
 ```
 
-# backup-history
+# history-backup
 
 ```nu
-> backup-history --help | numd parse-help
+> history-backup --help | numd parse-help
 // Usage:
-//   > backup-history
+//   > history-backup
 //
 // Input/output types:
 //   ╭─#─┬─input─┬─output─╮

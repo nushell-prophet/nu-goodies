@@ -795,7 +795,7 @@ export def 'mygit log' [
     | glob $in -d 1 --no-dir --exclude ['.CFUserTextEncoding']
     | par-each {|i| cp --update $i $dot_dir }
 
-    backup-history
+    history-backup
 
     let paths = [
         '~/.config/nushell'
@@ -814,7 +814,7 @@ export def 'mygit log' [
     }
 }
 
-export def 'backup-history' [] {
+export def 'history-backup' [] {
     let hist_backups_dir = '~/.config/nushell/history-backups/'
     | path expand
 

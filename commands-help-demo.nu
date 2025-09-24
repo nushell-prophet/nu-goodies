@@ -263,9 +263,9 @@ mygit log --help | numd parse-help | table | print; print ''
 
 "#code-block-marker-open-64
 ```nu" | print
-"> backup-history --help | numd parse-help" | nu-highlight | print
+"> history-backup --help | numd parse-help" | nu-highlight | print
 
-backup-history --help | numd parse-help | table | print; print ''
+history-backup --help | numd parse-help | table | print; print ''
 
 "```" | print
 
