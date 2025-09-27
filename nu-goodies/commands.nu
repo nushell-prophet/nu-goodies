@@ -1904,8 +1904,13 @@ export def 'nu-format' [
     } else { }
 }
 
-def nu-completions-files-modified [] {
-    ls
+def nu-completions-files-modified [context: string] {
+    $context
+    | split row ' '
+    | last
+    | if ($in | path type) == 'dir' and $in != '' {
+        path join '*' | into glob | ls $in
+    } else { ls }
     | sort-by modified -r
     | select name modified
     | update modified { date humanize }
@@ -1921,7 +1926,7 @@ def nu-completions-files-modified [] {
     }
 }
 
-export def files [...files: path@nu-completions-files-modified] {
+export def 'fs' [...files: path@nu-completions-files-modified] {
     $files
     | uniq
     | if ($in | length) == 1 { first } else { }
@@ -1995,7 +2000,7 @@ export def find-root [dir?: path]: [nothing -> path nothing -> nothing] {
 
     # We need to do the last check in case the reduce loop ran to the end
     # without finding nupm.nuon
-    if ($root_candidate | path join '.git' | path type) == 'dir' {
+    if ($root_candidate | path join '.git' | path exists) {
         $root_candidate
     } else {
         null
@@ -2017,4 +2022,25 @@ export def figlet-demo [text: string] {
         | wrap $i
     }
     | reduce {|i| merge $i }
+
+    # rename zellij tab
+    export def rename-tab [name: string = ''] {
+        if $name == '' { pwd | path basename | str replace -r '^-+' '' } else { $name }
+        | ^zellij action rename-tab $in
+    }
+}
+
+# rename zellij tab
+export def rename-tab [name: string = ''] {
+    let name = if $name == '' { pwd | path basename | str replace -r '^-+' '' } else { $name }
+
+    let name_with_index = zellij action query-tab-names
+    | lines
+    | where $it =~ $"^($name)\(·|\$)"
+    | | [($in | length) ($in | parse --regex '(\d+)$' | get -o capture0 | default 0 | into int)]
+    | flatten
+    | math max
+    | if $in > 0 { $'($name)·($in + 1)' } else { $name }
+
+    ^zellij action rename-tab $name_with_index
 }
