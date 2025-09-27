@@ -569,7 +569,7 @@ export def 'hist-to-script' [
     $buffer | save -a $filepath
 
     if not $dont_open {
-        commandline edit -r (str c $env.EDITOR $filepath)
+        commandline edit -r $'($env.EDITOR) ($filepath)'
     }
 }
 
