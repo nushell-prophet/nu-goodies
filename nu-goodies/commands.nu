@@ -1932,6 +1932,7 @@ def nu-completions-files-modified [context: string] {
     } else { ls }
     | sort-by modified -r
     | select name modified
+    | update name { if $in has ' ' { $'`($in)`' } else { } }
     | update modified { date humanize }
     | rename value description
     | {
@@ -1948,7 +1949,20 @@ def nu-completions-files-modified [context: string] {
 export def 'fs' [...files: path@nu-completions-files-modified] {
     $files
     | uniq
-    | if ($in | length) == 1 { first } else { }
+    | if ($in | length) == 1 {
+        let input = first
+
+        let input_for_rep = $input
+        | if $in has ' ' { $'`($in)`' } else { }
+
+        history
+        | last
+        | get command
+        | str replace -r $"\\\(?fs `?($input)`?\\\)?" $"($input_for_rep)"
+        | commandline edit -r $in
+
+        $input
+    } else { }
 }
 
 export def 'llm message' [
