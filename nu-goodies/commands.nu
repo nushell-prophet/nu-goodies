@@ -252,17 +252,17 @@ export def 'dfr enumerate' [
 # │ nu-goodies/abbreviate.nu │ file │  898 B │
 # ╰───────────name───────────┴─type─┴──size──╯
 export def 'example' [
-    --dont_copy (-C)
-    --dont_comment (-H)
+    --no-copy (-C) # Don't copy the output into clipboard
+    --no-comment (-H) # don't comment the result
     --abbreviated: int = 10
     --external # info that to execute this command one must use `nu -c` 
 ] {
     let input = table --abbreviated $abbreviated
-    | if $dont_comment { } else { ansi strip }
+    | if $no_comment { } else { ansi strip }
 
     let command = get-last-commands-from-sql 1
     | str replace -r '\| example.*' ''
-    | if $dont_comment {
+    | if $no_comment {
         nu-highlight # for making screnshots
     } else { }
     | if $external {
@@ -271,13 +271,13 @@ export def 'example' [
     | str c $in (char nl)
 
     $input
-    | if $dont_comment { } else {
+    | if $no_comment { } else {
         lines
         | each { str c '# => ' $in }
     }
     | prepend $command
     | str join (char nl)
-    | if $dont_copy { } else {
+    | if $no_copy { } else {
         let i = $in
         $i | pbcopy
         $i
