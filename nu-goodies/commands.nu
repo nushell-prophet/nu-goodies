@@ -1383,7 +1383,7 @@ export def 'transcribe' [file: path] {
     }
 
     (
-        ^/Users/user/git/whisper.cpp/transcribe -f $file
+        ^/Users/user/git/whisper.cpp/build/bin/whisper-cli -f $file
         -m /Users/user/git/whisper.cpp/models/ggml-base.en.bin
         -otxt $'($file).txt' -osrt $'($file).srt' -np
     )
