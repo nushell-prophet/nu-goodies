@@ -1987,20 +1987,6 @@ export def 'fs' [...files: path@nu-completions-files-modified] {
             | get target.0
         } else { }
     }
-    | if ($in | length) == 1 {
-        let input = first
-
-        let input_for_rep = $input
-        | if $in has ' ' { $'`($in)`' } else { }
-
-        history
-        | last
-        | get command
-        | str replace -r $"\\\(?fs `?($input)`?\\\)?" $"($input_for_rep)"
-        | commandline edit -r $in
-
-        $input
-    } else { }
 }
 
 export def 'llm message' [
