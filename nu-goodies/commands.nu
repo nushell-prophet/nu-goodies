@@ -1818,6 +1818,7 @@ export def 'nu-completions-cwds' [] {
                WHERE d.path IS NULL
                ORDER BY h.id DESC"
     | get cwd
+    | compact
     | each {|entry|
         if ($entry has ' ') { $'"($entry)"' } else { $entry }
     }
