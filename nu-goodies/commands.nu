@@ -423,21 +423,26 @@ export def --env gradient-screen [
 
 # show modified date for files in current dir
 export def git-ls-modified-date [] {
-    let gitlog = git log --all --format="%ai" --name-only --diff-filter=ACMRT
-    | split row "\n\n"
-    | par-each {|i|
+    let gitlog = git log --all --format="===%ai" --name-only --diff-filter=ACMRT -- .
+    | $"\n($in)"
+    | split row "\n==="
+    | skip
+    | each {|i|
         let lines = $i | lines
 
-        let last = $lines | last | into datetime
+        let ts = $lines | first | into datetime
 
         $lines
-        | drop
-        | each {|file| {name: $file commit-ts: $last} }
+        | skip 2
+        | each {|file| {name: $file commit-ts: $ts} }
     }
     | flatten
     | uniq-by name
 
-    git ls-files '**/*' | lines | wrap name | join $gitlog name --inner
+    git ls-files --full-name -- .
+    | lines
+    | wrap name
+    | join $gitlog name --inner
 }
 
 def split-ansi-chars [s: string] {
