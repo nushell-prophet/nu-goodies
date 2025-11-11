@@ -426,7 +426,7 @@ export def ls-git-modified-date [] {
     let gitlog = git log --all --format="===%ai" --name-only --diff-filter=ACMRT -- .
     | $"\n($in)"
     | split row "\n==="
-    | skip
+    | skip # skip the first empty group
     | each {|i|
         let lines = $i | lines
 
