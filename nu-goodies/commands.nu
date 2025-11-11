@@ -1813,16 +1813,19 @@ export def 'nu-completions-cwds' [] {
     let termsize = term size | get columns | $in - 5
 
     let variants = open $nu.history-path
-    | query db "SELECT DISTINCT(h.cwd) FROM history h
+    | query db "SELECT h.cwd, MAX(h.start_timestamp) as last_timestamp
+               FROM history h
                LEFT JOIN dead_cwds d ON h.cwd = d.path
                WHERE d.path IS NULL
-               ORDER BY h.id DESC"
-    | get cwd
-    | compact
-    | each {|entry|
-        if ($entry has ' ') { $'"($entry)"' } else { $entry }
+               GROUP BY h.cwd
+               ORDER BY MAX(h.id) DESC"
+    | where cwd != null
+    | update cwd {
+        if ($in has ' ') { $'"($in)"' } else { $in }
     }
-    | where ($it | str length --grapheme-clusters) < $termsize
+    | where ($it.cwd | str length --grapheme-clusters) < $termsize
+    | update last_timestamp { into int | $in / 1000 | into int | into datetime -f '%s' | date humanize }
+    | rename value description
 
     {
         options: {
