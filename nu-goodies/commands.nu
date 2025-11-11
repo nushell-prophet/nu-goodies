@@ -252,28 +252,32 @@ export def 'dfr enumerate' [
 # │ nu-goodies/abbreviate.nu │ file │  898 B │
 # ╰───────────name───────────┴─type─┴──size──╯
 export def 'example' [
-    --dont_copy (-C)
-    --dont_comment (-H)
+    --no-copy (-C) # Don't copy the output into clipboard
+    --no-comment (-H) # don't comment the result
     --abbreviated: int = 10
+    --external # info that to execute this command one must use `nu -c` 
 ] {
     let input = table --abbreviated $abbreviated
-    | if $dont_comment { } else { ansi strip }
+    | if $no_comment { } else { ansi strip }
 
     let command = get-last-commands-from-sql 1
     | str replace -r '\| example.*' ''
-    | if $dont_comment {
+    | if $no_comment {
         nu-highlight # for making screnshots
+    } else { }
+    | if $external {
+        str c '# this is a Nushell command and its commented output from REPL. LLMs can execute the command with `nu -c "command"`' (char nl) $in
     } else { }
     | str c $in (char nl)
 
     $input
-    | if $dont_comment { } else {
+    | if $no_comment { } else {
         lines
         | each { str c '# => ' $in }
     }
     | prepend $command
     | str join (char nl)
-    | if $dont_copy { } else {
+    | if $no_copy { } else {
         let i = $in
         $i | pbcopy
         $i
@@ -418,22 +422,27 @@ export def --env gradient-screen [
 }
 
 # show modified date for files in current dir
-export def git-ls-modified-date [] {
-    let gitlog = git log --all --format="%ai" --name-only --diff-filter=ACMRT
-    | split row "\n\n"
-    | par-each {|i|
+export def ls-git-modified-date [] {
+    let gitlog = git log --all --format="===%ai" --name-only --diff-filter=ACMRT -- .
+    | $"\n($in)"
+    | split row "\n==="
+    | skip
+    | each {|i|
         let lines = $i | lines
 
-        let last = $lines | last | into datetime
+        let ts = $lines | first | into datetime
 
         $lines
-        | drop
-        | each {|file| {name: $file commit-ts: $last} }
+        | skip 2
+        | each {|file| {name: $file commit-ts: $ts} }
     }
     | flatten
     | uniq-by name
 
-    git ls-files '**/*' | lines | wrap name | join $gitlog name --inner
+    git ls-files --full-name -- .
+    | lines
+    | wrap name
+    | join $gitlog name --inner
 }
 
 def split-ansi-chars [s: string] {
@@ -1932,6 +1941,7 @@ def nu-completions-files-modified [context: string] {
     } else { ls }
     | sort-by modified -r
     | select name modified
+    | update name { if $in has ' ' { $'`($in)`' } else { } }
     | update modified { date humanize }
     | rename value description
     | {
@@ -1948,7 +1958,37 @@ def nu-completions-files-modified [context: string] {
 export def 'fs' [...files: path@nu-completions-files-modified] {
     $files
     | uniq
-    | if ($in | length) == 1 { first } else { }
+    | each {|i|
+        $i
+        | if ($in | path type) == symlink {
+            ls $i --long
+            | update target {|i|
+                $i.target
+                | if $in starts-with '..' {
+                    $i.name
+                    | path dirname
+                    | path join $i.target
+                    | path expand
+                    | path relative-to (pwd)
+                } else { }
+            }
+            | get target.0
+        } else { }
+    }
+    | if ($in | length) == 1 {
+        let input = first
+
+        let input_for_rep = $input
+        | if $in has ' ' { $'`($in)`' } else { }
+
+        history
+        | last
+        | get command
+        | str replace -r $"\\\(?fs `?($input)`?\\\)?" $"($input_for_rep)"
+        | commandline edit -r $in
+
+        $input
+    } else { }
 }
 
 export def 'llm message' [

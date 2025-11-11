@@ -23,7 +23,7 @@ export use commands.nu [
     "format profile"
     # "frameit"
     "gradient-screen"
-    "git-ls-modified-date"
+    "ls-git-modified-date"
     "hist"
     "hist-to-script"
     "in-fx"
