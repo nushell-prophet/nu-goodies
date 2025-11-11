@@ -422,7 +422,7 @@ export def --env gradient-screen [
 }
 
 # show modified date for files in current dir
-export def git-ls-modified-date [] {
+export def ls-git-modified-date [] {
     let gitlog = git log --all --format="===%ai" --name-only --diff-filter=ACMRT -- .
     | $"\n($in)"
     | split row "\n==="
