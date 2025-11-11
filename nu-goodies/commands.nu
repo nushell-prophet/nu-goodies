@@ -1953,6 +1953,23 @@ def nu-completions-files-modified [context: string] {
 export def 'fs' [...files: path@nu-completions-files-modified] {
     $files
     | uniq
+    | each {|i|
+        $i
+        | if ($in | path type) == symlink {
+            ls $i --long
+            | update target {|i|
+                $i.target
+                | if $in starts-with '..' {
+                    $i.name
+                    | path dirname
+                    | path join $i.target
+                    | path expand
+                    | path relative-to (pwd)
+                } else { }
+            }
+            | get target.0
+        } else { }
+    }
     | if ($in | length) == 1 {
         let input = first
 
