@@ -1987,6 +1987,9 @@ export def 'fs' [...files: path@nu-completions-files-modified] {
             | get target.0
         } else { }
     }
+    | if ($in | length) == 1 {
+        first
+    } else { }
 }
 
 export def 'llm message' [
