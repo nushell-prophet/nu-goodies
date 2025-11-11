@@ -422,8 +422,10 @@ export def --env gradient-screen [
 }
 
 # show modified date for files in current dir
-export def ls-git-modified-date [] {
-    let gitlog = git log --all --format="===%ai" --name-only --diff-filter=ACMRT -- .
+export def ls-git-modified-date [path?: path] {
+    let path = $path | default (pwd)
+
+    let gitlog = git log --all --format="===%ai" --name-only --diff-filter=ACMRT -- $path
     | $"\n($in)"
     | split row "\n==="
     | skip # skip the first empty group
@@ -439,10 +441,16 @@ export def ls-git-modified-date [] {
     | flatten
     | uniq-by name
 
-    git ls-files --full-name -- .
+    let path_candidate = git ls-files --full-name -- $path
     | lines
     | wrap name
     | join $gitlog name --inner
+
+    let root = find-root
+
+    let full_paths = $path_candidate | update name { [$root $in] | path join }
+
+    try { $full_paths | update name { path relative-to (pwd) } } catch { $full_paths }
 }
 
 def split-ansi-chars [s: string] {
