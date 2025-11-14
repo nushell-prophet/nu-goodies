@@ -278,9 +278,7 @@ export def 'example' [
     | prepend $command
     | str join (char nl)
     | if $no_copy { } else {
-        let i = $in
-        $i | pbcopy
-        $i
+        tee { pbcopy }
     }
 }
 
