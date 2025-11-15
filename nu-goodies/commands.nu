@@ -422,7 +422,10 @@ export def --env gradient-screen [
 }
 
 # show modified date for files in current dir
-export def ls-git-modified-date [path?: path] {
+export def ls-git-modified-date [
+    path?: path
+    --max-files-in-commit: int = 5 # skip commits with more than this number of files. Useful for excluding automatic changes like by prettier or ruff
+] {
     let path = $path | default (pwd)
 
     let gitlog = git log --all --format="===%ai" --name-only --diff-filter=ACMRT -- $path
@@ -436,9 +439,12 @@ export def ls-git-modified-date [path?: path] {
 
         $lines
         | skip 2
-        | each {|file| {name: $file commit-ts: $ts} }
+        | if ($in | length) > $max_files_in_commit { null } else {
+            each {|file| {name: $file commit-ts: $ts} }
+        }
     }
     | flatten
+    | compact
     | uniq-by name
 
     let path_candidate = git ls-files --full-name -- $path
