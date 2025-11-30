@@ -1857,19 +1857,26 @@ export def 'replace-in-all-files' [
     $replace
     --quiet # don't outuput stats
     --no-git-check
+    --no-rg
     --extensions: list = [nu md py] # might be '{nu,md} or single ext like `py`
 ] {
-    let files = glob --no-dir $'**/*.{($extensions | str join ",")}'
+    let glob = $extensions | str join ',' | '**/*.{' + $in + '}'
+    let files_total = glob --no-dir $glob
 
-    let files_found = $files
-    | each {|i|
-        open $i
-        | if ($in | str contains $find) { $i }
+    let files_found = if (which rg | is-empty) or $no_rg {
+        $files_total
+        | each {|i|
+            open -r $i
+            | if ($in | str contains $find) { $i }
+        }
+        | compact
+    } else {
+        rg $find --files-with-matches --glob $glob
+        | lines
     }
-    | compact
 
     mut $rec = {
-        $'total .($extensions) files': ($files | length)
+        $'total .($extensions) files': ($files_total | length)
         'updated': 0
     }
 
