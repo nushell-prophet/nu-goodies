@@ -1857,9 +1857,9 @@ export def 'replace-in-all-files' [
     $replace
     --quiet # don't outuput stats
     --no-git-check
-    --extensions = '{nu,md}' # might be '{nu,md} or single ext like `py`
+    --extensions: list = [nu md py] # might be '{nu,md} or single ext like `py`
 ] {
-    let files = glob --no-dir $'**/*.($extensions)'
+    let files = glob --no-dir $'**/*.{($extensions | str join ",")}'
 
     let files_found = $files
     | each {|i|
