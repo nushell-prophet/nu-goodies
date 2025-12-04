@@ -1834,8 +1834,14 @@ export def 'nu-completions-cwds' [] {
                GROUP BY h.cwd
                ORDER BY MAX(h.id) DESC"
     | where cwd != null
-    | update cwd {
-        if ($in has ' ') { $'"($in)"' } else { $in }
+    | update cwd {|i|
+        do -i { $i.cwd | path relative-to $nu.home-path }
+        | match $in {
+            null => $i.cwd
+            '' => '~'
+            $relative_pwd => ([~ $relative_pwd] | path join)
+        }
+        | if ($in has ' ') { $'"($in)"' } else { $in }
     }
     | where ($it.cwd | str length --grapheme-clusters) < $termsize
     | update last_timestamp { into int | $in / 1000 | into int | into datetime -f '%s' | date humanize }
