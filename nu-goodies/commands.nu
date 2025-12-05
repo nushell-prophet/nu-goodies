@@ -1864,7 +1864,10 @@ export def 'replace-in-all-files' [
     --no-rg
     --extensions: list = [nu md py] # might be '{nu,md} or single ext like `py`
 ] {
-    let glob = $extensions | str join ',' | '**/*.{' + $in + '}'
+    let glob = $extensions
+    | str join ','
+    | str c '**/*.{' $in '}'
+
     let files_total = glob --no-dir $glob
 
     let files_found = if (which rg | is-empty) or $no_rg {
