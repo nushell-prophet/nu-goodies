@@ -503,7 +503,8 @@ alias core_hist = history
 
 # Filter history with regex and convenient flags, add useful columns
 export def 'hist' [
-    ...regex_filters: string # A regex to search for
+    like_filter?: string # a string to search in db
+    --regex_filters: list<string> = [] # a regex to search for
     --entries: int = 5000 # A number of last entries to work with
     --all (-a) # Return all the history
     --session (-s) # Show only entries from the current session
@@ -516,6 +517,9 @@ export def 'hist' [
         SELECT command_line as command, start_timestamp / 1000 as start_timestamp, session_id, hostname, cwd,
         duration_ms / 1000000.0 as duration_s, exit_status FROM history WHERE 1=1
     "
+    | if $like_filter != null {
+        append $" AND command_line LIKE '%($like_filter)%'"
+    } else { }
     | append " AND command_line NOT LIKE 'hist %'" # Build where clauses based on parameters Exclude 'hist' commands
     | append " AND exit_status = 0" # Only successful commands
     | if $session {
