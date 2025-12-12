@@ -1,8 +1,8 @@
 ###file L.nu
-# open table in Less
+# Open table in Less
 export def 'L' [
     --abbreviated (-a): int = 1000
-    --bat (-b) # use bat instead of less
+    --bat (-b) # Use bat instead of less
 ] {
     table -e --abbreviated $abbreviated | into string | if $bat { bat } else { less -R }
 }
@@ -16,8 +16,8 @@ def nu-complete-macos-apps [] {
 # > O O.nu --app "Sublime Text"
 export def 'O' [
     filepath?: path
-    --app (-a): string@'nu-complete-macos-apps' = 'Snagit 2022.app' # app to open at
-    --reveal (-r) # reveal app in finder
+    --app (-a): string@'nu-complete-macos-apps' = 'Snagit 2022.app' # App to open with
+    --reveal (-r) # Reveal app in Finder
 ]: [path -> nothing nothing -> nothing] {
     if $filepath == null { } else { $filepath }
     | if $reveal {
@@ -30,7 +30,7 @@ export def 'O' [
 ###file bar.nu
 # use std repeat
 
-# construct bars based on a given percentage from a given width (5 is default)
+# Construct bars based on a given percentage from a given width (5 is default)
 #
 # https://github.com/nushell/nu_scripts/blob/bar/sourced/progress_bar/bar.nu
 # > bar 0.2
@@ -42,7 +42,7 @@ export def 'bar' [
     percentage: float
     --background (-b): string = 'default'
     --foreground (-f): string = 'default'
-    --progress (-p) # output the result using 'print -n'
+    --progress (-p) # Output the result using 'print -n'
     --width (-w): int = 5
 ] {
     let blocks = [null "▏" "▎" "▍" "▌" "▋" "▊" "▉" "█"]
@@ -78,7 +78,7 @@ export def 'bar' [
 
 export def 'bye' [
     ...strings: string
-    --no_date # don't append date
+    --no_date # Don't append date
     -n # don't quit
 ] {
     gradient-screen ...$strings --no_date=$no_date
@@ -86,7 +86,7 @@ export def 'bye' [
 }
 
 ###file cb.nu
-# shortcut for pbpaste and pbcopy. But is it needed?
+# Shortcut for pbpaste and pbcopy. But is it needed?
 export def 'cb' [
     --paste
 ] {
@@ -105,7 +105,7 @@ export def 'center' [
 }
 
 ###file copy-cmd.nu
-# copy this command to clipboard
+# Copy this command to clipboard
 export def 'copy-cmd' [] {
     let commands = history
     | last 2
@@ -124,18 +124,18 @@ export def 'copy-cmd' [] {
 ###file cprint.nu
 # Print a string colorfully with bells and whistles
 export def 'cprint' [
-    text?: string # text to format, if omitted stdin will be used
-    --color (-c): string@'nu-complete-colors' = 'default' # color to use for the cprint text
-    --highlight_color (-H): string@'nu-complete-colors' = 'green_bold' # color to use for highlighting text enclosed in asterisks
-    --frame_color (-r): string@'nu-complete-colors' = 'dark_gray' # color to use for frame
-    --frame (-f): string = '' # symbol (or a string) to frame a text
-    --lines_before (-b): int = 0 # number of new lines before a text
-    --lines_after (-a): int = 1 # number of new lines after a text
-    --echo (-e) # echo text string instead of printing
-    --keep_single_breaks # don't remove single line breaks
-    --width (-w): int = 80 # the total width of text to wrap it
-    --indent (-i): int = 0 # indent output by number of spaces
-    --align: string = 'left' # alignment of text
+    text?: string # Text to format, if omitted stdin will be used
+    --color (-c): string@'nu-complete-colors' = 'default' # Color to use for the cprint text
+    --highlight_color (-H): string@'nu-complete-colors' = 'green_bold' # Color to use for highlighting text enclosed in asterisks
+    --frame_color (-r): string@'nu-complete-colors' = 'dark_gray' # Color to use for frame
+    --frame (-f): string = '' # Symbol (or a string) to frame a text
+    --lines_before (-b): int = 0 # Number of new lines before a text
+    --lines_after (-a): int = 1 # Number of new lines after a text
+    --echo (-e) # Echo text string instead of printing
+    --keep_single_breaks # Don't remove single line breaks
+    --width (-w): int = 80 # The total width of text to wrap it
+    --indent (-i): int = 0 # Indent output by number of spaces
+    --align: string = 'left' # Alignment of text
 ]: [string -> nothing nothing -> nothing nothing -> string string -> string] {
     let text = if $text == null { } else { $text }
 
@@ -153,8 +153,8 @@ export def 'cprint' [
     | if $echo { } else { print -n $in }
 }
 
-# I `export` commands here to make them available for testing, yet to be included
-# in the same file, so cprint could be easily copied to other projects
+# I `export` commands here to make them available for testing, while still
+# keeping them in the same file so cprint can be easily copied to other projects
 
 export def 'width-safe' [
     $width
@@ -253,9 +253,9 @@ export def 'dfr enumerate' [
 # ╰───────────name───────────┴─type─┴──size──╯
 export def 'example' [
     --no-copy (-C) # Don't copy the output into clipboard
-    --no-comment (-H) # don't comment the result
+    --no-comment (-H) # Don't comment the result
     --abbreviated: int = 10
-    --external # indicates that to execute this command one must use `nu -c` 
+    --external # Indicates that to execute this command one must use `nu -c` 
 ] {
     let input = table --abbreviated $abbreviated
     | if $no_comment { } else { ansi strip }
@@ -292,9 +292,9 @@ def get-last-commands-from-sql [n: int = 1] {
 }
 
 ###file fill non-exist.nu
-# fill missing columns for each row
+# Fill missing columns for each row
 #
-# this is how empty columns are represented
+# This is how empty columns are represented
 # > [{a: 1} {b: 2}] | to nuon
 # [{a: 1}, {b: 2}]
 #
@@ -317,7 +317,7 @@ export def 'fill non-exist' [
 # use normalize.nu
 # use bar.nu
 
-# format `debug profile` output
+# Format `debug profile` output
 #
 # > debug profile {pin-text cyber} --max-depth 7 --spans | format profile | null
 export def 'format profile' [] {
@@ -344,10 +344,10 @@ export def 'format profile' [] {
 }
 
 ###file gradient-screen.nu
-# fill screen with repeated texts from arguments or $env.gradient-screen.texts with random color gradient
+# Fill screen with repeated texts from arguments or $env.gradient-screen.texts with random color gradient
 export def --env gradient-screen [
     ...strings: string
-    --no_date # don't append date
+    --no_date # Don't append date
     --echo
     --rows: int
 ] {
@@ -419,7 +419,7 @@ export def --env gradient-screen [
     }
 }
 
-# show modified date for files in current dir
+# Show modified date for files in current directory
 export def ls-git-modified-date [
     path?: path
     --max-files-in-commit: int = 5 # skip commits with more than this number of files. Useful for excluding automatic changes such as those by prettier or ruff
@@ -503,13 +503,13 @@ alias core_hist = history
 
 # Filter history with regex and convenient flags, add useful columns
 export def 'hist' [
-    ...regex_filters: string # a regex to search for
-    --entries: int = 5000 # a number of last entries to work with
-    --all (-a) # return all the history
-    --session (-s) # show only entries from the current session
-    --cwd # show only entries from the current folder
-    --last-x: duration # duration for the period to check commands
-    --not-in-vd (-V) # disable opening command in visidata
+    ...regex_filters: string # A regex to search for
+    --entries: int = 5000 # A number of last entries to work with
+    --all (-a) # Return all the history
+    --session (-s) # Show only entries from the current session
+    --cwd # Show only entries from the current folder
+    --last-x: duration # Duration for the period to check commands
+    --not-in-vd (-V) # Disable opening command in visidata
 ] {
     # Start building the SQL query
     let sql_query = "
@@ -553,7 +553,7 @@ export def 'hist' [
 
     # Format timestamps as human readable
     # Convert nanoseconds to seconds and format
-    # todo: check that filtering by options is adjusted by offset too
+    # TODO: check that filtering by options is adjusted by offset too
     let formatted_results = $filtered_results | into datetime --format '%s' --offset (-3) start_timestamp
 
     # Add pipe count column
@@ -572,10 +572,10 @@ export def 'hist' [
 # Save significant or all current session history entries into a .nu file. If the .nu file already exists, data will be appended.
 export def 'hist-to-script' [
     filename?: path
-    --dont_open (-O) # don't open the save history file in editor
-    --up (-u): int = 0 # set number of last events to save
+    --dont_open (-O) # Don't open the saved history file in editor
+    --up (-u): int = 0 # Set number of last events to save
     --all # Save all history into .nu file
-    --directory_hist # get history for a directory instead of session
+    --directory_hist # Get history for a directory instead of session
 ] {
     let session = history session
 
@@ -614,7 +614,7 @@ export def 'hist-to-script' [
 }
 
 ###file in-fx.nu
-# convert data structure to json and open it in fx
+# Convert data structure to JSON and open it in fx
 export def --wrapped in-fx [
     ...rest
 ] {
@@ -623,9 +623,9 @@ export def --wrapped in-fx [
     | ^fx ...$rest
 }
 
-# open piped-in results in hx, output back the saved file
+# Open piped-in results in hx, output back the saved file
 export def 'in-hx' [
-    --path (-p) # output path of the file
+    --path (-p) # Output path of the file
 ] {
     let input = $in
     let type = $input | describe
@@ -660,8 +660,8 @@ use kv
 # Examples:
 # > history | in-vd
 export def 'in-vd' [
-    --json (-j) # force to use msgpack for piping data in-vd
-    --csv (-c) # force to use csv for piping data in-vd
+    --json (-j) # Force using msgpack for piping data in-vd
+    --csv (-c) # Force using csv for piping data in-vd
 ] {
     if ($in | describe | $in =~ 'FrameCustomValue') {
         polars into-nu
@@ -714,7 +714,7 @@ def has_hier [] {
 }
 
 ###file ln-for-preview.nu
-# hard-link an input table to temp directory (useful for previewing files from large directories in external programs)
+# Hard-link an input table to temp directory (useful for previewing files from large directories in external programs)
 #
 # > ls | where modified > (date now | $in - 20min) | ln-for-preview
 export def --env ln-for-preview [
@@ -767,7 +767,7 @@ export def --env ln-for-preview [
 # }
 
 ###file mc.nu
-# open midnight commander, cd to the last folder
+# Open midnight commander, cd to the last folder
 export def --env mc [
     path1?: path
     path2?: path
@@ -787,10 +787,10 @@ export def --env mc [
 }
 
 ###file md.nu
-# makedir and cd into it
+# Create directory and cd into it
 export def --env md [
     target_dir
-    -d # use standard directory
+    -d # Use standard directory
     --dest_dir: path = '/Users/user/temp'
 ] {
     let dir = (
@@ -808,7 +808,7 @@ export def --env md [
 }
 
 ###file mv1.nu
-# toggle suffix `_back` for a file
+# Toggle suffix `_back` for a file
 export def 'mv1' [
     file: path
 ] {
@@ -820,7 +820,7 @@ export def 'mv1' [
 }
 
 ###file mygit log.nu
-# commit current version of dot files and apps settings
+# Commit current version of dot files and apps settings
 export def 'mygit log' [
     --message (-m): string
 ] {
@@ -878,7 +878,7 @@ export def 'history-backup' [] {
 }
 
 ###file normalize.nu
-# normalize values in given columns
+# Normalize values in given columns
 #
 # > [[a b]; [1 2] [3 4] [a null]] | normalize a b
 # ╭─a─┬─b─┬a_norm┬b_norm╮
@@ -913,14 +913,14 @@ export def 'normalize' [
 }
 
 ###file nu-test.nu
-# install nushell or polars from the HEAD or the specified PR
+# Install nushell or polars from the HEAD or the specified PR
 export def 'nu-test install' [
-    --nushell # update nushell only
-    --polars # update polars plugin only
+    --nushell # Update nushell only
+    --polars # Update polars plugin only
     --nushell-repo-path: path = '/Users/user/git/nushell/'
     --cargo-test-path: path = '/Users/user/.cargo_test/'
     --plugin-config: path = '/Users/user/.test_config/nushell/polars_test.msgpackz'
-    --pr: string # a pr to checkout like ayax79:polars_pivot
+    --pr: string # A PR to checkout like ayax79:polars_pivot
 ] {
     cd $nushell_repo_path
 
@@ -968,9 +968,9 @@ export def 'nu-test launch' [
 const nightly_path = '~/temp/nu-nightly' | path expand
 
 export def --env download-nushell-nightly [
-    --arch (-a): string = 'aarch64-apple-darwin' # archicture as specified in nushell/nightly repo
-    --ext (-e): string = '.tar.gz' # extension, including the leading dot (e.g. '.tar.gz')
-    --destination_dir (-d): directory = $nightly_path # destination directory in which to save the download
+    --arch (-a): string = 'aarch64-apple-darwin' # Architecture as specified in nushell/nightly repo
+    --ext (-e): string = '.tar.gz' # Extension, including the leading dot (e.g. '.tar.gz')
+    --destination_dir (-d): directory = $nightly_path # Destination directory in which to save the download
 ] {
     let most_recent_nightly = (http get https://api.github.com/repos/nushell/nightly/releases | get 0)
     let nightly_name = ($most_recent_nightly.name | str replace -r '^Nu-nightly-' '')
@@ -1151,7 +1151,7 @@ export def 'ramdisk-create' [
 # https://discord.com/channels/601130461678272522/615253963645911060/1182672999921504336
 # by @melmass at discord
 
-# interactively select columns from a table
+# Interactively select columns from a table
 export def 'select-i' [] {
     let tgt = $in
     let choices = $tgt
@@ -1169,8 +1169,8 @@ export def 'select-i' [] {
 ###file side-by-side.nu
 export def 'side-by-side' [
     r
-    --delimiter: string = ' ' # delimiter between left and right
-    --collapse # use collapsed table representation
+    --delimiter: string = ' ' # Delimiter between left and right
+    --collapse # Use collapsed table representation
     --l_header: string
     --r_header: string
 ] {
@@ -1220,9 +1220,9 @@ export def 'side-by-side' [
 }
 
 ###file significant-digits.nu
-# the samve version as https://github.com/nushell/nu_scripts/blob/significant-digits/stdlib-candidate/std-rfc/math/mod.nu
+# The same version as https://github.com/nushell/nu_scripts/blob/significant-digits/stdlib-candidate/std-rfc/math/mod.nu
 
-# replace all insignificant digits with 0
+# Replace all insignificant digits with 0
 #
 # | Significant Digits | Maximum Relative Error |
 # |--------------------|------------------------|
@@ -1313,8 +1313,8 @@ export def 'str append' [
     --2space (-2)
     --new-line (-n)
     --tab (-t)
-    --concatenator (-c): string = '' # input and rest concatenator
-    --rest_el: string = ' ' # rest elements concatenator
+    --concatenator (-c): string = '' # Input and rest concatenator
+    --rest_el: string = ' ' # Rest elements concatenator
 ] {
     let input = $in
     let concatenator = $"(
@@ -1338,8 +1338,8 @@ export def 'str prepend' [
     --2space (-2)
     --new-line (-n)
     --tab (-t)
-    --concatenator (-c): string = '' # input and rest concatenator
-    --rest_el: string = ' ' # rest elements concatenator
+    --concatenator (-c): string = '' # Input and rest concatenator
+    --rest_el: string = ' ' # Rest elements concatenator
 ] {
     let input = $in
     let concatenator = $"(
@@ -1378,7 +1378,7 @@ export def --env 'testcd' [destination] { cd $destination }
 export def 'to-safe-filename' [
     --prefix: string = ''
     --suffix: string = ''
-    --regex: string = '[^A-Za-z0-9_А-Яа-я+]' # symbols to keep
+    --regex: string = '[^A-Za-z0-9_А-Яа-я+]' # Symbols to keep
     --date
 ]: string -> string {
     str replace -ra $regex '_'
@@ -1492,18 +1492,18 @@ export def 'wez-to-gif' [
     ^agg --font-family $font_family --font-size $font_size -v $wezrec $gif_name
     print ''
 
-    ^open -R $gif_name # reveal in finder
+    ^open -R $gif_name # Reveal in Finder
 }
 
 ###file wez-to-png.nu
-# capture wezterm scrollback, split by prompts, output chosen ones to an image file
-# uses nu_plugin_image
+# Capture wezterm scrollback, split by prompts, output chosen ones to an image file
+# Uses nu_plugin_image
 # https://wezfurlong.org/wezterm/index.html
 # https://github.com/FMotalleb/nu_plugin_image/
 
 # use wez-to-ansi.nu
 
-# capture wezterm scrollback, split by prompts, output chosen ones to an image file
+# Capture wezterm scrollback, split by prompts, output chosen ones to an image file
 export def 'wez-to-png' [
     $n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
     --output_path: path = '' # Path for saving output images.
@@ -1548,7 +1548,7 @@ def last-commands [
 # Helper function to get all unique directories from command history
 # Now with SQL-level filtering against dead_cwds
 def get-history-dirs [
-    --include-dead (-d) # Include dead directories in the results
+    --include-dead (-d) # Include nonexistent directories in the results
 ]: nothing -> list<string> {
     # Ensure dead_cwds table exists
     init-dead-cwds-table
@@ -1743,7 +1743,7 @@ export def --env 'z' [
     query?: string@'nu-completions-cwds' # Directory query to search for (optional)
     --interactive (-i) # Force interactive mode
     --new-tab (-n) # Open directory in a new Zellij tab
-    --update-dead-dirs (-u) # Refresh the list of non-existent directories
+    --update-dead-dirs (-u) # Refresh the list of nonexistent directories
     --clean (-c) # Remove directories from dead list that now exist
 ]: nothing -> nothing {
     # Handle update dead dirs
@@ -1859,10 +1859,10 @@ export def 'nu-completions-cwds' [] {
 export def 'replace-in-all-files' [
     $find
     $replace
-    --quiet # don't outuput stats
+    --quiet # Don't output stats
     --no-git-check
     --no-rg
-    --extensions: list = [nu md py] # might be '{nu,md} or single ext like `py`
+    --extensions: list = [nu md py] # Might be '{nu,md}' or single ext like `py`
 ] {
     let glob = $extensions
     | str join ','
@@ -1942,7 +1942,7 @@ def 'insert-new-lines' [] {
 
 # Format piped in Nushell code or previous command from history using Topiary.
 export def 'nu-format' [
-    --no-new-lines (-n) # don't insert new lines
+    --no-new-lines (-n) # Don't insert new lines
 ]: [nothing -> nothing string -> string] {
     let input = $in
 
@@ -2058,11 +2058,11 @@ export def 'completion-llm-message' [
     }
 }
 
-# concatenate rest parameters into a string
+# Concatenate rest parameters into a string
 @example escape-interpolation { 1 + 1 | str c 'result is ' $in } --result 'result is 2'
 export def 'str c' [...$rest] { $rest | into string | str join }
 
-# helper function initially from nupm/utils/dirs.nu
+# Helper function initially from nupm/utils/dirs.nu
 # 
 # Try to find the package root directory by looking for nupm.nuon in parent
 # directories.
@@ -2102,22 +2102,16 @@ export def figlet-demo [text: string] {
         | wrap $i
     }
     | reduce {|i| merge $i }
-
-    # rename zellij tab
-    export def rename-tab [name: string = ''] {
-        if $name == '' { pwd | path basename | str replace -r '^-+' '' } else { $name }
-        | ^zellij action rename-tab $in
-    }
 }
 
-# rename zellij tab
+# Rename zellij tab
 export def rename-tab [name: string = ''] {
     let name = if $name == '' { pwd | path basename | str replace -r '^-+' '' } else { $name }
 
     let name_with_index = zellij action query-tab-names
     | lines
     | where $it =~ $"^($name)\(·|\$)"
-    | | [($in | length) ($in | parse --regex '(\d+)$' | get -o capture0 | default 0 | into int)]
+    | [($in | length) ($in | parse --regex '(\d+)$' | get -o capture0 | default [0] | into int)]
     | flatten
     | math max
     | if $in > 0 { $'($name)·($in + 1)' } else { $name }
