@@ -30,7 +30,7 @@ export def 'O' [
 ###file bar.nu
 # use std repeat
 
-# construct bars based of a given percentage from a given width (5 is default)
+# construct bars based on a given percentage from a given width (5 is default)
 #
 # https://github.com/nushell/nu_scripts/blob/bar/sourced/progress_bar/bar.nu
 # > bar 0.2
@@ -243,7 +243,7 @@ export def 'dfr enumerate' [
 }
 
 ###file example.nu
-# output a command from a pipe where `example` used, and truncate the output table
+# output a command from a pipe where `example` is used, and truncate the output table
 #
 # > ls nu-goodies | first 3 | reject modified | example
 # ╭───────────name───────────┬─type─┬──size──╮
@@ -255,7 +255,7 @@ export def 'example' [
     --no-copy (-C) # Don't copy the output into clipboard
     --no-comment (-H) # don't comment the result
     --abbreviated: int = 10
-    --external # info that to execute this command one must use `nu -c` 
+    --external # indicates that to execute this command one must use `nu -c` 
 ] {
     let input = table --abbreviated $abbreviated
     | if $no_comment { } else { ansi strip }
@@ -294,7 +294,7 @@ def get-last-commands-from-sql [n: int = 1] {
 ###file fill non-exist.nu
 # fill missing columns for each row
 #
-# this is how empty columns are present
+# this is how empty columns are represented
 # > [{a: 1} {b: 2}] | to nuon
 # [{a: 1}, {b: 2}]
 #
@@ -422,7 +422,7 @@ export def --env gradient-screen [
 # show modified date for files in current dir
 export def ls-git-modified-date [
     path?: path
-    --max-files-in-commit: int = 5 # skip commits with more than this number of files. Useful for excluding automatic changes like by prettier or ruff
+    --max-files-in-commit: int = 5 # skip commits with more than this number of files. Useful for excluding automatic changes such as those by prettier or ruff
 ] {
     let path = $path | default { pwd }
 
@@ -614,7 +614,7 @@ export def 'hist-to-script' [
 }
 
 ###file in-fx.nu
-# convert datastructure to json and open it in fx
+# convert data structure to json and open it in fx
 export def --wrapped in-fx [
     ...rest
 ] {
@@ -714,7 +714,7 @@ def has_hier [] {
 }
 
 ###file ln-for-preview.nu
-# hardlink an input table to temp directory (useful for previewing files from large directories in external programs)
+# hard-link an input table to temp directory (useful for previewing files from large directories in external programs)
 #
 # > ls | where modified > (date now | $in - 20min) | ln-for-preview
 export def --env ln-for-preview [
@@ -1137,7 +1137,7 @@ export def 'print-and-pass' [
 }
 
 ###file ramdisk-create.nu
-# Create ramdisk in MacOS
+# Create ramdisk in macOS
 export def 'ramdisk-create' [
     size: filesize = 4194304kb
 ] {
@@ -1496,7 +1496,7 @@ export def 'wez-to-gif' [
 }
 
 ###file wez-to-png.nu
-# capture wezterm scrollback, split by prompts, output chosen to an image file
+# capture wezterm scrollback, split by prompts, output chosen ones to an image file
 # uses nu_plugin_image
 # https://wezfurlong.org/wezterm/index.html
 # https://github.com/FMotalleb/nu_plugin_image/
