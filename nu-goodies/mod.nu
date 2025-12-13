@@ -11,7 +11,6 @@ export use commands.nu [
     "cprint"
     "cd-root"
     # "dedent"
-    "dfr enumerate"
     # "download-nushell-nightly"
     # "escape-nushell-escapes"
     # "escape-regex"

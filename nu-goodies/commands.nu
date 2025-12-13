@@ -233,14 +233,6 @@ def 'nu-complete-colors' [] {
     ansi --list | take until {|it| $it.name == reset } | get name
 }
 
-###file dfr enumerate.nu
-export def 'dfr enumerate' [
-    n: int = 3
-] {
-    dfr first $n
-    | dfr into-nu
-    | enumerate
-}
 
 ###file example.nu
 # output a command from a pipe where `example` is used, and truncate the output table
