@@ -233,7 +233,6 @@ def 'nu-complete-colors' [] {
     ansi --list | take until {|it| $it.name == reset } | get name
 }
 
-
 ###file example.nu
 # output a command from a pipe where `example` is used, and truncate the output table
 #
@@ -527,8 +526,7 @@ export def 'hist' [
         append $" AND start_timestamp > ((date now) - $last_x | into int)" # Convert to nanoseconds
     } else { }
     | append ' ORDER BY id DESC'
-    | if not ($all or $entries == 0) {
-        # Apply limit if not --all
+    | if not ($all or $entries == 0 or $like_filter != null) {
         append $" LIMIT ($entries)"
     } else { }
     | str join
