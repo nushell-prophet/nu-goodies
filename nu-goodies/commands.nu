@@ -539,9 +539,8 @@ export def 'hist' [
         $results
     } else {
         $regex_filters
-        | reduce -f $results {|pattern acc|
-            $acc
-            | where command =~ $pattern
+        | reduce --fold $results {|pattern|
+            where command =~ $pattern
         }
     }
 
