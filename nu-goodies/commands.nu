@@ -1677,6 +1677,12 @@ def select-dir [
     }
 }
 
+# Helper function to get open Zellij tab names
+def zellij-tab-names []: nothing -> list<string> {
+    if ($env.ZELLIJ? | is-empty) { return [] }
+    zellij action query-tab-names | lines
+}
+
 # Helper function to handle Zellij integration
 def handle-zellij [
     $path: string # Target directory path
@@ -1692,8 +1698,7 @@ def handle-zellij [
     }
 
     # Check if tab with this name already exists
-    let matching_tab = zellij action query-tab-names
-    | lines
+    let matching_tab = zellij-tab-names
     | where { $in =~ $"^($dir_name)\(·|$\)" }
     | get 0?
 
@@ -1766,6 +1771,10 @@ export def 'nu-completions-cwds' [] {
     init-dead-cwds-table
 
     let termsize = term size | get columns | $in - 5
+    let max_depth = 6
+
+    # Get open Zellij tabs for marking
+    let zellij_tabs = zellij-tab-names
 
     let variants = open $nu.history-path
     | query db "SELECT h.cwd, MAX(h.start_timestamp) as last_timestamp
@@ -1784,8 +1793,19 @@ export def 'nu-completions-cwds' [] {
         }
         | if ($in has ' ') { $'"($in)"' } else { $in }
     }
+    # Filter by depth - skip paths deeper than max_depth
+    | where { $in.cwd | path split | length | $in <= $max_depth }
+    # Filter by length
     | where ($it.cwd | str length --grapheme-clusters) < $termsize
-    | update last_timestamp { into int | $in / 1000 | into int | into datetime -f '%s' | date humanize }
+    | update last_timestamp {|row|
+        let timestamp = $row.last_timestamp | into int | $in / 1000 | into int | into datetime -f '%s' | date humanize
+
+        # Check if a Zellij tab exists for this directory
+        let dir_name = $row.cwd | path split | last | str replace '"' ''
+        let has_tab = $zellij_tabs | any { $in =~ $"^($dir_name)\(·|$$\)" }
+
+        if $has_tab { $"⇆ ($timestamp)" } else { $timestamp }
+    }
     | rename value description
 
     {
