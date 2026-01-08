@@ -1634,66 +1634,46 @@ def handle-dead-dirs [
     }
 }
 
-# Helper function to get valid directory paths
-# Now using SQL filtering instead of Nushell filtering
-def get-valid-dirs [
-    --update-dead (-u) # Update dead directories before filtering
-]: nothing -> string {
-    if $update_dead {
-        # Update dead directories first
-        handle-dead-dirs --update=true | ignore
-    }
-
-    # Get valid directories with SQL-level filtering
-    get-history-dirs
-    | to text
-}
-
 # Helper function to select a directory path
 def select-dir [
     $query: string # The search query
     --interactive (-i) # Force interactive mode
 ]: nothing -> string {
-    let valid_cwds = get-valid-dirs
-
-    # Function for interactive selection
-    let select_interactive = {
-        $valid_cwds | fzf --scheme=path -q $query
-    }
+    # Get valid directories with SQL-level filtering
+    let valid_cwds = get-history-dirs | to text
 
     if ($query | path exists) {
         # Direct path exists - use it
-        $query
-    } else if $interactive {
+        return $query
+    }
+
+    if $interactive {
         # Interactive mode requested
-        do $select_interactive
-    } else {
-        # Try fuzzy finding and return first existing directory
-        let fuzzy_results = $valid_cwds
-        | fzf -f $query
-        | lines
+        return ($valid_cwds | fzf --scheme=path -q $query)
+    }
 
-        # Find the first result that actually exists
-        let existing_path = $fuzzy_results
-        | first 10
-        | par-each --keep-order {|path|
-            if ($path | path exists) {
-                $path
-            } else {
-                # Add non-existing dir to dead dirs list
-                add-dead-dir $path
-                null
-            }
-        }
-        | compact
-        | get 0?
-
-        if ($existing_path | is-empty) {
-            # No valid match found - fall back to interactive
-            do $select_interactive
+    # Try fuzzy finding and return first existing directory
+    let existing_path = $valid_cwds
+    | fzf -f $query
+    | lines
+    | first 10
+    | par-each --keep-order {|path|
+        if ($path | path exists) {
+            $path
         } else {
-            $existing_path
+            # Add non-existing dir to dead dirs list
+            add-dead-dir $path
+            null
         }
+    }
+    | compact
+    | get 0?
+
+    if ($existing_path | is-empty) {
+        # No valid match found - fall back to interactive
+        $valid_cwds | fzf --scheme=path -q $query
+    } else {
+        $existing_path
     }
 }
 
@@ -1703,32 +1683,29 @@ def handle-zellij [
     $dir_name: string # Directory name for tab
     --new-tab (-n) # Open in new tab
 ]: nothing -> bool {
-    if ($env.ZELLIJ? | is-empty) {
-        return false
-    }
+    if ($env.ZELLIJ? | is-empty) { return false }
 
     if $new_tab {
         # Create new tab with the directory
         zellij action new-tab --layout default --cwd $path --name $dir_name
-        true
-    } else {
-        # Check if tab with this name already exists
-        let existing_tabs = zellij action query-tab-names | lines
-
-        $existing_tabs
-        | where $it =~ $"^($dir_name)\(·|$)"
-        | if $in != [] {
-            # Switch to existing tab
-            let name = first
-
-            zellij action go-to-tab-name $name
-            print -n 'Switching to tab ' $name
-        } else {
-            # Rename current tab
-            zellij action rename-tab $dir_name
-        }
-        false
+        return true
     }
+
+    # Check if tab with this name already exists
+    let matching_tab = zellij action query-tab-names
+    | lines
+    | where { $in =~ $"^($dir_name)\(·|$\)" }
+    | get 0?
+
+    if ($matching_tab | is-not-empty) {
+        # Switch to existing tab
+        zellij action go-to-tab-name $matching_tab
+        print -n 'Switching to tab ' $matching_tab
+    } else {
+        # Rename current tab
+        zellij action rename-tab $dir_name
+    }
+    false
 }
 
 # Main z command
@@ -1765,33 +1742,8 @@ export def --env 'z' [
         return
     }
 
-    # Handle case when no query is provided
-    if ($query | is-empty) {
-        # Default to interactive mode
-        let target_path = select-dir "" --interactive=true
-
-        # Exit if no path was selected
-        if ($target_path | is-empty) { return }
-
-        # Expand the path to full format
-        let expanded_path = $target_path | path expand
-
-        # Get directory name for tab naming
-        let dir_name = $target_path | path split | last
-
-        # Handle Zellij integration
-        let zellij_handled = handle-zellij $expanded_path $dir_name --new-tab=$new_tab
-
-        # Change to the target directory if not handled by Zellij new tab
-        if not $zellij_handled {
-            cd $expanded_path
-        }
-
-        return
-    }
-
-    # Get target path with query
-    let target_path = select-dir $query --interactive=$interactive
+    # Get target path - default to interactive mode when no query
+    let target_path = select-dir ($query | default "") --interactive=($interactive or ($query | is-empty))
 
     # Exit if no path was selected
     if ($target_path | is-empty) { return }
@@ -1803,10 +1755,8 @@ export def --env 'z' [
     let dir_name = $target_path | path split | last
 
     # Handle Zellij integration
-    let zellij_handled = handle-zellij $expanded_path $dir_name --new-tab=$new_tab
-
     # Change to the target directory if not handled by Zellij new tab
-    if not $zellij_handled {
+    if not (handle-zellij $expanded_path $dir_name --new-tab=$new_tab) {
         cd $expanded_path
     }
 }
