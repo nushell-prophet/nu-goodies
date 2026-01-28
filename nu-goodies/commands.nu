@@ -1689,8 +1689,9 @@ def zellij-tab-pattern [dir_name: string]: nothing -> string {
     $"^($dir_name)\(·|$\)"
 }
 
-# Returns true if caller should cd, false if Zellij handled navigation
-def zellij-need-cd [
+# Handle Zellij tab navigation: create new tab, switch to existing, or rename current.
+# Returns true if caller should cd (Zellij renamed tab), false if Zellij handled navigation.
+def zellij-navigate [
     $path: string # Target directory path
     $dir_name: string # Directory name for tab
     --new-tab (-n) # Open in new tab
@@ -1765,7 +1766,7 @@ export def --env 'z' [
     # Get directory name for tab naming
     let dir_name = $target_path | path split | last
 
-    if (zellij-need-cd $expanded_path $dir_name --new-tab=$new_tab) {
+    if (zellij-navigate $expanded_path $dir_name --new-tab=$new_tab) {
         cd $expanded_path
     }
 }
