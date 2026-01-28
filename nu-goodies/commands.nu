@@ -1683,18 +1683,18 @@ def zellij-tab-names []: nothing -> list<string> {
     zellij action query-tab-names | lines
 }
 
-# Helper function to handle Zellij integration
-def handle-zellij [
+# Returns true if caller should cd, false if Zellij handled navigation
+def zellij-need-cd [
     $path: string # Target directory path
     $dir_name: string # Directory name for tab
     --new-tab (-n) # Open in new tab
 ]: nothing -> bool {
-    if ($env.ZELLIJ? | is-empty) { return false }
+    if ($env.ZELLIJ? | is-empty) { return true }
 
     if $new_tab {
         # Create new tab with the directory
         zellij action new-tab --layout default --cwd $path --name $dir_name
-        return true
+        return false
     }
 
     # Check if tab with this name already exists
@@ -1705,12 +1705,12 @@ def handle-zellij [
     if ($matching_tab | is-not-empty) and ([true false] | input list 'switch to tab') {
         # Switch to existing tab
         zellij action go-to-tab-name $matching_tab
-        return true
+        return false
     }
 
     # Rename current tab
     zellij action rename-tab $dir_name
-    false
+    true
 }
 
 # Main z command
@@ -1759,9 +1759,7 @@ export def --env 'z' [
     # Get directory name for tab naming
     let dir_name = $target_path | path split | last
 
-    # Handle Zellij integration
-    # Change to the target directory if not handled by Zellij new tab
-    if not (handle-zellij $expanded_path $dir_name --new-tab=$new_tab) {
+    if (zellij-need-cd $expanded_path $dir_name --new-tab=$new_tab) {
         cd $expanded_path
     }
 }
