@@ -8,7 +8,7 @@ export def 'L' [
 }
 
 ###file O.nu
-def nu-complete-macos-apps []: nothing -> list<string> {
+def completions-macos-apps []: nothing -> list<string> {
     ls /Applications -s | get name | each { str replace '.app' '' | $'"($in)"' }
 }
 
@@ -16,7 +16,7 @@ def nu-complete-macos-apps []: nothing -> list<string> {
 # > O O.nu --app "Sublime Text"
 export def 'O' [
     filepath?: path
-    --app (-a): string@'nu-complete-macos-apps' = 'Snagit 2022.app' # App to open with
+    --app (-a): string@'completions-macos-apps' = 'Snagit 2022.app' # App to open with
     --reveal (-r) # Reveal app in Finder
 ]: [path -> nothing nothing -> nothing] {
     if $filepath == null { } else { $filepath }
@@ -127,9 +127,9 @@ export def 'copy-cmd' []: nothing -> nothing {
 # Print a string colorfully with bells and whistles
 export def 'cprint' [
     text?: string # Text to format, if omitted stdin will be used
-    --color (-c): string@'nu-complete-colors' = 'default' # Color to use for the cprint text
-    --highlight-color (-H): string@'nu-complete-colors' = 'green_bold' # Color to use for highlighting text enclosed in asterisks
-    --frame-color (-r): string@'nu-complete-colors' = 'dark_gray' # Color to use for frame
+    --color (-c): string@'completions-colors' = 'default' # Color to use for the cprint text
+    --highlight-color (-H): string@'completions-colors' = 'green_bold' # Color to use for highlighting text enclosed in asterisks
+    --frame-color (-r): string@'completions-colors' = 'dark_gray' # Color to use for frame
     --frame (-f): string = '' # Symbol (or a string) to frame a text
     --lines-before (-b): int = 0 # Number of new lines before a text
     --lines-after (-a): int = 1 # Number of new lines after a text
@@ -239,7 +239,7 @@ export def 'indentit' [
     str replace -arm '^' (char sp | str repeat $indent)
 }
 
-def 'nu-complete-colors' []: nothing -> list<string> {
+def 'completions-colors' []: nothing -> list<string> {
     ansi --list | take until {|it| $it.name == reset } | get name
 }
 
@@ -1724,7 +1724,7 @@ def 'zellij-navigate' [
 
 # Jump to directory from history using fuzzy search
 export def --env 'z' [
-    query?: string@'nu-completions-cwds' # Fuzzy search query for directory
+    query?: string@'completions-cwds' # Fuzzy search query for directory
     --interactive (-i) # Always show interactive picker
     --new-tab (-n) # Open in new Zellij tab
     --update-dead-dirs (-u) # Rebuild nonexistent directories cache
@@ -1754,7 +1754,7 @@ export def --env 'z' [
 }
 
 # Generate completions for z command from history
-export def 'nu-completions-cwds' []: nothing -> record {
+export def 'completions-cwds' []: nothing -> record {
     # Using SQL-level filtering for completions as well
     init-dead-cwds-table
 
@@ -1912,7 +1912,7 @@ export def 'nu-format' [
     } else { }
 }
 
-def 'nu-completions-files-modified' [context: string]: nothing -> record {
+def 'completions-files-modified' [context: string]: nothing -> record {
     $context
     | split row ' '
     | last
@@ -1936,7 +1936,7 @@ def 'nu-completions-files-modified' [context: string]: nothing -> record {
 }
 
 # Resolve symlinks and return target paths, sorted by modification time
-export def 'fs' [...files: path@nu-completions-files-modified]: nothing -> any {
+export def 'fs' [...files: path@completions-files-modified]: nothing -> any {
     $files
     | uniq
     | each {|i|
@@ -1963,7 +1963,7 @@ export def 'fs' [...files: path@nu-completions-files-modified]: nothing -> any {
 
 # Retrieve LLM conversation messages by hash suffix
 export def 'llm message' [
-    ...rest: string@completion-llm-message
+    ...rest: string@completions-llm-message
 ]: nothing -> string {
     let dict = llm-open-log
 
@@ -1986,7 +1986,7 @@ export def 'llm-open-log' []: nothing -> table {
 }
 
 # Generate completions for llm message command
-export def 'completion-llm-message' [
+export def 'completions-llm-message' [
     --first: int = 200
 ]: nothing -> record {
     llm-open-log
