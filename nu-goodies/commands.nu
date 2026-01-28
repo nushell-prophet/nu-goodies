@@ -1588,9 +1588,9 @@ def add-dead-dir [
     # Ensure table exists
     init-dead-cwds-table
 
-    # Insert new directory if it doesn't exist
+    # Insert new directory if it doesn't exist (parameterized to prevent SQL injection)
     open $nu.history-path
-    | query db $"INSERT OR IGNORE INTO dead_cwds \(path\) VALUES \('($dir)'\)"
+    | query db "INSERT OR IGNORE INTO dead_cwds (path) VALUES (?)" -p [$dir]
 }
 
 # Helper function to remove a directory from dead dirs
@@ -1600,9 +1600,9 @@ def remove-dead-dir [
     # Ensure table exists
     init-dead-cwds-table
 
-    # Delete the directory
+    # Delete the directory (parameterized to prevent SQL injection)
     open $nu.history-path
-    | query db $"DELETE FROM dead_cwds WHERE path = '($dir)'"
+    | query db "DELETE FROM dead_cwds WHERE path = ?" -p [$dir]
 }
 
 # Helper function to handle dead directories
