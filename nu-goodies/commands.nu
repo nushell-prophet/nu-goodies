@@ -479,23 +479,28 @@ def check_colors [c0 c1 --threshold = 250] {
 }
 
 def rand_hex_col2 [] {
-    mut color0 = []
-    mut color1 = []
+    # Try up to 30 times to find contrasting colors
+    let pair = generate {|i=0|
+        if $i >= 30 { return {} }
 
-    for pair in 1..30 {
-        $color0 = (generate_colors)
-        $color1 = (generate_colors)
-        if (check_colors $color0 $color1) {
-            break
+        let c0 = generate_colors
+        let c1 = generate_colors
+
+        if (check_colors $c0 $c1) {
+            {out: [$c0 $c1]}
+        } else {
+            {next: ($i + 1)}
         }
     }
+    | get 0?
 
-    if not (check_colors $color0 $color1) {
+    # Fallback: force contrast if no good pair found
+    $pair | default {
+        let c0 = generate_colors
         let rand = random int 100..180
-        $color1 = ($color0 | each { ($in + $rand) mod 255 })
+        [$c0 ($c0 | each { ($in + $rand) mod 255 })]
     }
-
-    [$color0 $color1] | each { make_hex }
+    | each { make_hex }
 }
 
 ###file hist.nu
