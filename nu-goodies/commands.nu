@@ -1570,24 +1570,11 @@ def init-dead-cwds-table []: nothing -> nothing {
     | query db "CREATE TABLE IF NOT EXISTS dead_cwds (path TEXT PRIMARY KEY, added_date TEXT DEFAULT CURRENT_TIMESTAMP)"
 }
 
-# Helper function to read dead directories from SQLite
-def read-dead-dirs []: nothing -> list<string> {
-    # Ensure table exists
-    init-dead-cwds-table
-
-    # Get all dead directories
-    open $nu.history-path
-    | query db "SELECT path FROM dead_cwds"
-    | get path
-}
 
 # Helper function to add a dead directory to the table
 def add-dead-dir [
     $dir: string # Directory to add to dead dirs list
 ]: nothing -> nothing {
-    # Ensure table exists
-    init-dead-cwds-table
-
     # Insert new directory if it doesn't exist (parameterized to prevent SQL injection)
     open $nu.history-path
     | query db "INSERT OR IGNORE INTO dead_cwds (path) VALUES (?)" -p [$dir]
@@ -1597,9 +1584,6 @@ def add-dead-dir [
 def remove-dead-dir [
     $dir: string # Directory to remove from dead dirs list
 ]: nothing -> nothing {
-    # Ensure table exists
-    init-dead-cwds-table
-
     # Delete the directory (parameterized to prevent SQL injection)
     open $nu.history-path
     | query db "DELETE FROM dead_cwds WHERE path = ?" -p [$dir]
@@ -1731,7 +1715,8 @@ export def --env 'z' [
 
     # Handle cleaning dead dirs that now exist
     if $clean {
-        let dead_dirs = read-dead-dirs
+        init-dead-cwds-table
+        let dead_dirs = open $nu.history-path | query db "SELECT path FROM dead_cwds" | get path
         let existing_dirs = $dead_dirs | where {|dir| $dir | path exists }
 
         if ($existing_dirs | is-empty) {
