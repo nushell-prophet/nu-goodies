@@ -1830,7 +1830,7 @@ export def 'replace-in-all-files' [
         }
         | compact
     } else {
-        rg $find --files-with-matches --glob $glob
+        rg $find --fixed-strings --files-with-matches --glob $glob
         | lines
     }
 
