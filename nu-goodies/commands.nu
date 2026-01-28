@@ -1570,7 +1570,6 @@ def init-dead-cwds-table []: nothing -> nothing {
     | query db "CREATE TABLE IF NOT EXISTS dead_cwds (path TEXT PRIMARY KEY, added_date TEXT DEFAULT CURRENT_TIMESTAMP)"
 }
 
-
 # Helper function to add a dead directory to the table
 def add-dead-dir [
     $dir: string # Directory to add to dead dirs list
@@ -1661,8 +1660,8 @@ def zellij-tab-pattern [dir_name: string]: nothing -> string {
 # Handle Zellij tab navigation: create new tab, switch to existing, or rename current.
 # Returns true if caller should cd (Zellij renamed tab), false if Zellij handled navigation.
 def zellij-navigate [
-    $path: string # Target directory path
-    $dir_name: string # Directory name for tab
+    path: string # Target directory path
+    dir_name: string # Directory name for tab
     --new-tab (-n) # Open in new tab
 ]: nothing -> bool {
     if ($env.ZELLIJ? | is-empty) { return true }
@@ -1745,7 +1744,7 @@ export def 'nu-completions-cwds' [] {
             '' => '~'
             $relative_pwd => ([~ $relative_pwd] | path join)
         }
-        | if ($in has ' ') { $'"($in)"' } else { $in }
+        | if ($in has ' ') { $'"($in)"' } else { }
     }
     # Filter by depth - skip paths deeper than max_depth
     | where { $in.cwd | path split | length | $in <= $max_depth }
@@ -1774,8 +1773,8 @@ export def 'nu-completions-cwds' [] {
 }
 
 export def 'replace-in-all-files' [
-    $find
-    $replace
+    find
+    replace
     --quiet # Don't output stats
     --no-git-check
     --no-rg
