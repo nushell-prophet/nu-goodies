@@ -1605,33 +1605,26 @@ def remove-dead-dir [
     | query db "DELETE FROM dead_cwds WHERE path = ?" -p [$dir]
 }
 
-# Helper function to handle dead directories
-def handle-dead-dirs [
-    --update (-u) # Force update of dead directories list
-]: nothing -> list<string> {
-    if $update {
-        # Get all directories including those already marked as dead
-        let all_cwds = get-history-dirs --include-dead
+# Scan history directories and rebuild the dead_cwds table with non-existent paths
+def update-dead-dirs []: nothing -> list<string> {
+    # Get all directories including those already marked as dead
+    let all_cwds = get-history-dirs --include-dead
 
-        # Check which directories no longer exist
-        let dead_cwds = $all_cwds
-        | where {|dir| $dir | path exists | not $in }
+    # Check which directories no longer exist
+    let dead_cwds = $all_cwds
+    | where {|dir| $dir | path exists | not $in }
 
-        # Clear existing dead_cwds table and insert new values
-        init-dead-cwds-table
-        open $nu.history-path
-        | query db "DELETE FROM dead_cwds"
+    # Clear existing dead_cwds table and insert new values
+    init-dead-cwds-table
+    open $nu.history-path
+    | query db "DELETE FROM dead_cwds"
 
-        # Insert each dead directory
-        $dead_cwds | each {|dir|
-            add-dead-dir $dir
-        }
-
-        $dead_cwds
-    } else {
-        # Load existing dead directories list
-        read-dead-dirs
+    # Insert each dead directory
+    $dead_cwds | each {|dir|
+        add-dead-dir $dir
     }
+
+    $dead_cwds
 }
 
 # Helper function to select a directory path
@@ -1731,7 +1724,7 @@ export def --env 'z' [
     # Handle update dead dirs
     if $update_dead_dirs {
         print "Updating dead directories list..."
-        handle-dead-dirs --update=true
+        update-dead-dirs
         return
     }
 
