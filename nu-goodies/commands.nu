@@ -1702,10 +1702,9 @@ def handle-zellij [
     | where { $in =~ $"^($dir_name)\(·|$\)" }
     | get 0?
 
-    if ($matching_tab | is-not-empty) {
+    if ($matching_tab | is-not-empty) and ([true false] | input list 'switch to tab') {
         # Switch to existing tab
         zellij action go-to-tab-name $matching_tab
-        print -n 'Switching to tab ' $matching_tab
     } else {
         # Rename current tab
         zellij action rename-tab $dir_name
