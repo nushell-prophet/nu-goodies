@@ -1627,43 +1627,44 @@ def update-dead-dirs []: nothing -> list<string> {
     $dead_cwds
 }
 
-# Helper function to select a directory path
-def select-dir [
-    $query: string # The search query
-    --interactive (-i) # Force interactive mode
+# Find first existing path from candidates, recording dead ones along the way
+def find-first-existing [
+    candidates: list<string>
 ]: nothing -> string {
-    # Get valid directories with SQL-level filtering
-    let valid_cwds = get-history-dirs | to text
-
-    if ($query | path exists) {
-        # Direct path exists - use it
-        return $query
-    }
-
-    if $interactive {
-        # Interactive mode requested
-        return ($valid_cwds | fzf --scheme=path -q $query)
-    }
-
-    # Try fuzzy finding and return first existing directory
-    let existing_path = $valid_cwds
-    | fzf -f $query
-    | lines
-    | first 10
+    $candidates
     | par-each --keep-order {|path|
         if ($path | path exists) {
             $path
         } else {
-            # Add non-existing dir to dead dirs list
             add-dead-dir $path
             null
         }
     }
     | compact
     | get 0?
+}
+
+# Select a directory path using fuzzy search
+def select-dir [
+    $query: string # The search query
+    --interactive (-i) # Force interactive mode
+]: nothing -> string {
+    let valid_cwds = get-history-dirs | to text
+
+    if ($query | path exists) {
+        return $query
+    }
+
+    if $interactive {
+        return ($valid_cwds | fzf --scheme=path -q $query)
+    }
+
+    # Try fuzzy finding first
+    let candidates = $valid_cwds | fzf -f $query | lines | first 10
+    let existing_path = find-first-existing $candidates
 
     if ($existing_path | is-empty) {
-        # No valid match found - fall back to interactive
+        # Fall back to interactive
         $valid_cwds | fzf --scheme=path -q $query
     } else {
         $existing_path
