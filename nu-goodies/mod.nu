@@ -5,7 +5,7 @@ export use commands.nu [
     "bye"
     # "cb"
     "center"
-    # "check-clean-working-tree"
+    # "git-check-file-clean"
     # "colorit"
     "copy-cmd"
     "cprint"

@@ -1831,7 +1831,7 @@ export def 'replace-in-all-files' [
 
     let updated = $files_found
     | each {|i|
-        if not $no_git_check { check-clean-working-tree $i }
+        if not $no_git_check { git-check-file-clean $i }
 
         $i | open
         | str replace -a $find $replace
@@ -1851,23 +1851,16 @@ export def 'replace-in-all-files' [
 }
 
 # Error if file has uncommitted git changes
-export def 'check-clean-working-tree' [
-    $module_path: path
+export def git-check-file-clean [
+    $file: path
 ] {
-    cd ($module_path | path dirname)
+    let git_status = git status --short -- $file
 
-    let git_status = git status --short
-
-    $git_status
-    | lines
-    | parse '{s} {m} {f}'
-    | where f =~ $'($module_path | path basename)$'
-    | is-not-empty
-    | if $in {
+    if ($git_status | is-not-empty) {
         error make --unspanned {
             msg: (
-                "Working tree isn't empty. Please commit or stash changed files, " +
-                "or use `--no-git-check` flag. Uncommited files:\n" + $git_status
+                "File has uncommitted changes. Please commit or stash, " +
+                "or use `--no-git-check` flag.\n" + $git_status
             )
         }
     }
