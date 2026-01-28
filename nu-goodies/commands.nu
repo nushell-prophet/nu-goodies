@@ -1683,6 +1683,12 @@ def zellij-tab-names []: nothing -> list<string> {
     zellij action query-tab-names | lines
 }
 
+# Generate regex pattern to match Zellij tab by directory name
+# Matches "dirname" or "dirname·2" (indexed duplicates)
+def zellij-tab-pattern [dir_name: string]: nothing -> string {
+    $"^($dir_name)\(·|$\)"
+}
+
 # Returns true if caller should cd, false if Zellij handled navigation
 def zellij-need-cd [
     $path: string # Target directory path
@@ -1699,7 +1705,7 @@ def zellij-need-cd [
 
     # Check if tab with this name already exists
     let matching_tab = zellij-tab-names
-    | where { $in =~ $"^($dir_name)\(·|$\)" }
+    | where { $in =~ (zellij-tab-pattern $dir_name) }
     | get 0?
 
     if ($matching_tab | is-not-empty) and ([true false] | input list 'switch to tab') {
@@ -1800,7 +1806,7 @@ export def 'nu-completions-cwds' [] {
 
         # Check if a Zellij tab exists for this directory
         let dir_name = $row.cwd | path split | last | str replace '"' ''
-        let has_tab = $zellij_tabs | any { $in =~ $"^($dir_name)\(·|$$\)" }
+        let has_tab = $zellij_tabs | any { $in =~ (zellij-tab-pattern $dir_name) }
 
         if $has_tab { $"⇆ ($timestamp)" } else { $timestamp }
     }
