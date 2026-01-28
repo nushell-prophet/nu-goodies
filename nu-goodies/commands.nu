@@ -1854,7 +1854,7 @@ export def 'replace-in-all-files' [
 export def git-check-file-clean [
     file: path
 ] {
-    let git_status = git status --short -- $file
+    let git_status = git status --porcelain -- $file
 
     if ($git_status | is-not-empty) {
         error make --unspanned {
