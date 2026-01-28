@@ -177,14 +177,14 @@ export def 'wrapit' [
     indent: int
 ]: string -> string {
     str replace -arm '^[\t ]+' ''
-    | if $keep_single_breaks { } else { remove_single_nls }
+    | if $keep_single_breaks { } else { remove-single-nls }
     | str replace -arm '[\t ]+$' ''
     | str replace -arm $"\(.{1,($width_safe)}\)\(\\s|$\)|\(.{1,($width_safe)}\)" "$1$3\n"
     | str replace -r $'\s+$' '' # trailing new line
 }
 
 # Collapse single newlines into spaces, preserve double newlines as paragraphs
-export def 'remove_single_nls' []: string -> string {
+export def 'remove-single-nls' []: string -> string {
     str replace -r -a '(\n[\t ]*){2,}' '⏎'
     | str replace -arm '(?<!⏎)\n' ' ' # remove single line breaks used for code formatting
     | str replace -a '⏎' "\n\n"
@@ -374,7 +374,7 @@ export def --env gradient-screen [
     let 1_len = $1_list | length
     let date_text = date now | format date "%Y%m%d_%H%M%S"
 
-    let colors = rand_hex_col2
+    let colors = rand-hex-col2
 
     $env.gradient-screen-last-colors = $colors
 
@@ -470,23 +470,23 @@ def split-ansi-chars [s: string]: nothing -> list<string> {
     | compact --empty
 }
 
-def generate_colors []: nothing -> list<int> { 1..3 | each { (random int 0..255) } }
+def generate-colors []: nothing -> list<int> { 1..3 | each { (random int 0..255) } }
 
-def make_hex []: list<int> -> string { each { into binary --compact | encode hex } | prepend '0x' | str join }
+def make-hex []: list<int> -> string { each { into binary --compact | encode hex } | prepend '0x' | str join }
 
-def check_colors [c0: list<int>, c1: list<int>, --threshold: int = 250]: nothing -> bool {
+def check-colors [c0: list<int>, c1: list<int>, --threshold: int = 250]: nothing -> bool {
     ($c0 | zip $c1 | each {|i| ($i.0 - $i.1) ** 2 } | math sum | math sqrt) > $threshold
 }
 
-def rand_hex_col2 []: nothing -> list<string> {
+def rand-hex-col2 []: nothing -> list<string> {
     # Try up to 30 times to find contrasting colors
     let pair = generate {|i=0|
         if $i >= 30 { return {} }
 
-        let c0 = generate_colors
-        let c1 = generate_colors
+        let c0 = generate-colors
+        let c1 = generate-colors
 
-        if (check_colors $c0 $c1) {
+        if (check-colors $c0 $c1) {
             {out: [$c0 $c1]}
         } else {
             {next: ($i + 1)}
@@ -496,11 +496,11 @@ def rand_hex_col2 []: nothing -> list<string> {
 
     # Fallback: force contrast if no good pair found
     $pair | default {
-        let c0 = generate_colors
+        let c0 = generate-colors
         let rand = random int 100..180
         [$c0 ($c0 | each { ($in + $rand) mod 255 })]
     }
-    | each { make_hex }
+    | each { make-hex }
 }
 
 ###file hist.nu
