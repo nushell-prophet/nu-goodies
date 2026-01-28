@@ -1798,23 +1798,23 @@ export def 'replace-in-all-files' [
         | lines
     }
 
-    mut $rec = {
-        $'total .($extensions) files': ($files_total | length)
-        'updated': 0
-    }
-
-    for $i in $files_found {
+    let updated = $files_found
+    | each {|i|
         if not $no_git_check { check-clean-working-tree $i }
 
         $i | open
         | str replace -a $find $replace
         | str replace -r '\n*$' (char nl)
         | save -f $i
-
-        $rec.updated += 1
     }
+    | length
 
-    if not $quiet { $rec }
+    if not $quiet {
+        {
+            $'total .($extensions) files': ($files_total | length)
+            'updated': $updated
+        }
+    }
 }
 
 export def 'check-clean-working-tree' [
