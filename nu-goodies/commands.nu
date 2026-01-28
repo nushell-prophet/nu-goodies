@@ -76,6 +76,7 @@ export def 'bar' [
 ###file bye.nu
 # use gradient-screen.nu
 
+# Display gradient screen and exit the shell
 export def 'bye' [
     ...strings: string
     --no_date # Don't append date
@@ -98,8 +99,9 @@ export def 'cb' [
 }
 
 ###file center.nu
+# Center text within terminal width
 export def 'center' [
-    --factor: int = 1
+    --factor: int = 1 # Divide terminal width by this factor
 ] {
     fill -a center --width ((term size).columns // $factor)
 }
@@ -156,6 +158,7 @@ export def 'cprint' [
 # I `export` commands here to make them available for testing, while still
 # keeping them in the same file so cprint can be easily copied to other projects
 
+# Calculate safe text width accounting for terminal size and indent
 export def 'width-safe' [
     $width
     $indent
@@ -167,6 +170,7 @@ export def 'width-safe' [
     | [$in 1] | math max # term size gives 0 in tests
 }
 
+# Wrap text to specified width, optionally preserving line breaks
 export def 'wrapit' [
     $keep_single_breaks
     $width_safe
@@ -179,12 +183,14 @@ export def 'wrapit' [
     | str replace -r $'\s+$' '' # trailing new line
 }
 
+# Collapse single newlines into spaces, preserve double newlines as paragraphs
 export def 'remove_single_nls' [] {
     str replace -r -a '(\n[\t ]*){2,}' '⏎'
     | str replace -arm '(?<!⏎)\n' ' ' # remove single line breaks used for code formatting
     | str replace -a '⏎' "\n\n"
 }
 
+# Add newlines before and after text
 export def 'newlineit' [
     $before
     $after
@@ -192,6 +198,7 @@ export def 'newlineit' [
     $"((char nl) | str repeat $before)($in)((char nl) | str repeat $after)"
 }
 
+# Wrap text with decorative frame lines above and below
 export def 'frameit' [
     $width_safe
     $frame
@@ -206,6 +213,7 @@ export def 'frameit' [
     | $in + "\n" + $input + "\n" + $in
 }
 
+# Apply color and highlight *emphasized* text
 export def 'colorit' [
     $highlight_color
     $color
@@ -214,6 +222,7 @@ export def 'colorit' [
     | str c (ansi $color) $in (ansi reset)
 }
 
+# Align each line of text within specified width
 export def 'alignit' [
     $alignment: string
     $width_safe
@@ -223,6 +232,7 @@ export def 'alignit' [
     | str join (char nl)
 }
 
+# Add leading spaces to each line
 export def 'indentit' [
     $indent
 ] {
@@ -410,7 +420,7 @@ export def --env gradient-screen [
     }
 }
 
-# Show modified date for files in current directory
+# Show git commit dates for files, excluding bulk-change commits
 export def ls-git-modified-date [
     path?: path
     --max-files-in-commit: int = 5 # skip commits with more than this number of files. Useful for excluding automatic changes such as those by prettier or ruff
@@ -616,9 +626,9 @@ export def --wrapped in-fx [
     | ^fx ...$rest
 }
 
-# Open piped-in results in hx, output back the saved file
+# Open data in Helix editor, return edited content to commandline
 export def 'in-hx' [
-    --path (-p) # Output path of the file
+    --path (-p) # Output file path instead of content
 ] {
     let input = $in
     let type = $input | describe
@@ -760,7 +770,7 @@ export def --env ln-for-preview [
 # }
 
 ###file mc.nu
-# Open midnight commander, cd to the last folder
+# Open Midnight Commander and cd to its exit directory
 export def --env mc [
     path1?: path
     path2?: path
@@ -813,7 +823,7 @@ export def 'mv1' [
 }
 
 ###file mygit log.nu
-# Commit current version of dot files and apps settings
+# Backup dotfiles and config directories to their git repos
 export def 'mygit log' [
     --message (-m): string
 ] {
@@ -847,6 +857,7 @@ export def 'mygit log' [
     }
 }
 
+# Backup Nushell history database to timestamped SQL dump
 export def 'history-backup' [] {
     let hist_backups_dir = '~/.config/nushell/history-backups/'
     | path expand
@@ -943,6 +954,7 @@ export def 'nu-test install' [
     commandline edit -r $'^($cargo_test_path | path join bin nu) --plugin-config ($plugin_config)'
 }
 
+# Launch the test-installed Nushell binary
 export def 'nu-test launch' [
     --no-plugin
 ] {
@@ -960,6 +972,7 @@ export def 'nu-test launch' [
 
 const nightly_path = '~/temp/nu-nightly' | path expand
 
+# Download and extract latest Nushell nightly build
 export def --env download-nushell-nightly [
     --arch (-a): string = 'aarch64-apple-darwin' # Architecture as specified in nushell/nightly repo
     --ext (-e): string = '.tar.gz' # Extension, including the leading dot (e.g. '.tar.gz')
@@ -986,6 +999,7 @@ export def --env download-nushell-nightly [
     tar -C $nightly_path -xzf $destination_file
 }
 
+# Launch the most recent downloaded nightly Nushell
 export def 'launch-downloaded' [] {
     let path = glob ($nightly_path | path join *darwin *nu) | sort | last
     commandline edit -r $path
@@ -1103,6 +1117,7 @@ export def 'number-format' [
 }
 
 ###file orbita.nu
+# Generate 14 lines of spaces (placeholder grid)
 export def 'orbita' [] {
     1..14 | each { line ' ' }
 }
@@ -1160,12 +1175,13 @@ export def 'select-i' [] {
 }
 
 ###file side-by-side.nu
+# Display two tables side by side for comparison
 export def 'side-by-side' [
-    r
-    --delimiter: string = ' ' # Delimiter between left and right
-    --collapse # Use collapsed table representation
-    --l_header: string
-    --r_header: string
+    r # Right side table
+    --delimiter: string = ' ' # Separator between columns
+    --collapse # Use compact table format
+    --l_header: string # Left table header label
+    --r_header: string # Right table header label
 ] {
     mut $l = $in | if $collapse { table } else { table -e } | into string | lines
     mut $r = $r | if $collapse { table } else { table -e } | into string | lines
@@ -1293,6 +1309,7 @@ export def 'significant-digits' [
 alias std_append = append
 alias std_prepend = prepend
 
+# Repeat a string n times
 export def 'str repeat' [
     $n
 ] {
@@ -1300,6 +1317,7 @@ export def 'str repeat' [
     seq 1 $n | each { $text } | str join
 }
 
+# Append strings with optional separators
 export def 'str append' [
     ...text: string
     --space (-s)
@@ -1325,6 +1343,7 @@ export def 'str append' [
     $"($input)($concatenator)($text | str join $rest_el)"
 }
 
+# Prepend strings with optional separators
 export def 'str prepend' [
     ...text: string
     --space (-s)
@@ -1350,10 +1369,13 @@ export def 'str prepend' [
     $"($text | str join $rest_el)($concatenator)($input)"
 }
 
+# Add indentation to text (not implemented)
 export def 'indent' [] { }
 
+# Remove indentation from text (not implemented)
 export def 'dedent' [] { }
 
+# Escape regex special characters in a string
 export def 'escape-regex' [] {
     let input = $in
     let regex = '\.^$*+?{}()[]|/' | split chars | each { $'\($in)' } | str join '|' | $"\(($in))"
@@ -1361,18 +1383,21 @@ export def 'escape-regex' [] {
     $input | str replace --all --regex $regex '\$1'
 }
 
+# Escape Nushell special characters for string interpolation
 export def 'escape-nushell-escapes' [] {
     str replace --all --regex '(\\|\"|\/|\(|\)|\{|\}|\$|\^|\#|\||\~)' '\$1'
 }
 
 ###file testcd.nu
+# Test helper for cd command
 export def --env 'testcd' [destination] { cd $destination }
 
+# Convert string to filesystem-safe filename
 export def 'to-safe-filename' [
-    --prefix: string = ''
-    --suffix: string = ''
-    --regex: string = '[^A-Za-z0-9_А-Яа-я+]' # Symbols to keep
-    --date
+    --prefix: string = '' # Prepend to filename
+    --suffix: string = '' # Append to filename
+    --regex: string = '[^A-Za-z0-9_А-Яа-я+]' # Characters to replace
+    --date # Prepend timestamp for uniqueness
 ]: string -> string {
     str replace -ra $regex '_'
     | str replace -ra '__+' '_'
@@ -1407,6 +1432,7 @@ export def 'to-temp-file' [
 }
 
 ###file transcribe.nu
+# Transcribe audio file to text using whisper.cpp
 export def 'transcribe' [file: path] {
     let file = $file
     | if $in =~ '\.wav$' { } else {
@@ -1423,11 +1449,12 @@ export def 'transcribe' [file: path] {
 }
 
 ###file wez-to-ansi.nu
+# Capture recent commands from Wezterm scrollback with ANSI codes
 export def 'wez-to-ansi' [
     $n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
     --regex: string = '^>' # Regex to separate prompts from outputs. Default is ''.
     --lines_before_top_of_term: int = 100 # Lines from top of scrollback in Wezterm to capture.
-    --min_term_width: int = 0
+    --min_term_width: int = 0 # Minimum output width (pads with spaces)
 ] {
 
     # let regex = '^' + (ansi green_italic) + '>'
@@ -1448,9 +1475,10 @@ export def 'wez-to-ansi' [
     | str join (char nl)
 }
 
+# Record Wezterm session to asciicast format
 export def 'wez-to-asciicast' [
-    command: string = ''
-    --filename: path
+    command: string = '' # Command to record
+    --filename: path # Output file path
 ]: nothing -> path {
     let wezrec = ^wezterm record --cwd (pwd) -- $nu.current-exe --execute $'source $nu.env-path; clear; ($command)'
     | complete
@@ -1467,10 +1495,11 @@ export def 'wez-to-asciicast' [
     $target_folder | path join ($wezrec | path basename)
 }
 
+# Record Wezterm session and convert to GIF
 export def 'wez-to-gif' [
-    --filename: path
-    --font-family: string = "ZedMono Nerd Font"
-    --font-size: int = 20
+    --filename: path # Output GIF path
+    --font-family: string = "ZedMono Nerd Font" # Font for rendering
+    --font-size: int = 20 # Font size in pixels
 ] {
 
     let wezrec = wez-to-asciicast
@@ -1688,12 +1717,12 @@ def zellij-navigate [
     true
 }
 
-# Main z command
+# Jump to directory from history using fuzzy search
 export def --env 'z' [
-    query?: string@'nu-completions-cwds' # Directory query to search for (optional)
-    --interactive (-i) # Force interactive mode
-    --new-tab (-n) # Open directory in a new Zellij tab
-    --update-dead-dirs (-u) # Refresh the list of nonexistent directories
+    query?: string@'nu-completions-cwds' # Fuzzy search query for directory
+    --interactive (-i) # Always show interactive picker
+    --new-tab (-n) # Open in new Zellij tab
+    --update-dead-dirs (-u) # Rebuild nonexistent directories cache
 ]: nothing -> nothing {
     # Handle update dead dirs
     if $update_dead_dirs {
@@ -1719,6 +1748,7 @@ export def --env 'z' [
     }
 }
 
+# Generate completions for z command from history
 export def 'nu-completions-cwds' [] {
     # Using SQL-level filtering for completions as well
     init-dead-cwds-table
@@ -1772,13 +1802,14 @@ export def 'nu-completions-cwds' [] {
     }
 }
 
+# Find and replace text across multiple files by extension
 export def 'replace-in-all-files' [
-    find
-    replace
-    --quiet # Don't output stats
-    --no-git-check
-    --no-rg
-    --extensions: list = [nu md py] # Might be '{nu,md}' or single ext like `py`
+    find # Text to search for
+    replace # Replacement text
+    --quiet # Suppress statistics output
+    --no-git-check # Skip uncommitted changes check
+    --no-rg # Use Nushell instead of ripgrep
+    --extensions: list = [nu md py] # File extensions to process
 ] {
     let glob = $extensions
     | str join ','
@@ -1817,6 +1848,7 @@ export def 'replace-in-all-files' [
     }
 }
 
+# Error if file has uncommitted git changes
 export def 'check-clean-working-tree' [
     $module_path: path
 ] {
@@ -1856,9 +1888,9 @@ def 'insert-new-lines' [] {
     | str join
 }
 
-# Format piped in Nushell code or previous command from history using Topiary.
+# Format Nushell code using Topiary formatter
 export def 'nu-format' [
-    --no-new-lines (-n) # Don't insert new lines
+    --no-new-lines (-n) # Skip automatic line breaks before pipes
 ]: [nothing -> nothing string -> string] {
     let input = $in
 
@@ -1903,6 +1935,7 @@ def nu-completions-files-modified [context: string] {
     }
 }
 
+# Resolve symlinks and return target paths, sorted by modification time
 export def 'fs' [...files: path@nu-completions-files-modified] {
     $files
     | uniq
@@ -1928,6 +1961,7 @@ export def 'fs' [...files: path@nu-completions-files-modified] {
     } else { }
 }
 
+# Retrieve LLM conversation messages by hash suffix
 export def 'llm message' [
     ...rest: string@completion-llm-message
 ] {
@@ -1944,12 +1978,14 @@ export def 'llm message' [
     | str join "\n\n---\n\n"
 }
 
+# Load and deduplicate LLM conversation log
 export def 'llm-open-log' [] {
     open ~/short_log.yaml
     | uniq-by content-hash
     | sort-by timestamp -r
 }
 
+# Generate completions for llm message command
 export def 'completion-llm-message' [
     --first: int = 200
 ] {
@@ -2003,10 +2039,12 @@ export def find-root [dir?: path]: [nothing -> path nothing -> nothing] {
     }
 }
 
+# Change directory to git repository root
 export def --env cd-root [dir?: path]: [nothing -> nothing] {
     cd (find-root)
 }
 
+# Preview text in all available figlet fonts
 export def figlet-demo [text: string] {
     glob /opt/homebrew/Cellar/figlet/2.2.5/share/figlet/fonts/*.flf
     | par-each {|i|
@@ -2020,7 +2058,7 @@ export def figlet-demo [text: string] {
     | reduce {|i| merge $i }
 }
 
-# Rename zellij tab
+# Rename Zellij tab, auto-incrementing duplicates
 export def rename-tab [name: string = ''] {
     let name = if $name == '' { pwd | path basename | str replace -r '^-+' '' } else { $name }
 
