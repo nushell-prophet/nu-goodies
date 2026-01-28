@@ -1841,8 +1841,10 @@ export def 'replace-in-all-files' [
     | length
 
     if not $quiet {
+        let field_name = $'total .($extensions) files'
+        # I use record here just for decoration
         {
-            $'total .($extensions) files': ($files_total | length)
+            $field_name: ($files_total | length)
             'updated': $updated
         }
     }
