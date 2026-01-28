@@ -1615,7 +1615,7 @@ def update-dead-dirs []: nothing -> list<string> {
     | where {|dir| $dir | path exists | not $in }
 
     # Clear existing dead_cwds table and insert new values
-    init-dead-cwds-table
+    # (table already initialized by get-history-dirs above)
     open $nu.history-path
     | query db "DELETE FROM dead_cwds"
 
