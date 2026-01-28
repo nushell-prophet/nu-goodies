@@ -1580,15 +1580,6 @@ def add-dead-dir [
     | query db "INSERT OR IGNORE INTO dead_cwds (path) VALUES (?)" -p [$dir]
 }
 
-# Helper function to remove a directory from dead dirs
-def remove-dead-dir [
-    $dir: string # Directory to remove from dead dirs list
-]: nothing -> nothing {
-    # Delete the directory (parameterized to prevent SQL injection)
-    open $nu.history-path
-    | query db "DELETE FROM dead_cwds WHERE path = ?" -p [$dir]
-}
-
 # Scan history directories and rebuild the dead_cwds table with non-existent paths
 def update-dead-dirs []: nothing -> list<string> {
     # Get all directories including those already marked as dead
@@ -1704,32 +1695,11 @@ export def --env 'z' [
     --interactive (-i) # Force interactive mode
     --new-tab (-n) # Open directory in a new Zellij tab
     --update-dead-dirs (-u) # Refresh the list of nonexistent directories
-    --clean (-c) # Remove directories from dead list that now exist
 ]: nothing -> nothing {
     # Handle update dead dirs
     if $update_dead_dirs {
         print "Updating dead directories list..."
         update-dead-dirs
-        return
-    }
-
-    # Handle cleaning dead dirs that now exist
-    if $clean {
-        init-dead-cwds-table
-        let dead_dirs = open $nu.history-path | query db "SELECT path FROM dead_cwds" | get path
-        let existing_dirs = $dead_dirs | where {|dir| $dir | path exists }
-
-        if ($existing_dirs | is-empty) {
-            print "No directories to clean from the dead list."
-            return
-        }
-
-        # Remove existing dirs from dead list
-        $existing_dirs | each {|dir|
-            remove-dead-dir $dir
-            print $"Removed ($dir) from dead directories list"
-        }
-
         return
     }
 
