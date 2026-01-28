@@ -224,8 +224,8 @@ export def 'colorit' [
 
 # Align each line of text within specified width
 export def 'alignit' [
-    $alignment: string
-    $width_safe
+    alignment: string
+    width_safe
 ] {
     lines
     | fill --alignment $alignment --width $width_safe
@@ -895,7 +895,7 @@ export def 'normalize' [
     --suffix = '_norm'
 ] {
     mut $table = ($in)
-    let $allowed_types = ['int' 'float' 'filesize']
+    let allowed_types = ['int' 'float' 'filesize']
 
     for column in $column_names {
         let max_value = $table
@@ -1451,7 +1451,7 @@ export def 'transcribe' [file: path] {
 ###file wez-to-ansi.nu
 # Capture recent commands from Wezterm scrollback with ANSI codes
 export def 'wez-to-ansi' [
-    $n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
+    n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
     --regex: string = '^>' # Regex to separate prompts from outputs. Default is ''.
     --lines_before_top_of_term: int = 100 # Lines from top of scrollback in Wezterm to capture.
     --min_term_width: int = 0 # Minimum output width (pads with spaces)
@@ -1527,7 +1527,7 @@ export def 'wez-to-gif' [
 
 # Capture wezterm scrollback, split by prompts, output chosen ones to an image file
 export def 'wez-to-png' [
-    $n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
+    n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
     --output_path: path = '' # Path for saving output images.
 ] {
     let output_path = $output_path
@@ -1601,7 +1601,7 @@ def init-dead-cwds-table []: nothing -> nothing {
 
 # Helper function to add a dead directory to the table
 def add-dead-dir [
-    $dir: string # Directory to add to dead dirs list
+    dir: string # Directory to add to dead dirs list
 ]: nothing -> nothing {
     # Insert new directory if it doesn't exist (parameterized to prevent SQL injection)
     open $nu.history-path
@@ -1649,7 +1649,7 @@ def find-first-existing [
 
 # Select a directory path using fuzzy search
 def select-dir [
-    $query: string # The search query
+    query: string # The search query
     --interactive (-i) # Force interactive mode
 ]: nothing -> string {
     let valid_cwds = get-history-dirs | to text
@@ -1852,7 +1852,7 @@ export def 'replace-in-all-files' [
 
 # Error if file has uncommitted git changes
 export def git-check-file-clean [
-    $file: path
+    file: path
 ] {
     let git_status = git status --short -- $file
 
@@ -1868,7 +1868,7 @@ export def git-check-file-clean [
 
 # Insert new lines before the pipe symbol and let/mut
 def 'insert-new-lines' [] {
-    let $cmd = $in
+    let cmd = $in
 
     ast --flatten $cmd
     | where {|it| $it.shape == shape_pipe or ($it.shape == 'shape_internalcall' and $it.content in [let mut]) }
@@ -2043,7 +2043,7 @@ export def --env cd-root [dir?: path]: [nothing -> nothing] {
 export def figlet-demo [text: string] {
     glob /opt/homebrew/Cellar/figlet/2.2.5/share/figlet/fonts/*.flf
     | par-each {|i|
-        let $i = $i
+        let i = $i
         | path basename;
 
         $text
