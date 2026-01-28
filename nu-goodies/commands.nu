@@ -1705,10 +1705,11 @@ def handle-zellij [
     if ($matching_tab | is-not-empty) and ([true false] | input list 'switch to tab') {
         # Switch to existing tab
         zellij action go-to-tab-name $matching_tab
-    } else {
-        # Rename current tab
-        zellij action rename-tab $dir_name
+        return true
     }
+
+    # Rename current tab
+    zellij action rename-tab $dir_name
     false
 }
 
