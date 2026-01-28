@@ -79,10 +79,10 @@ export def 'bar' [
 # Display gradient screen and exit the shell
 export def 'bye' [
     ...strings: string
-    --no_date # Don't append date
+    --no-date # Don't append date
     -n # don't quit
 ] {
-    gradient-screen ...$strings --no_date=$no_date
+    gradient-screen ...$strings --no-date=$no_date
     if not $n { exit }
 }
 
@@ -128,13 +128,13 @@ export def 'copy-cmd' [] {
 export def 'cprint' [
     text?: string # Text to format, if omitted stdin will be used
     --color (-c): string@'nu-complete-colors' = 'default' # Color to use for the cprint text
-    --highlight_color (-H): string@'nu-complete-colors' = 'green_bold' # Color to use for highlighting text enclosed in asterisks
-    --frame_color (-r): string@'nu-complete-colors' = 'dark_gray' # Color to use for frame
+    --highlight-color (-H): string@'nu-complete-colors' = 'green_bold' # Color to use for highlighting text enclosed in asterisks
+    --frame-color (-r): string@'nu-complete-colors' = 'dark_gray' # Color to use for frame
     --frame (-f): string = '' # Symbol (or a string) to frame a text
-    --lines_before (-b): int = 0 # Number of new lines before a text
-    --lines_after (-a): int = 1 # Number of new lines after a text
+    --lines-before (-b): int = 0 # Number of new lines before a text
+    --lines-after (-a): int = 1 # Number of new lines after a text
     --echo (-e) # Echo text string instead of printing
-    --keep_single_breaks # Don't remove single line breaks
+    --keep-single-breaks # Don't remove single line breaks
     --width (-w): int = 80 # The total width of text to wrap it
     --indent (-i): int = 0 # Indent output by number of spaces
     --align: string = 'left' # Alignment of text
@@ -348,7 +348,7 @@ export def 'format profile' [] {
 # Fill screen with repeated texts from arguments or $env.gradient-screen.texts with random color gradient
 export def --env gradient-screen [
     ...strings: string
-    --no_date # Don't append date
+    --no-date # Don't append date
     --echo
     --rows: int
 ] {
@@ -510,7 +510,7 @@ alias core_hist = history
 # Filter history with regex and convenient flags, add useful columns
 export def 'hist' [
     like_filter?: string # a string to search in db
-    --regex_filters: list<string> = [] # a regex to search for
+    --regex-filters: list<string> = [] # a regex to search for
     --entries: int = 5000 # A number of last entries to work with
     --all (-a) # Return all the history
     --session (-s) # Show only entries from the current session
@@ -580,10 +580,10 @@ export def 'hist' [
 # Save significant or all current session history entries into a .nu file. If the .nu file already exists, data will be appended.
 export def 'hist-to-script' [
     filename?: path
-    --dont_open (-O) # Don't open the saved history file in editor
+    --dont-open (-O) # Don't open the saved history file in editor
     --up (-u): int = 0 # Set number of last events to save
     --all # Save all history into .nu file
-    --directory_hist # Get history for a directory instead of session
+    --directory-hist # Get history for a directory instead of session
 ] {
     let session = history session
 
@@ -799,7 +799,7 @@ export def --env mc [
 export def --env md [
     target_dir
     -d # Use standard directory
-    --dest_dir: path = '/Users/user/temp'
+    --dest-dir: path = '/Users/user/temp'
 ] {
     let dir = (
         if $d or ($dest_dir != '/Users/user/temp') {
@@ -981,7 +981,7 @@ const nightly_path = '~/temp/nu-nightly' | path expand
 export def --env download-nushell-nightly [
     --arch (-a): string = 'aarch64-apple-darwin' # Architecture as specified in nushell/nightly repo
     --ext (-e): string = '.tar.gz' # Extension, including the leading dot (e.g. '.tar.gz')
-    --destination_dir (-d): directory = $nightly_path # Destination directory in which to save the download
+    --destination-dir (-d): directory = $nightly_path # Destination directory in which to save the download
 ] {
     let most_recent_nightly = (http get https://api.github.com/repos/nushell/nightly/releases | get 0)
     let nightly_name = ($most_recent_nightly.name | str replace -r '^Nu-nightly-' '')
@@ -1015,17 +1015,17 @@ export def 'launch-downloaded' [] {
 
 # Format number column in a table using number-format
 #
-# > [[a]; [123456.678] [2345.8900]] | number-col-format a --denom wt --decimals 2 --significant_digits 3
+# > [[a]; [123456.678] [2345.8900]] | number-col-format a --denom wt --decimals 2 --significant-digits 3
 # ╭──────a───────╮
 # │ 123_000.00wt │
 # │   2_340.00wt │
 # ╰──────────────╯
 export def 'number-col-format' [
     column_name: string # A column name to format
-    --thousands_delim (-t) = '_' # Thousands delimiter: number-format 1000 -t ': 1'000
+    --thousands-delim (-t) = '_' # Thousands delimiter: number-format 1000 -t ': 1'000
     --decimals (-d) = 0 # Number of digits after decimal delimiter: number-format 1000.1234 -d 2: 1000.12
     --denom (-D) = '' # Denom `--denom "Wt": number-format 1000 --denom 'Wt': 1000Wt
-    --significant_digits: int = 0 # The number of first digits to display, others will become 0
+    --significant-digits: int = 0 # The number of first digits to display, others will become 0
 ] {
     let input = $in
 
@@ -1055,8 +1055,8 @@ export def 'number-col-format' [
         (
             number-format ($i | get $column_name)
             --denom $denom --decimals $decimals
-            --thousands_delim $thousands_delim --integers $integers
-            --significant_digits $significant_digits
+            --thousands-delim $thousands_delim --integers $integers
+            --significant-digits $significant_digits
         )
     }
 }
@@ -1066,7 +1066,7 @@ export def 'number-col-format' [
 
 # Format big numbers nicely
 #
-# > number-format 1000 --thousands_delim "'"
+# > number-format 1000 --thousands-delim "'"
 # 1'000
 #
 # > number-format 123 --integers 6
@@ -1079,9 +1079,9 @@ export def 'number-col-format' [
 # 1_000Wt
 export def 'number-format' [
     num? # Number to format
-    --thousands_delim (-t): string = '_' # Thousands delimiter
+    --thousands-delim (-t): string = '_' # Thousands delimiter
     --integers (-i): int = 0 # Length of padding whole-part digits
-    --significant_digits: int = 0 # The number of first digits to display, others will become 0
+    --significant-digits: int = 0 # The number of first digits to display, others will become 0
     --decimals (-d): int = 0 # Number of digits after decimal delimiter
     --denom (-D): string = '' # Denom
     --color: string = 'green'
@@ -1185,8 +1185,8 @@ export def 'side-by-side' [
     r # Right side table
     --delimiter: string = ' ' # Separator between columns
     --collapse # Use compact table format
-    --l_header: string # Left table header label
-    --r_header: string # Right table header label
+    --l-header: string # Left table header label
+    --r-header: string # Right table header label
 ] {
     mut $l = $in | if $collapse { table } else { table -e } | into string | lines
     mut $r = $r | if $collapse { table } else { table -e } | into string | lines
@@ -1330,7 +1330,7 @@ export def 'str append' [
     --new-line (-n)
     --tab (-t)
     --concatenator (-c): string = '' # Input and rest concatenator
-    --rest_el: string = ' ' # Rest elements concatenator
+    --rest-el: string = ' ' # Rest elements concatenator
 ] {
     let input = $in
     let concatenator = $"(
@@ -1356,7 +1356,7 @@ export def 'str prepend' [
     --new-line (-n)
     --tab (-t)
     --concatenator (-c): string = '' # Input and rest concatenator
-    --rest_el: string = ' ' # Rest elements concatenator
+    --rest-el: string = ' ' # Rest elements concatenator
 ] {
     let input = $in
     let concatenator = $"(
@@ -1458,8 +1458,8 @@ export def 'transcribe' [file: path] {
 export def 'wez-to-ansi' [
     n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
     --regex: string = '^>' # Regex to separate prompts from outputs. Default is ''.
-    --lines_before_top_of_term: int = 100 # Lines from top of scrollback in Wezterm to capture.
-    --min_term_width: int = 0 # Minimum output width (pads with spaces)
+    --lines-before-top-of-term: int = 100 # Lines from top of scrollback in Wezterm to capture.
+    --min-term-width: int = 0 # Minimum output width (pads with spaces)
 ] {
 
     # let regex = '^' + (ansi green_italic) + '>'
@@ -1533,7 +1533,7 @@ export def 'wez-to-gif' [
 # Capture wezterm scrollback, split by prompts, output chosen ones to an image file
 export def 'wez-to-png' [
     n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
-    --output_path: path = '' # Path for saving output images.
+    --output-path: path = '' # Path for saving output images.
 ] {
     let output_path = $output_path
     | if $in != '' { } else {
