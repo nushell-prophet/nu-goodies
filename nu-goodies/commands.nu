@@ -3,12 +3,12 @@
 export def 'L' [
     --abbreviated (-a): int = 1000
     --bat (-b) # Use bat instead of less
-] {
+]: any -> nothing {
     table -e --abbreviated $abbreviated | into string | if $bat { bat } else { less -R }
 }
 
 ###file O.nu
-def nu-complete-macos-apps [] {
+def completions-macos-apps []: nothing -> list<string> {
     ls /Applications -s | get name | each { str replace '.app' '' | $'"($in)"' }
 }
 
@@ -16,7 +16,7 @@ def nu-complete-macos-apps [] {
 # > O O.nu --app "Sublime Text"
 export def 'O' [
     filepath?: path
-    --app (-a): string@'nu-complete-macos-apps' = 'Snagit 2022.app' # App to open with
+    --app (-a): string@'completions-macos-apps' = 'Snagit 2022.app' # App to open with
     --reveal (-r) # Reveal app in Finder
 ]: [path -> nothing nothing -> nothing] {
     if $filepath == null { } else { $filepath }
@@ -44,7 +44,7 @@ export def 'bar' [
     --foreground (-f): string = 'default'
     --progress (-p) # Output the result using 'print -n'
     --width (-w): int = 5
-] {
+]: nothing -> string {
     let blocks = [null "▏" "▎" "▍" "▌" "▋" "▊" "▉" "█"]
     let full_bar = $blocks | last
     let whole_part = ($percentage * $width) // 1
@@ -76,12 +76,13 @@ export def 'bar' [
 ###file bye.nu
 # use gradient-screen.nu
 
+# Display gradient screen and exit the shell
 export def 'bye' [
     ...strings: string
-    --no_date # Don't append date
+    --no-date # Don't append date
     -n # don't quit
-] {
-    gradient-screen ...$strings --no_date=$no_date
+]: nothing -> nothing {
+    gradient-screen ...$strings --no-date=$no_date
     if not $n { exit }
 }
 
@@ -89,7 +90,7 @@ export def 'bye' [
 # Shortcut for pbpaste and pbcopy. But is it needed?
 export def 'cb' [
     --paste
-] {
+]: [any -> nothing nothing -> string] {
     if $paste or ($in == null) {
         pbpaste
     } else {
@@ -98,15 +99,16 @@ export def 'cb' [
 }
 
 ###file center.nu
+# Center text within terminal width
 export def 'center' [
-    --factor: int = 1
-] {
+    --factor: int = 1 # Divide terminal width by this factor
+]: string -> string {
     fill -a center --width ((term size).columns // $factor)
 }
 
 ###file copy-cmd.nu
 # Copy this command to clipboard
-export def 'copy-cmd' [] {
+export def 'copy-cmd' []: nothing -> nothing {
     let commands = history
     | last 2
     | get command
@@ -125,14 +127,14 @@ export def 'copy-cmd' [] {
 # Print a string colorfully with bells and whistles
 export def 'cprint' [
     text?: string # Text to format, if omitted stdin will be used
-    --color (-c): string@'nu-complete-colors' = 'default' # Color to use for the cprint text
-    --highlight_color (-H): string@'nu-complete-colors' = 'green_bold' # Color to use for highlighting text enclosed in asterisks
-    --frame_color (-r): string@'nu-complete-colors' = 'dark_gray' # Color to use for frame
+    --color (-c): string@'completions-colors' = 'default' # Color to use for the cprint text
+    --highlight-color (-H): string@'completions-colors' = 'green_bold' # Color to use for highlighting text enclosed in asterisks
+    --frame-color (-r): string@'completions-colors' = 'dark_gray' # Color to use for frame
     --frame (-f): string = '' # Symbol (or a string) to frame a text
-    --lines_before (-b): int = 0 # Number of new lines before a text
-    --lines_after (-a): int = 1 # Number of new lines after a text
+    --lines-before (-b): int = 0 # Number of new lines before a text
+    --lines-after (-a): int = 1 # Number of new lines after a text
     --echo (-e) # Echo text string instead of printing
-    --keep_single_breaks # Don't remove single line breaks
+    --keep-single-breaks # Don't remove single line breaks
     --width (-w): int = 80 # The total width of text to wrap it
     --indent (-i): int = 0 # Indent output by number of spaces
     --align: string = 'left' # Alignment of text
@@ -156,10 +158,11 @@ export def 'cprint' [
 # I `export` commands here to make them available for testing, while still
 # keeping them in the same file so cprint can be easily copied to other projects
 
+# Calculate safe text width accounting for terminal size and indent
 export def 'width-safe' [
-    $width
-    $indent
-] {
+    width: int
+    indent: int
+]: nothing -> int {
     term size
     | get columns
     | [$in $width] | math min
@@ -167,36 +170,40 @@ export def 'width-safe' [
     | [$in 1] | math max # term size gives 0 in tests
 }
 
+# Wrap text to specified width, optionally preserving line breaks
 export def 'wrapit' [
-    $keep_single_breaks
-    $width_safe
-    $indent
-] {
+    keep_single_breaks: bool
+    width_safe: int
+    indent: int
+]: string -> string {
     str replace -arm '^[\t ]+' ''
-    | if $keep_single_breaks { } else { remove_single_nls }
+    | if $keep_single_breaks { } else { remove-single-nls }
     | str replace -arm '[\t ]+$' ''
     | str replace -arm $"\(.{1,($width_safe)}\)\(\\s|$\)|\(.{1,($width_safe)}\)" "$1$3\n"
     | str replace -r $'\s+$' '' # trailing new line
 }
 
-export def 'remove_single_nls' [] {
+# Collapse single newlines into spaces, preserve double newlines as paragraphs
+export def 'remove-single-nls' []: string -> string {
     str replace -r -a '(\n[\t ]*){2,}' '⏎'
     | str replace -arm '(?<!⏎)\n' ' ' # remove single line breaks used for code formatting
     | str replace -a '⏎' "\n\n"
 }
 
+# Add newlines before and after text
 export def 'newlineit' [
-    $before
-    $after
-] {
+    before: int
+    after: int
+]: string -> string {
     $"((char nl) | str repeat $before)($in)((char nl) | str repeat $after)"
 }
 
+# Wrap text with decorative frame lines above and below
 export def 'frameit' [
-    $width_safe
-    $frame
-    $frame_color
-] {
+    width_safe: int
+    frame: string
+    frame_color: string
+]: string -> string {
     let input = $in
 
     $frame
@@ -206,40 +213,34 @@ export def 'frameit' [
     | $in + "\n" + $input + "\n" + $in
 }
 
+# Apply color and highlight *emphasized* text
 export def 'colorit' [
-    $highlight_color
-    $color
-] {
+    highlight_color: string
+    color: string
+]: string -> string {
     str replace -r -a '\*([^*]+?)\*' $'(ansi reset)(ansi $highlight_color)$1(ansi reset)(ansi $color)'
     | str c (ansi $color) $in (ansi reset)
 }
 
+# Align each line of text within specified width
 export def 'alignit' [
-    $alignment: string
-    $width_safe
-] {
+    alignment: string
+    width_safe: int
+]: string -> string {
     lines
     | fill --alignment $alignment --width $width_safe
     | str join (char nl)
 }
 
+# Add leading spaces to each line
 export def 'indentit' [
-    $indent
-] {
+    indent: int
+]: string -> string {
     str replace -arm '^' (char sp | str repeat $indent)
 }
 
-def 'nu-complete-colors' [] {
+def 'completions-colors' []: nothing -> list<string> {
     ansi --list | take until {|it| $it.name == reset } | get name
-}
-
-###file dfr enumerate.nu
-export def 'dfr enumerate' [
-    n: int = 3
-] {
-    dfr first $n
-    | dfr into-nu
-    | enumerate
 }
 
 ###file example.nu
@@ -255,8 +256,8 @@ export def 'example' [
     --no-copy (-C) # Don't copy the output into clipboard
     --no-comment (-H) # Don't comment the result
     --abbreviated: int = 10
-    --external # Indicates that to execute this command one must use `nu -c` 
-] {
+    --external # Indicates that to execute this command one must use `nu -c`
+]: any -> string {
     let input = table --abbreviated $abbreviated
     | if $no_comment { } else { ansi strip }
 
@@ -282,7 +283,7 @@ export def 'example' [
     }
 }
 
-def get-last-commands-from-sql [n: int = 1] {
+def get-last-commands-from-sql [n: int = 1]: nothing -> any {
     open $nu.history-path
     | query db "select command_line from history order by id desc limit ?" -p [$n]
     | get command_line
@@ -302,7 +303,7 @@ def get-last-commands-from-sql [n: int = 1] {
 # [{a: 1, b: ""}, {b: 2, a: ""}]
 export def 'fill non-exist' [
     value_to_replace: any = ''
-] {
+]: table -> table {
     let table = $in
 
     $table
@@ -320,7 +321,7 @@ export def 'fill non-exist' [
 # Format `debug profile` output
 #
 # > debug profile {pin-text cyber} --max-depth 7 --spans | format profile | null
-export def 'format profile' [] {
+export def 'format profile' []: table -> table {
     skip
     | update depth {|i| $i.depth - 1 }
     | normalize duration_ms
@@ -347,10 +348,10 @@ export def 'format profile' [] {
 # Fill screen with repeated texts from arguments or $env.gradient-screen.texts with random color gradient
 export def --env gradient-screen [
     ...strings: string
-    --no_date # Don't append date
+    --no-date # Don't append date
     --echo
     --rows: int
-] {
+]: nothing -> any {
     let strings = $strings
     | if $in == [] {
         $env.gradient-screen?.texts?
@@ -373,7 +374,7 @@ export def --env gradient-screen [
     let 1_len = $1_list | length
     let date_text = date now | format date "%Y%m%d_%H%M%S"
 
-    let colors = rand_hex_col2
+    let colors = rand-hex-col2
 
     $env.gradient-screen-last-colors = $colors
 
@@ -419,11 +420,11 @@ export def --env gradient-screen [
     }
 }
 
-# Show modified date for files in current directory
+# Show git commit dates for files, excluding bulk-change commits
 export def ls-git-modified-date [
     path?: path
     --max-files-in-commit: int = 5 # skip commits with more than this number of files. Useful for excluding automatic changes such as those by prettier or ruff
-] {
+]: nothing -> table {
     let path = $path | default { pwd }
 
     let gitlog = git log --all --format="===%ai" --name-only --diff-filter=ACMRT -- $path
@@ -457,7 +458,7 @@ export def ls-git-modified-date [
     try { $full_paths | update name { path relative-to (pwd) } } catch { $full_paths }
 }
 
-def split-ansi-chars [s: string] {
+def split-ansi-chars [s: string]: nothing -> list<string> {
     # Pattern to match: escape sequence + one character (no reset needed for gradients)
     let pat = "(\e\\[[0-9;]*m)+(.)"
 
@@ -469,32 +470,37 @@ def split-ansi-chars [s: string] {
     | compact --empty
 }
 
-def generate_colors [] { 1..3 | each { (random int 0..255) } }
+def generate-colors []: nothing -> list<int> { 1..3 | each { (random int 0..255) } }
 
-def make_hex [] { each { into binary --compact | encode hex } | prepend '0x' | str join }
+def make-hex []: list<int> -> string { each { into binary --compact | encode hex } | prepend '0x' | str join }
 
-def check_colors [c0 c1 --threshold = 250] {
+def check-colors [c0: list<int>, c1: list<int>, --threshold: int = 250]: nothing -> bool {
     ($c0 | zip $c1 | each {|i| ($i.0 - $i.1) ** 2 } | math sum | math sqrt) > $threshold
 }
 
-def rand_hex_col2 [] {
-    mut color0 = []
-    mut color1 = []
+def rand-hex-col2 []: nothing -> list<string> {
+    # Try up to 30 times to find contrasting colors
+    let pair = generate {|i=0|
+        if $i >= 30 { return {} }
 
-    for pair in 1..30 {
-        $color0 = (generate_colors)
-        $color1 = (generate_colors)
-        if (check_colors $color0 $color1) {
-            break
+        let c0 = generate-colors
+        let c1 = generate-colors
+
+        if (check-colors $c0 $c1) {
+            {out: [$c0 $c1]}
+        } else {
+            {next: ($i + 1)}
         }
     }
+    | get 0?
 
-    if not (check_colors $color0 $color1) {
+    # Fallback: force contrast if no good pair found
+    $pair | default {
+        let c0 = generate-colors
         let rand = random int 100..180
-        $color1 = ($color0 | each { ($in + $rand) mod 255 })
+        [$c0 ($c0 | each { ($in + $rand) mod 255 })]
     }
-
-    [$color0 $color1] | each { make_hex }
+    | each { make-hex }
 }
 
 ###file hist.nu
@@ -504,14 +510,14 @@ alias core_hist = history
 # Filter history with regex and convenient flags, add useful columns
 export def 'hist' [
     like_filter?: string # a string to search in db
-    --regex_filters: list<string> = [] # a regex to search for
+    --regex-filters: list<string> = [] # a regex to search for
     --entries: int = 5000 # A number of last entries to work with
     --all (-a) # Return all the history
     --session (-s) # Show only entries from the current session
     --cwd # Show only entries from the current folder
     --last-x: duration # Duration for the period to check commands
     --not-in-vd (-V) # Disable opening command in visidata
-] {
+]: nothing -> any {
     # Start building the SQL query
     let sql_query = "
         SELECT command_line as command, start_timestamp / 1000 as start_timestamp, session_id, hostname, cwd,
@@ -535,8 +541,7 @@ export def 'hist' [
         append $" AND start_timestamp > ((date now) - $last_x | into int)" # Convert to nanoseconds
     } else { }
     | append ' ORDER BY id DESC'
-    | if not ($all or $entries == 0) {
-        # Apply limit if not --all
+    | if not ($all or $entries == 0 or $like_filter != null) {
         append $" LIMIT ($entries)"
     } else { }
     | str join
@@ -549,9 +554,8 @@ export def 'hist' [
         $results
     } else {
         $regex_filters
-        | reduce -f $results {|pattern acc|
-            $acc
-            | where command =~ $pattern
+        | reduce --fold $results {|pattern|
+            where command =~ $pattern
         }
     }
 
@@ -576,11 +580,11 @@ export def 'hist' [
 # Save significant or all current session history entries into a .nu file. If the .nu file already exists, data will be appended.
 export def 'hist-to-script' [
     filename?: path
-    --dont_open (-O) # Don't open the saved history file in editor
+    --dont-open (-O) # Don't open the saved history file in editor
     --up (-u): int = 0 # Set number of last events to save
     --all # Save all history into .nu file
-    --directory_hist # Get history for a directory instead of session
-] {
+    --directory-hist # Get history for a directory instead of session
+]: nothing -> nothing {
     let session = history session
 
     let filepath = $filename
@@ -621,16 +625,16 @@ export def 'hist-to-script' [
 # Convert data structure to JSON and open it in fx
 export def --wrapped in-fx [
     ...rest
-] {
+]: any -> nothing {
     to json -r
     | ansi strip
     | ^fx ...$rest
 }
 
-# Open piped-in results in hx, output back the saved file
+# Open data in Helix editor, return edited content to commandline
 export def 'in-hx' [
-    --path (-p) # Output path of the file
-] {
+    --path (-p) # Output file path instead of content
+]: any -> nothing {
     let input = $in
     let type = $input | describe
     let filename = $nu.temp-path | path join (date now | format date "%Y%m%d_%H%M%S" | $in + '.nu')
@@ -666,7 +670,7 @@ use kv
 export def 'in-vd' [
     --json (-j) # Force using msgpack for piping data in-vd
     --csv (-c) # Force using csv for piping data in-vd
-] {
+]: any -> any {
     if ($in | describe | $in =~ 'FrameCustomValue') {
         polars into-nu
     } else { }
@@ -692,7 +696,7 @@ export def 'in-vd' [
 }
 
 # Open nushell commands history in visidata
-export def 'in-vd history' [] {
+export def 'in-vd history' []: table -> nothing {
     where command !~ 'in-vd history'
     | to csv
     | vd --save-filetype csv --filetype csv -o -
@@ -711,7 +715,7 @@ export def 'in-vd history' [] {
 # false
 # > [{a: {c: d}, b: e}] | has_hier
 # true
-def has_hier [] {
+def has_hier []: any -> bool {
     describe
     | find -r '^table(?!.*: (table|record|list))'
     | is-empty
@@ -771,11 +775,11 @@ export def --env ln-for-preview [
 # }
 
 ###file mc.nu
-# Open midnight commander, cd to the last folder
+# Open Midnight Commander and cd to its exit directory
 export def --env mc [
     path1?: path
     path2?: path
-] {
+]: nothing -> nothing {
     let path = ($nu.temp-path | path join (random chars))
     if $path2 != null {
         ^mc --nosubshell $path1 $path2 -P $path
@@ -793,10 +797,10 @@ export def --env mc [
 ###file md.nu
 # Create directory and cd into it
 export def --env md [
-    target_dir
+    target_dir: string
     -d # Use standard directory
-    --dest_dir: path = '/Users/user/temp'
-] {
+    --dest-dir: path = '/Users/user/temp'
+]: nothing -> nothing {
     let dir = (
         if $d or ($dest_dir != '/Users/user/temp') {
             $dest_dir | path join ($target_dir | str replace -a ' ' '_')
@@ -815,7 +819,7 @@ export def --env md [
 # Toggle suffix `_back` for a file
 export def 'mv1' [
     file: path
-] {
+]: nothing -> nothing {
     if ($file | str ends-with '_back') {
         mv $file $"($file | str replace -r '_back$' '')"
     } else {
@@ -824,10 +828,10 @@ export def 'mv1' [
 }
 
 ###file mygit log.nu
-# Commit current version of dot files and apps settings
+# Backup dotfiles and config directories to their git repos
 export def 'mygit log' [
     --message (-m): string
-] {
+]: nothing -> nothing {
     let message = $message
     | default (date now | format date "%Y-%m-%d")
 
@@ -858,7 +862,8 @@ export def 'mygit log' [
     }
 }
 
-export def 'history-backup' [] {
+# Backup Nushell history database to timestamped SQL dump
+export def 'history-backup' []: nothing -> nothing {
     let hist_backups_dir = '~/.config/nushell/history-backups/'
     | path expand
 
@@ -891,11 +896,11 @@ export def 'history-backup' [] {
 # │ a │   │ a    │      │
 # ╰───┴───┴──────┴──────╯
 export def 'normalize' [
-    ...column_names
-    --suffix = '_norm'
-] {
+    ...column_names: string
+    --suffix: string = '_norm'
+]: table -> table {
     mut $table = ($in)
-    let $allowed_types = ['int' 'float' 'filesize']
+    let allowed_types = ['int' 'float' 'filesize']
 
     for column in $column_names {
         let max_value = $table
@@ -925,7 +930,7 @@ export def 'nu-test install' [
     --cargo-test-path: path = '/Users/user/.cargo_test/'
     --plugin-config: path = '/Users/user/.test_config/nushell/polars_test.msgpackz'
     --pr: string # A PR to checkout like ayax79:polars_pivot
-] {
+]: nothing -> nothing {
     cd $nushell_repo_path
 
     git checkout main
@@ -954,9 +959,10 @@ export def 'nu-test install' [
     commandline edit -r $'^($cargo_test_path | path join bin nu) --plugin-config ($plugin_config)'
 }
 
+# Launch the test-installed Nushell binary
 export def 'nu-test launch' [
     --no-plugin
-] {
+]: nothing -> nothing {
     let exec = '/Users/user/.cargo_test/' | path join bin nu
     let params = [
         "--execute"
@@ -971,11 +977,12 @@ export def 'nu-test launch' [
 
 const nightly_path = '~/temp/nu-nightly' | path expand
 
+# Download and extract latest Nushell nightly build
 export def --env download-nushell-nightly [
     --arch (-a): string = 'aarch64-apple-darwin' # Architecture as specified in nushell/nightly repo
     --ext (-e): string = '.tar.gz' # Extension, including the leading dot (e.g. '.tar.gz')
-    --destination_dir (-d): directory = $nightly_path # Destination directory in which to save the download
-] {
+    --destination-dir (-d): directory = $nightly_path # Destination directory in which to save the download
+]: nothing -> nothing {
     let most_recent_nightly = (http get https://api.github.com/repos/nushell/nightly/releases | get 0)
     let nightly_name = ($most_recent_nightly.name | str replace -r '^Nu-nightly-' '')
     let asset = http get $most_recent_nightly.assets_url
@@ -997,7 +1004,8 @@ export def --env download-nushell-nightly [
     tar -C $nightly_path -xzf $destination_file
 }
 
-export def 'launch-downloaded' [] {
+# Launch the most recent downloaded nightly Nushell
+export def 'launch-downloaded' []: nothing -> nothing {
     let path = glob ($nightly_path | path join *darwin *nu) | sort | last
     commandline edit -r $path
 }
@@ -1007,18 +1015,18 @@ export def 'launch-downloaded' [] {
 
 # Format number column in a table using number-format
 #
-# > [[a]; [123456.678] [2345.8900]] | number-col-format a --denom wt --decimals 2 --significant_digits 3
+# > [[a]; [123456.678] [2345.8900]] | number-col-format a --denom wt --decimals 2 --significant-digits 3
 # ╭──────a───────╮
 # │ 123_000.00wt │
 # │   2_340.00wt │
 # ╰──────────────╯
 export def 'number-col-format' [
     column_name: string # A column name to format
-    --thousands_delim (-t) = '_' # Thousands delimiter: number-format 1000 -t ': 1'000
-    --decimals (-d) = 0 # Number of digits after decimal delimiter: number-format 1000.1234 -d 2: 1000.12
-    --denom (-D) = '' # Denom `--denom "Wt": number-format 1000 --denom 'Wt': 1000Wt
-    --significant_digits: int = 0 # The number of first digits to display, others will become 0
-] {
+    --thousands-delim (-t): string = '_' # Thousands delimiter: number-format 1000 -t ': 1'000
+    --decimals (-d): int = 0 # Number of digits after decimal delimiter: number-format 1000.1234 -d 2: 1000.12
+    --denom (-D): string = '' # Denom `--denom "Wt": number-format 1000 --denom 'Wt': 1000Wt
+    --significant-digits: int = 0 # The number of first digits to display, others will become 0
+]: table -> table {
     let input = $in
 
     if $column_name not-in ($input | columns) {
@@ -1047,8 +1055,8 @@ export def 'number-col-format' [
         (
             number-format ($i | get $column_name)
             --denom $denom --decimals $decimals
-            --thousands_delim $thousands_delim --integers $integers
-            --significant_digits $significant_digits
+            --thousands-delim $thousands_delim --integers $integers
+            --significant-digits $significant_digits
         )
     }
 }
@@ -1058,7 +1066,7 @@ export def 'number-col-format' [
 
 # Format big numbers nicely
 #
-# > number-format 1000 --thousands_delim "'"
+# > number-format 1000 --thousands-delim "'"
 # 1'000
 #
 # > number-format 123 --integers 6
@@ -1070,14 +1078,14 @@ export def 'number-col-format' [
 # > number-format 1000 --denom 'Wt'
 # 1_000Wt
 export def 'number-format' [
-    num? # Number to format
-    --thousands_delim (-t): string = '_' # Thousands delimiter
+    num?: number # Number to format
+    --thousands-delim (-t): string = '_' # Thousands delimiter
     --integers (-i): int = 0 # Length of padding whole-part digits
-    --significant_digits: int = 0 # The number of first digits to display, others will become 0
+    --significant-digits: int = 0 # The number of first digits to display, others will become 0
     --decimals (-d): int = 0 # Number of digits after decimal delimiter
     --denom (-D): string = '' # Denom
     --color: string = 'green'
-] {
+]: [int -> string float -> string nothing -> string] {
     let in_num = $in
 
     let parts = $num
@@ -1114,13 +1122,14 @@ export def 'number-format' [
 }
 
 ###file orbita.nu
-export def 'orbita' [] {
+# Generate 14 lines of spaces (placeholder grid)
+export def 'orbita' []: nothing -> list<string> {
     1..14 | each { line ' ' }
 }
 
 def line [
     symbol: string
-] {
+]: nothing -> string {
     1..61 | each { $symbol } | str join
 }
 
@@ -1128,7 +1137,7 @@ def line [
 # An alternative to `inspect` that doesn't break debugging output
 export def 'print-and-pass' [
     callback?: closure
-] {
+]: any -> any {
     let input = $in
 
     if $callback == null {
@@ -1144,7 +1153,7 @@ export def 'print-and-pass' [
 # Create ramdisk in macOS
 export def 'ramdisk-create' [
     size: filesize = 4194304kb
-] {
+]: nothing -> nothing {
     let vol = (hdiutil attach -nobrowse -nomount $'ram://($size | into int | $in * 1.024 / 1000 * 2)' | str trim);
     sleep 2sec
     (^diskutil erasevolume HFS+ RAMDisk $vol)
@@ -1156,7 +1165,7 @@ export def 'ramdisk-create' [
 # by @melmass at discord
 
 # Interactively select columns from a table
-export def 'select-i' [] {
+export def 'select-i' []: table -> nothing {
     let tgt = $in
     let choices = $tgt
     | columns
@@ -1171,13 +1180,14 @@ export def 'select-i' [] {
 }
 
 ###file side-by-side.nu
+# Display two tables side by side for comparison
 export def 'side-by-side' [
-    r
-    --delimiter: string = ' ' # Delimiter between left and right
-    --collapse # Use collapsed table representation
-    --l_header: string
-    --r_header: string
-] {
+    r: any # Right side table
+    --delimiter: string = ' ' # Separator between columns
+    --collapse # Use compact table format
+    --l-header: string # Left table header label
+    --r-header: string # Right table header label
+]: any -> string {
     mut $l = $in | if $collapse { table } else { table -e } | into string | lines
     mut $r = $r | if $collapse { table } else { table -e } | into string | lines
 
@@ -1304,13 +1314,15 @@ export def 'significant-digits' [
 alias std_append = append
 alias std_prepend = prepend
 
+# Repeat a string n times
 export def 'str repeat' [
-    $n
-] {
+    n: int
+]: string -> string {
     let text = $in
     seq 1 $n | each { $text } | str join
 }
 
+# Append strings with optional separators
 export def 'str append' [
     ...text: string
     --space (-s)
@@ -1318,8 +1330,8 @@ export def 'str append' [
     --new-line (-n)
     --tab (-t)
     --concatenator (-c): string = '' # Input and rest concatenator
-    --rest_el: string = ' ' # Rest elements concatenator
-] {
+    --rest-el: string = ' ' # Rest elements concatenator
+]: string -> string {
     let input = $in
     let concatenator = $"(
         if $new_line { (char nl) }
@@ -1336,6 +1348,7 @@ export def 'str append' [
     $"($input)($concatenator)($text | str join $rest_el)"
 }
 
+# Prepend strings with optional separators
 export def 'str prepend' [
     ...text: string
     --space (-s)
@@ -1343,8 +1356,8 @@ export def 'str prepend' [
     --new-line (-n)
     --tab (-t)
     --concatenator (-c): string = '' # Input and rest concatenator
-    --rest_el: string = ' ' # Rest elements concatenator
-] {
+    --rest-el: string = ' ' # Rest elements concatenator
+]: string -> string {
     let input = $in
     let concatenator = $"(
         if $new_line { (char nl) }
@@ -1361,29 +1374,35 @@ export def 'str prepend' [
     $"($text | str join $rest_el)($concatenator)($input)"
 }
 
-export def 'indent' [] { }
+# Add indentation to text (not implemented)
+export def 'indent' []: string -> string { $in }
 
-export def 'dedent' [] { }
+# Remove indentation from text (not implemented)
+export def 'dedent' []: string -> string { $in }
 
-export def 'escape-regex' [] {
+# Escape regex special characters in a string
+export def 'escape-regex' []: string -> string {
     let input = $in
     let regex = '\.^$*+?{}()[]|/' | split chars | each { $'\($in)' } | str join '|' | $"\(($in))"
 
     $input | str replace --all --regex $regex '\$1'
 }
 
-export def 'escape-nushell-escapes' [] {
+# Escape Nushell special characters for string interpolation
+export def 'escape-nushell-escapes' []: string -> string {
     str replace --all --regex '(\\|\"|\/|\(|\)|\{|\}|\$|\^|\#|\||\~)' '\$1'
 }
 
 ###file testcd.nu
-export def --env 'testcd' [destination] { cd $destination }
+# Test helper for cd command
+export def --env 'testcd' [destination: path]: nothing -> nothing { cd $destination }
 
+# Convert string to filesystem-safe filename
 export def 'to-safe-filename' [
-    --prefix: string = ''
-    --suffix: string = ''
-    --regex: string = '[^A-Za-z0-9_А-Яа-я+]' # Symbols to keep
-    --date
+    --prefix: string = '' # Prepend to filename
+    --suffix: string = '' # Append to filename
+    --regex: string = '[^A-Za-z0-9_А-Яа-я+]' # Characters to replace
+    --date # Prepend timestamp for uniqueness
 ]: string -> string {
     str replace -ra $regex '_'
     | str replace -ra '__+' '_'
@@ -1406,8 +1425,8 @@ export def 'to-safe-filename' [
 # used as the file content. If there is stdin closure takes the file name as an
 # argument & operates on it.
 export def 'to-temp-file' [
-    content? # Commands used to generate the content of the file.
-] {
+    content?: any # Commands used to generate the content of the file.
+]: [any -> path nothing -> path] {
     let content = if $content == null { } else { $content }
     let output_file = $nu.temp-path
     | path join $'(date now | into int).yaml'
@@ -1418,7 +1437,8 @@ export def 'to-temp-file' [
 }
 
 ###file transcribe.nu
-export def 'transcribe' [file: path] {
+# Transcribe audio file to text using whisper.cpp
+export def 'transcribe' [file: path]: nothing -> nothing {
     let file = $file
     | if $in =~ '\.wav$' { } else {
         let f = $in + '.wav';
@@ -1434,12 +1454,13 @@ export def 'transcribe' [file: path] {
 }
 
 ###file wez-to-ansi.nu
+# Capture recent commands from Wezterm scrollback with ANSI codes
 export def 'wez-to-ansi' [
-    $n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
+    n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
     --regex: string = '^>' # Regex to separate prompts from outputs. Default is ''.
-    --lines_before_top_of_term: int = 100 # Lines from top of scrollback in Wezterm to capture.
-    --min_term_width: int = 0
-] {
+    --lines-before-top-of-term: int = 100 # Lines from top of scrollback in Wezterm to capture.
+    --min-term-width: int = 0 # Minimum output width (pads with spaces)
+]: nothing -> string {
 
     # let regex = '^' + (ansi green_italic) + '>'
 
@@ -1459,9 +1480,10 @@ export def 'wez-to-ansi' [
     | str join (char nl)
 }
 
+# Record Wezterm session to asciicast format
 export def 'wez-to-asciicast' [
-    command: string = ''
-    --filename: path
+    command: string = '' # Command to record
+    --filename: path # Output file path (unused)
 ]: nothing -> path {
     let wezrec = ^wezterm record --cwd (pwd) -- $nu.current-exe --execute $'source $nu.env-path; clear; ($command)'
     | complete
@@ -1478,11 +1500,12 @@ export def 'wez-to-asciicast' [
     $target_folder | path join ($wezrec | path basename)
 }
 
+# Record Wezterm session and convert to GIF
 export def 'wez-to-gif' [
-    --filename: path
-    --font-family: string = "ZedMono Nerd Font"
-    --font-size: int = 20
-] {
+    --filename: path # Output GIF path
+    --font-family: string = "ZedMono Nerd Font" # Font for rendering
+    --font-size: int = 20 # Font size in pixels
+]: nothing -> nothing {
 
     let wezrec = wez-to-asciicast
 
@@ -1509,9 +1532,9 @@ export def 'wez-to-gif' [
 
 # Capture wezterm scrollback, split by prompts, output chosen ones to an image file
 export def 'wez-to-png' [
-    $n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
-    --output_path: path = '' # Path for saving output images.
-] {
+    n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
+    --output-path: path = '' # Path for saving output images.
+]: nothing -> nothing {
     let output_path = $output_path
     | if $in != '' { } else {
         let filename = last-commands $n_last_commands
@@ -1534,12 +1557,12 @@ export def 'wez-to-png' [
     ^open -R $output_path
 }
 
-def now-fn []: nothing -> string {
+def 'now-fn' []: nothing -> string {
     date now | format date "%Y%m%d_%H%M%S"
 }
 
-def last-commands [
-    $n_last_commands
+def 'last-commands' [
+    n_last_commands: int
 ]: nothing -> string {
     history
     | last ($n_last_commands + 1)
@@ -1551,7 +1574,7 @@ def last-commands [
 
 # Helper function to get all unique directories from command history
 # Now with SQL-level filtering against dead_cwds
-def get-history-dirs [
+def 'get-history-dirs' [
     --include-dead (-d) # Include nonexistent directories in the results
 ]: nothing -> list<string> {
     # Ensure dead_cwds table exists
@@ -1576,233 +1599,145 @@ def get-history-dirs [
 }
 
 # Helper function to initialize dead_cwds table if it doesn't exist
-def init-dead-cwds-table []: nothing -> nothing {
+def 'init-dead-cwds-table' []: nothing -> nothing {
     open $nu.history-path
     | query db "CREATE TABLE IF NOT EXISTS dead_cwds (path TEXT PRIMARY KEY, added_date TEXT DEFAULT CURRENT_TIMESTAMP)"
 }
 
-# Helper function to read dead directories from SQLite
-def read-dead-dirs []: nothing -> list<string> {
-    # Ensure table exists
-    init-dead-cwds-table
-
-    # Get all dead directories
-    open $nu.history-path
-    | query db "SELECT path FROM dead_cwds"
-    | get path
-}
-
 # Helper function to add a dead directory to the table
-def add-dead-dir [
-    $dir: string # Directory to add to dead dirs list
+def 'add-dead-dir' [
+    dir: string # Directory to add to dead dirs list
 ]: nothing -> nothing {
-    # Ensure table exists
-    init-dead-cwds-table
-
-    # Insert new directory if it doesn't exist
+    # Insert new directory if it doesn't exist (parameterized to prevent SQL injection)
     open $nu.history-path
-    | query db $"INSERT OR IGNORE INTO dead_cwds \(path\) VALUES \('($dir)'\)"
+    | query db "INSERT OR IGNORE INTO dead_cwds (path) VALUES (?)" -p [$dir]
 }
 
-# Helper function to remove a directory from dead dirs
-def remove-dead-dir [
-    $dir: string # Directory to remove from dead dirs list
-]: nothing -> nothing {
-    # Ensure table exists
-    init-dead-cwds-table
+# Scan history directories and rebuild the dead_cwds table with non-existent paths
+def 'update-dead-dirs' []: nothing -> list<string> {
+    # Get all directories including those already marked as dead
+    let all_cwds = get-history-dirs --include-dead
 
-    # Delete the directory
+    # Check which directories no longer exist
+    let dead_cwds = $all_cwds
+    | where {|dir| $dir | path exists | not $in }
+
+    # Clear existing dead_cwds table and insert new values
+    # (table already initialized by get-history-dirs above)
     open $nu.history-path
-    | query db $"DELETE FROM dead_cwds WHERE path = '($dir)'"
-}
+    | query db "DELETE FROM dead_cwds"
 
-# Helper function to handle dead directories
-def handle-dead-dirs [
-    --update (-u) # Force update of dead directories list
-]: nothing -> list<string> {
-    if $update {
-        # Get all directories including those already marked as dead
-        let all_cwds = get-history-dirs --include-dead
-
-        # Check which directories no longer exist
-        let dead_cwds = $all_cwds
-        | where {|dir| $dir | path exists | not $in }
-
-        # Clear existing dead_cwds table and insert new values
-        init-dead-cwds-table
-        open $nu.history-path
-        | query db "DELETE FROM dead_cwds"
-
-        # Insert each dead directory
-        $dead_cwds | each {|dir|
-            add-dead-dir $dir
-        }
-
-        $dead_cwds
-    } else {
-        # Load existing dead directories list
-        read-dead-dirs
+    # Insert each dead directory
+    $dead_cwds | each {|dir|
+        add-dead-dir $dir
     }
+
+    $dead_cwds
 }
 
-# Helper function to get valid directory paths
-# Now using SQL filtering instead of Nushell filtering
-def get-valid-dirs [
-    --update-dead (-u) # Update dead directories before filtering
+# Find first existing path from candidates, recording dead ones along the way
+def 'find-first-existing' [
+    candidates: list<string>
 ]: nothing -> string {
-    if $update_dead {
-        # Update dead directories first
-        handle-dead-dirs --update=true | ignore
+    $candidates
+    | par-each --keep-order {|path|
+        if ($path | path exists) {
+            $path
+        } else {
+            add-dead-dir $path
+            null
+        }
     }
-
-    # Get valid directories with SQL-level filtering
-    get-history-dirs
-    | to text
+    | compact
+    | get 0?
 }
 
-# Helper function to select a directory path
-def select-dir [
-    $query: string # The search query
+# Select a directory path using fuzzy search
+def 'select-dir' [
+    query: string # The search query
     --interactive (-i) # Force interactive mode
 ]: nothing -> string {
-    let valid_cwds = get-valid-dirs
-
-    # Function for interactive selection
-    let select_interactive = {
-        $valid_cwds | fzf --scheme=path -q $query
-    }
+    let valid_cwds = get-history-dirs | to text
 
     if ($query | path exists) {
-        # Direct path exists - use it
-        $query
-    } else if $interactive {
-        # Interactive mode requested
-        do $select_interactive
+        return $query
+    }
+
+    if $interactive {
+        return ($valid_cwds | fzf --scheme=path -q $query)
+    }
+
+    # Try fuzzy finding first
+    let candidates = $valid_cwds | fzf -f $query | lines | first 10
+    let existing_path = find-first-existing $candidates
+
+    if ($existing_path | is-empty) {
+        # Fall back to interactive
+        $valid_cwds | fzf --scheme=path -q $query
     } else {
-        # Try fuzzy finding and return first existing directory
-        let fuzzy_results = $valid_cwds
-        | fzf -f $query
-        | lines
-
-        # Find the first result that actually exists
-        let existing_path = $fuzzy_results
-        | first 10
-        | par-each --keep-order {|path|
-            if ($path | path exists) {
-                $path
-            } else {
-                # Add non-existing dir to dead dirs list
-                add-dead-dir $path
-                null
-            }
-        }
-        | compact
-        | get 0?
-
-        if ($existing_path | is-empty) {
-            # No valid match found - fall back to interactive
-            do $select_interactive
-        } else {
-            $existing_path
-        }
+        $existing_path
     }
 }
 
-# Helper function to handle Zellij integration
-def handle-zellij [
-    $path: string # Target directory path
-    $dir_name: string # Directory name for tab
+# Helper function to get open Zellij tab names
+def 'zellij-tab-names' []: nothing -> list<string> {
+    if ($env.ZELLIJ? | is-empty) { return [] }
+    zellij action query-tab-names | lines
+}
+
+# Generate regex pattern to match Zellij tab by directory name
+# Matches "dirname" or "dirname·2" (indexed duplicates)
+def 'zellij-tab-pattern' [dir_name: string]: nothing -> string {
+    $"^($dir_name)\(·|$\)"
+}
+
+# Handle Zellij tab navigation: create new tab, switch to existing, or rename current.
+# Returns true if caller should cd (Zellij renamed tab), false if Zellij handled navigation.
+def 'zellij-navigate' [
+    path: string # Target directory path
+    dir_name: string # Directory name for tab
     --new-tab (-n) # Open in new tab
 ]: nothing -> bool {
-    if ($env.ZELLIJ? | is-empty) {
-        return false
-    }
+    if ($env.ZELLIJ? | is-empty) { return true }
 
     if $new_tab {
         # Create new tab with the directory
         zellij action new-tab --layout default --cwd $path --name $dir_name
-        true
-    } else {
-        # Check if tab with this name already exists
-        let existing_tabs = zellij action query-tab-names | lines
-
-        $existing_tabs
-        | where $it =~ $"^($dir_name)\(·|$)"
-        | if $in != [] {
-            # Switch to existing tab
-            let name = first
-
-            zellij action go-to-tab-name $name
-            print -n 'Switching to tab ' $name
-        } else {
-            # Rename current tab
-            zellij action rename-tab $dir_name
-        }
-        false
+        return false
     }
+
+    # Check if tab with this name already exists
+    let matching_tab = zellij-tab-names
+    | where { $in =~ (zellij-tab-pattern $dir_name) }
+    | get 0?
+
+    if ($matching_tab | is-not-empty) and ([true false] | input list 'switch to tab') {
+        # Switch to existing tab
+        zellij action go-to-tab-name $matching_tab
+        return false
+    }
+
+    # Rename current tab
+    zellij action rename-tab $dir_name
+    true
 }
 
-# Main z command
+# Jump to directory from history using fuzzy search
 export def --env 'z' [
-    query?: string@'nu-completions-cwds' # Directory query to search for (optional)
-    --interactive (-i) # Force interactive mode
-    --new-tab (-n) # Open directory in a new Zellij tab
-    --update-dead-dirs (-u) # Refresh the list of nonexistent directories
-    --clean (-c) # Remove directories from dead list that now exist
+    query?: string@'completions-cwds' # Fuzzy search query for directory
+    --interactive (-i) # Always show interactive picker
+    --new-tab (-n) # Open in new Zellij tab
+    --update-dead-dirs (-u) # Rebuild nonexistent directories cache
 ]: nothing -> nothing {
     # Handle update dead dirs
     if $update_dead_dirs {
         print "Updating dead directories list..."
-        handle-dead-dirs --update=true
+        update-dead-dirs
         return
     }
 
-    # Handle cleaning dead dirs that now exist
-    if $clean {
-        let dead_dirs = read-dead-dirs
-        let existing_dirs = $dead_dirs | where {|dir| $dir | path exists }
-
-        if ($existing_dirs | is-empty) {
-            print "No directories to clean from the dead list."
-            return
-        }
-
-        # Remove existing dirs from dead list
-        $existing_dirs | each {|dir|
-            remove-dead-dir $dir
-            print $"Removed ($dir) from dead directories list"
-        }
-
-        return
-    }
-
-    # Handle case when no query is provided
-    if ($query | is-empty) {
-        # Default to interactive mode
-        let target_path = select-dir "" --interactive=true
-
-        # Exit if no path was selected
-        if ($target_path | is-empty) { return }
-
-        # Expand the path to full format
-        let expanded_path = $target_path | path expand
-
-        # Get directory name for tab naming
-        let dir_name = $target_path | path split | last
-
-        # Handle Zellij integration
-        let zellij_handled = handle-zellij $expanded_path $dir_name --new-tab=$new_tab
-
-        # Change to the target directory if not handled by Zellij new tab
-        if not $zellij_handled {
-            cd $expanded_path
-        }
-
-        return
-    }
-
-    # Get target path with query
-    let target_path = select-dir $query --interactive=$interactive
+    # Get target path - default to interactive mode when no query
+    let target_path = select-dir ($query | default "") --interactive=($interactive or ($query | is-empty))
 
     # Exit if no path was selected
     if ($target_path | is-empty) { return }
@@ -1813,20 +1748,21 @@ export def --env 'z' [
     # Get directory name for tab naming
     let dir_name = $target_path | path split | last
 
-    # Handle Zellij integration
-    let zellij_handled = handle-zellij $expanded_path $dir_name --new-tab=$new_tab
-
-    # Change to the target directory if not handled by Zellij new tab
-    if not $zellij_handled {
+    if (zellij-navigate $expanded_path $dir_name --new-tab=$new_tab) {
         cd $expanded_path
     }
 }
 
-export def 'nu-completions-cwds' [] {
+# Generate completions for z command from history
+export def 'completions-cwds' []: nothing -> record {
     # Using SQL-level filtering for completions as well
     init-dead-cwds-table
 
     let termsize = term size | get columns | $in - 5
+    let max_depth = 6
+
+    # Get open Zellij tabs for marking
+    let zellij_tabs = zellij-tab-names
 
     let variants = open $nu.history-path
     | query db "SELECT h.cwd, MAX(h.start_timestamp) as last_timestamp
@@ -1843,10 +1779,21 @@ export def 'nu-completions-cwds' [] {
             '' => '~'
             $relative_pwd => ([~ $relative_pwd] | path join)
         }
-        | if ($in has ' ') { $'"($in)"' } else { $in }
+        | if ($in has ' ') { $'"($in)"' } else { }
     }
+    # Filter by depth - skip paths deeper than max_depth
+    | where { $in.cwd | path split | length | $in <= $max_depth }
+    # Filter by length
     | where ($it.cwd | str length --grapheme-clusters) < $termsize
-    | update last_timestamp { into int | $in / 1000 | into int | into datetime -f '%s' | date humanize }
+    | update last_timestamp {|row|
+        let timestamp = $row.last_timestamp | into int | $in / 1000 | into int | into datetime -f '%s' | date humanize
+
+        # Check if a Zellij tab exists for this directory
+        let dir_name = $row.cwd | path split | last | str replace '"' ''
+        let has_tab = $zellij_tabs | any { $in =~ (zellij-tab-pattern $dir_name) }
+
+        if $has_tab { $"⇆ ($timestamp)" } else { $timestamp }
+    }
     | rename value description
 
     {
@@ -1860,14 +1807,15 @@ export def 'nu-completions-cwds' [] {
     }
 }
 
+# Find and replace text across multiple files by extension
 export def 'replace-in-all-files' [
-    $find
-    $replace
-    --quiet # Don't output stats
-    --no-git-check
-    --no-rg
-    --extensions: list = [nu md py] # Might be '{nu,md}' or single ext like `py`
-] {
+    find: string # Text to search for
+    replace: string # Replacement text
+    --quiet # Suppress statistics output
+    --no-git-check # Skip uncommitted changes check
+    --no-rg # Use Nushell instead of ripgrep
+    --extensions: list<string> = [nu md py] # File extensions to process
+]: nothing -> any {
     let glob = $extensions
     | str join ','
     | str c '**/*.{' $in '}'
@@ -1882,54 +1830,50 @@ export def 'replace-in-all-files' [
         }
         | compact
     } else {
-        rg $find --files-with-matches --glob $glob
+        rg $find --fixed-strings --files-with-matches --glob $glob
         | lines
     }
 
-    mut $rec = {
-        $'total .($extensions) files': ($files_total | length)
-        'updated': 0
-    }
-
-    for $i in $files_found {
-        if not $no_git_check { check-clean-working-tree $i }
+    let updated = $files_found
+    | each {|i|
+        if not $no_git_check { git-check-file-clean $i }
 
         $i | open
         | str replace -a $find $replace
         | str replace -r '\n*$' (char nl)
         | save -f $i
-
-        $rec.updated += 1
     }
+    | length
 
-    if not $quiet { $rec }
+    if not $quiet {
+        let field_name = $'total .($extensions) files'
+        # I use record here just for decoration
+        {
+            $field_name: ($files_total | length)
+            'updated': $updated
+        }
+    }
 }
 
-export def 'check-clean-working-tree' [
-    $module_path: path
-] {
-    cd ($module_path | path dirname)
+# Error if file has uncommitted git changes
+export def git-check-file-clean [
+    file: path
+]: nothing -> nothing {
+    let git_status = git status --porcelain -- $file
 
-    let git_status = git status --short
-
-    $git_status
-    | lines
-    | parse '{s} {m} {f}'
-    | where f =~ $'($module_path | path basename)$'
-    | is-not-empty
-    | if $in {
+    if ($git_status | is-not-empty) {
         error make --unspanned {
             msg: (
-                "Working tree isn't empty. Please commit or stash changed files, " +
-                "or use `--no-git-check` flag. Uncommited files:\n" + $git_status
+                "File has uncommitted changes. Please commit or stash, " +
+                "or use `--no-git-check` flag.\n" + $git_status
             )
         }
     }
 }
 
 # Insert new lines before the pipe symbol and let/mut
-def 'insert-new-lines' [] {
-    let $cmd = $in
+def 'insert-new-lines' []: string -> string {
+    let cmd = $in
 
     ast --flatten $cmd
     | where {|it| $it.shape == shape_pipe or ($it.shape == 'shape_internalcall' and $it.content in [let mut]) }
@@ -1944,9 +1888,9 @@ def 'insert-new-lines' [] {
     | str join
 }
 
-# Format piped in Nushell code or previous command from history using Topiary.
+# Format Nushell code using Topiary formatter
 export def 'nu-format' [
-    --no-new-lines (-n) # Don't insert new lines
+    --no-new-lines (-n) # Skip automatic line breaks before pipes
 ]: [nothing -> nothing string -> string] {
     let input = $in
 
@@ -1968,7 +1912,7 @@ export def 'nu-format' [
     } else { }
 }
 
-def nu-completions-files-modified [context: string] {
+def 'completions-files-modified' [context: string]: nothing -> record {
     $context
     | split row ' '
     | last
@@ -1991,7 +1935,8 @@ def nu-completions-files-modified [context: string] {
     }
 }
 
-export def 'fs' [...files: path@nu-completions-files-modified] {
+# Resolve symlinks and return target paths, sorted by modification time
+export def 'fs' [...files: path@completions-files-modified]: nothing -> any {
     $files
     | uniq
     | each {|i|
@@ -2016,9 +1961,10 @@ export def 'fs' [...files: path@nu-completions-files-modified] {
     } else { }
 }
 
+# Retrieve LLM conversation messages by hash suffix
 export def 'llm message' [
-    ...rest: string@completion-llm-message
-] {
+    ...rest: string@completions-llm-message
+]: nothing -> string {
     let dict = llm-open-log
 
     $rest
@@ -2032,15 +1978,17 @@ export def 'llm message' [
     | str join "\n\n---\n\n"
 }
 
-export def 'llm-open-log' [] {
+# Load and deduplicate LLM conversation log
+export def 'llm-open-log' []: nothing -> table {
     open ~/short_log.yaml
     | uniq-by content-hash
     | sort-by timestamp -r
 }
 
-export def 'completion-llm-message' [
+# Generate completions for llm message command
+export def 'completions-llm-message' [
     --first: int = 200
-] {
+]: nothing -> record {
     llm-open-log
     | each {|i|
         $i.content
@@ -2064,7 +2012,7 @@ export def 'completion-llm-message' [
 
 # Concatenate rest parameters into a string
 @example escape-interpolation { 1 + 1 | str c 'result is ' $in } --result 'result is 2'
-export def 'str c' [...$rest] { $rest | into string | str join }
+export def 'str c' [...rest: any]: nothing -> string { $rest | into string | str join }
 
 # Helper function initially from nupm/utils/dirs.nu
 # 
@@ -2091,14 +2039,16 @@ export def find-root [dir?: path]: [nothing -> path nothing -> nothing] {
     }
 }
 
+# Change directory to git repository root
 export def --env cd-root [dir?: path]: [nothing -> nothing] {
     cd (find-root)
 }
 
-export def figlet-demo [text: string] {
+# Preview text in all available figlet fonts
+export def figlet-demo [text: string]: nothing -> record {
     glob /opt/homebrew/Cellar/figlet/2.2.5/share/figlet/fonts/*.flf
     | par-each {|i|
-        let $i = $i
+        let i = $i
         | path basename;
 
         $text
@@ -2108,8 +2058,8 @@ export def figlet-demo [text: string] {
     | reduce {|i| merge $i }
 }
 
-# Rename zellij tab
-export def rename-tab [name: string = ''] {
+# Rename Zellij tab, auto-incrementing duplicates
+export def rename-tab [name: string = '']: nothing -> nothing {
     let name = if $name == '' { pwd | path basename | str replace -r '^-+' '' } else { $name }
 
     let name_with_index = zellij action query-tab-names

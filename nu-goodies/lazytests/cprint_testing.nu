@@ -29,7 +29,7 @@ Output:
 ```
 
 ```nu
-cprint $text --keep_single_breaks --indent 4
+cprint $text --keep-single-breaks --indent 4
 ```
 
 Output:
@@ -176,7 +176,7 @@ Output:
 ```
 
 ```nu
-cprint $text --lines_before 3 --echo
+cprint $text --lines-before 3 --echo
 ```
 
 Output:
