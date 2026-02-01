@@ -208,7 +208,7 @@ export def 'frameit' [
 
     $frame
     | str repeat $width_safe
-    | str substring --grapheme-clusters 1..($width_safe) # in case that frame has more than 1 chars
+    | str substring --grapheme-clusters 1..$width_safe # in case that frame has more than 1 chars
     | str c (ansi $frame_color) $in (ansi reset)
     | $in + "\n" + $input + "\n" + $in
 }
@@ -474,13 +474,13 @@ def generate-colors []: nothing -> list<int> { 1..3 | each { (random int 0..255)
 
 def make-hex []: list<int> -> string { each { into binary --compact | encode hex } | prepend '0x' | str join }
 
-def check-colors [c0: list<int>, c1: list<int>, --threshold: int = 250]: nothing -> bool {
+def check-colors [c0: list<int> c1: list<int> --threshold: int = 250]: nothing -> bool {
     ($c0 | zip $c1 | each {|i| ($i.0 - $i.1) ** 2 } | math sum | math sqrt) > $threshold
 }
 
 def rand-hex-col2 []: nothing -> list<string> {
     # Try up to 30 times to find contrasting colors
-    let pair = generate {|i=0|
+    let pair = generate {|i = 0|
         if $i >= 30 { return {} }
 
         let c0 = generate-colors
@@ -1485,17 +1485,20 @@ export def 'wez-to-asciicast' [
     command: string = '' # Command to record
     --filename: path # Output file path (unused)
 ]: nothing -> path {
-    let wezrec = ^wezterm record --cwd (pwd) -- $nu.current-exe --execute $'source $nu.env-path; clear; ($command)'
+    let err = ^wezterm record --cwd (pwd) -- $nu.current-exe --execute $'source $nu.env-path; clear; ($command)'
     | complete
     | get stderr
-    | str replace -r '.*\n.*\/var' '/var'
-    | str trim -c (char nl)
+
+    let wezrec = $err
+    | str replace -r '\s+$' ''
+    | parse -r '(?<path>\S+$)'
+    | get path.0
 
     let target_folder = '/Users/user/temp/wezterm-asciinemas'
     | path join $'gif_(pwd | path split | last)'
     | $'($in)(mkdir $in)'
 
-    mv $wezrec $target_folder
+    try { mv $wezrec $target_folder } catch { print "wasn't moved, the original err with path is:" $err }
 
     $target_folder | path join ($wezrec | path basename)
 }
@@ -1702,7 +1705,7 @@ def 'zellij-navigate' [
 
     if $new_tab {
         # Create new tab with the directory
-        zellij action new-tab --layout default --cwd $path --name $dir_name
+        zellij action new-tab --layout compact-bar-up --cwd $path --name $dir_name
         return false
     }
 
