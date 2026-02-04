@@ -1702,12 +1702,12 @@ def 'zellij-navigate' [
     | get 0?
 
     let request: closure = {
-        let switch = 'switch to existing tab'
-        let stay = 'stay here'
-
-        [$switch $stay]
-        | input list 'there is zellij tab already'
-        | $in == $switch
+        [
+            {value: true description: 'switch to existing tab'}
+            {value: false description: 'stay here'}
+        ]
+        | input list 'there is zellij tab already' --display description
+        | get value
     }
 
     if ($matching_tab | is-not-empty) and (do $request) {
