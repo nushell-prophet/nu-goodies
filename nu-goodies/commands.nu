@@ -843,7 +843,7 @@ export def 'mygit log' [
     | glob $in -d 1 --no-dir --exclude ['.CFUserTextEncoding']
     | par-each {|i| cp --update $i $dot_dir }
 
-    history-backup
+    nu ~/.config/nushell/toolkit.nu history backup
 
     let paths = [
         '~/.config/nushell'
@@ -862,29 +862,7 @@ export def 'mygit log' [
     }
 }
 
-# Backup Nushell history database to timestamped SQL dump
-export def 'history-backup' []: nothing -> nothing {
-    let hist_backups_dir = '~/.config/nushell/history-backups/'
-    | path expand
-
-    let date_uniq = date now
-    | format date '%F_%T_%f'
-    | str replace -ra '([^\d_])' ''
-
-    let temp_hist_folder = $hist_backups_dir
-    | path join $date_uniq
-
-    # let history_back_file = $temp_hist_folder
-    # | path join 'history.sqlite3'
-
-    mkdir $temp_hist_folder
-
-    # # sqlite3 $nu.history-path 'PRAGMA wal_checkpoint(FULL);'
-    # sqlite3 $nu.history-path $'.backup ($history_back_file)'
-
-    sqlite3 $nu.history-path ".dump history"
-    | save ($hist_backups_dir | path join 'history_back.sql') -f
-}
+# history-backup moved to ~/.config/nushell/toolkit.nu
 
 ###file normalize.nu
 # Normalize values in given columns
