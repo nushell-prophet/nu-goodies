@@ -256,7 +256,7 @@ export def 'example' [
     --no-copy (-C) # Don't copy the output into clipboard
     --no-comment (-H) # Don't comment the result
     --abbreviated: int = 10
-    --external # Indicates that to execute this command one must use `nu -c`
+    --internal # Indicates that to execute this command one must use `nu -c`
 ]: any -> string {
     let input = table --abbreviated $abbreviated
     | if $no_comment { } else { ansi strip }
@@ -266,9 +266,9 @@ export def 'example' [
     | if $no_comment {
         nu-highlight # for making screnshots
     } else { }
-    | if $external {
-        str c '# this is a Nushell command and its commented output from REPL. LLMs can execute the command with `nu -c "command"`' (char nl) $in
-    } else { }
+    | if $internal { } else {
+        $"nu -c '($in | str replace -a "'" "'\\''")'"
+    }
     | str c $in (char nl)
 
     $input
