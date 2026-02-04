@@ -259,7 +259,7 @@ export def 'example' [
     --internal # Indicates that to execute this command one must use `nu -c`
 ]: any -> string {
     let input = table --abbreviated $abbreviated
-    | if $no_comment { } else { ansi strip }
+    | if $no_comment { } else { into string | ansi strip }
 
     let command = get-last-commands-from-sql 1
     | str replace -r '\| example.*' ''
@@ -267,15 +267,15 @@ export def 'example' [
         nu-highlight # for making screnshots
     } else { }
     | if $internal { } else {
-        if not ($in | str contains "'") {
+        if "'" not-in $in {
             # no single quotes — single-quote wrap (both shells)
             $"nu -c '($in)'"
-        } else if ($in =~ '["$`\\]') {
-            # single quotes + bash-unsafe chars — bash-only fallback
-            $"nu -c '($in | str replace -a "'" "'\\''")'"
-        } else {
+        } else if ($in !~ '["$`\\]') {
             # only single quotes — double-quote wrap (both shells)
             $'nu -c "($in)"'
+        } else {
+            # both quotes or bash-unsafe chars — bash-only fallback
+            $"nu -c '($in | str replace -a "'" "'\\''")'"
         }
     }
     | str c $in (char nl)
