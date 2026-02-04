@@ -267,7 +267,16 @@ export def 'example' [
         nu-highlight # for making screnshots
     } else { }
     | if $internal { } else {
-        $"nu -c '($in | str replace -a "'" "'\\''")'"
+        if not ($in | str contains "'") {
+            # no single quotes — single-quote wrap (both shells)
+            $"nu -c '($in)'"
+        } else if ($in =~ '["$`\\]') {
+            # single quotes + bash-unsafe chars — bash-only fallback
+            $"nu -c '($in | str replace -a "'" "'\\''")'"
+        } else {
+            # only single quotes — double-quote wrap (both shells)
+            $'nu -c "($in)"'
+        }
     }
     | str c $in (char nl)
 
