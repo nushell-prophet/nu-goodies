@@ -1701,7 +1701,16 @@ def 'zellij-navigate' [
     | where { $in =~ (zellij-tab-pattern $dir_name) }
     | get 0?
 
-    if ($matching_tab | is-not-empty) and ([true false] | input list 'switch to tab') {
+    let request: closure = {
+        let switch = 'switch to existing tab'
+        let stay = 'stay here'
+
+        [$switch $stay]
+        | input list 'there is zellij tab already'
+        | $in == $switch
+    }
+
+    if ($matching_tab | is-not-empty) and (do $request) {
         # Switch to existing tab
         zellij action go-to-tab-name $matching_tab
         return false
