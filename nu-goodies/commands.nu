@@ -838,7 +838,7 @@ export def 'mygit log' [
     let dot_dir = '~/.config/dot_home_dir'
     | path expand
 
-    $nu.home-path
+    $nu.home-dir
     | path join '.*'
     | glob $in -d 1 --no-dir --exclude ['.CFUserTextEncoding']
     | par-each {|i| cp --update $i $dot_dir }
