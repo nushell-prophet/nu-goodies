@@ -1747,9 +1747,9 @@ export def --env 'z' [
     # Get directory name for tab naming
     let dir_name = $target_path | path split | last
 
-    if (zellij-navigate $expanded_path $dir_name --new-tab=$new_tab) {
-        cd $expanded_path
-    }
+    zellij-navigate $expanded_path $dir_name --new-tab=$new_tab
+
+    cd $expanded_path
 }
 
 # Generate completions for z command from history
