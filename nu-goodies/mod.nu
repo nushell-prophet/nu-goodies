@@ -18,7 +18,6 @@ export use commands.nu [
     "fs"
     "fill non-exist"
     "find-root"
-    "figlet-demo"
     "format profile"
     # "frameit"
     "gradient-screen"
@@ -47,10 +46,8 @@ export use commands.nu [
     "nu-test launch"
     "number-col-format"
     "number-format"
-    "O"
     "orbita"
     "print-and-pass"
-    "ramdisk-create"
     # "remove_single_nls"
     "replace-in-all-files"
     "rename-tab"
@@ -72,6 +69,12 @@ export use commands.nu [
     # "width-safe"
     # "wrapit"
     "z"
+]
+
+export use macos.nu [
+    "O"
+    "ramdisk-create"
+    "figlet-demo"
 ]
 
 export use update-public-git.nu
