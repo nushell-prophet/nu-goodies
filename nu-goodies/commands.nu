@@ -256,7 +256,7 @@ export def 'example' [
     --no-copy (-C) # Don't copy the output into clipboard
     --no-comment (-H) # Don't comment the result
     --abbreviated: int = 10
-    --internal # Indicates that to execute this command one must use `nu -c`
+    --bare # Don't wrap in `nu -c`, output the raw nushell command
 ]: any -> string {
     let input = table --abbreviated $abbreviated
     | if $no_comment { } else { into string | ansi strip }
@@ -266,7 +266,7 @@ export def 'example' [
     | if $no_comment {
         nu-highlight # for making screnshots
     } else { }
-    | if $internal { } else {
+    | if $bare { } else {
         if "'" not-in $in {
             # no single quotes — single-quote wrap (both shells)
             $"nu -c '($in)'"
