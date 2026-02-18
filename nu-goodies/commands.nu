@@ -1349,6 +1349,16 @@ export def 'escape-nushell-escapes' []: string -> string {
     str replace --all --regex '(\\|\"|\/|\(|\)|\{|\}|\$|\^|\#|\||\~)' '\$1'
 }
 
+# Check for toolkit.nu in the current dir and put `overlay use as tk` into the commandline
+export def 'tt' --env [] {
+    if ('toolkit.nu' | path exists) {
+        commandline edit "overlay use 'toolkit.nu' --prefix as tk; commandline edit 'tk'"
+    } else {
+        print 'No toolkit.nu in the current folder. Here are the first 3 files:'
+        ls | first 3
+    }
+}
+
 ###file testcd.nu
 # Test helper for cd command
 export def --env 'testcd' [destination: path]: nothing -> nothing { cd $destination }
@@ -2011,7 +2021,6 @@ export def find-root [dir?: path]: [nothing -> path nothing -> nothing] {
 export def --env cd-root [dir?: path]: [nothing -> nothing] {
     cd (find-root)
 }
-
 
 # Rename Zellij tab, auto-incrementing duplicates
 export def rename-tab [name: string = '']: nothing -> nothing {

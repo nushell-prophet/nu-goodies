@@ -59,6 +59,7 @@ export use commands.nu [
     # "str prepend"
     # "str repeat"
     # "testcd"
+    "tt"
     "to-safe-filename"
     "to-temp-file"
     "transcribe"
