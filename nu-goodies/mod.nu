@@ -8,6 +8,7 @@ export use commands.nu [
     # "git-check-file-clean"
     # "colorit"
     "copy-cmd"
+    "copy-out"
     "cprint"
     "cd-root"
     # "dedent"

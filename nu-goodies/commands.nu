@@ -1349,7 +1349,7 @@ export def 'escape-nushell-escapes' []: string -> string {
     str replace --all --regex '(\\|\"|\/|\(|\)|\{|\}|\$|\^|\#|\||\~)' '\$1'
 }
 
-# Check for toolkit.nu in the current dir and put `overlay use as tk` into the commandline
+# checks for toolkit.nu file in the dir, and puts into commandline `overlay use as tk`
 export def 'tt' --env [] {
     if ('toolkit.nu' | path exists) {
         commandline edit "overlay use 'toolkit.nu' --prefix as tk; commandline edit 'tk'"
@@ -1539,6 +1539,39 @@ def 'last-commands' [
     | get command
     | str trim
     | str join '_'
+}
+
+###file copy-out.nu
+# Copy last command(s) with output to clipboard from Zellij pane scrollback
+export def 'copy-out' [
+    n: int = 1 # Number of commands to include
+    --echo (-e) # Return text instead of copying
+]: nothing -> any {
+    let tmp = $nu.temp-dir | path join 'copy-out.txt'
+    zellij action dump-screen $tmp --full
+
+    let all_lines = open $tmp
+    | ansi strip
+    | lines
+
+    let prompts = $all_lines
+    | enumerate
+    | where { $in.item =~ '^> ' }
+    | get index
+
+    if ($prompts | length) < 2 {
+        error make --unspanned {msg: 'Not enough commands in scrollback'}
+    }
+
+    let end = $prompts | last
+    let start = $prompts | drop 1 | last $n | first
+
+    $all_lines
+    | skip $start
+    | first ($end - $start)
+    | str join (char nl)
+    | str replace -ra '\n+$' ''
+    | if $echo { } else { pbcopy }
 }
 
 # Helper function to get all unique directories from command history
