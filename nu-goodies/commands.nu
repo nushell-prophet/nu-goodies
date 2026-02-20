@@ -1566,6 +1566,7 @@ export def 'copy-out' [
     ...rest: int@completions-copy-out # Command indices (1 = last)
     --echo (-e) # Return text instead of copying
     --ansi (-a) # Keep ANSI escape codes
+    --no-comment (-C) # Don't comment output with # =>
 ]: nothing -> any {
     let indices = $rest | if ($in | is-empty) { [1] } else { }
 
@@ -1611,6 +1612,14 @@ export def 'copy-out' [
         }
         | str join "\n\n"
         | lines
+    }
+    | if $no_comment { } else {
+        each {
+            if ($in =~ '^> ') {
+                str replace -r '^> ' ''
+            } else if ($in | is-empty) {
+            } else { str c '# => ' $in }
+        }
     }
     | str join (char nl)
     | str replace -ra '\n+$' ''
