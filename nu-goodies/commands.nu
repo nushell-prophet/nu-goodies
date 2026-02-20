@@ -1542,9 +1542,25 @@ def 'last-commands' [
 }
 
 ###file copy-out.nu
+def 'completions-copy-out' []: nothing -> list<record<value: int, description: string>> {
+    let session = history session
+    let width = term size | get columns | $in - 5
+
+    open $nu.history-path
+    | query db "SELECT command_line FROM history WHERE session_id = ? ORDER BY id DESC LIMIT 20" -p [$session]
+    | get command_line
+    | enumerate
+    | each {|i|
+        {
+            value: ($i.index + 1)
+            description: ($i.item | str replace -a (char nl) '·' | str substring --grapheme-clusters 0..$width)
+        }
+    }
+}
+
 # Copy last command(s) with output to clipboard from Zellij pane scrollback
 export def 'copy-out' [
-    n: int = 1 # Number of commands to include
+    n: int@completions-copy-out = 1 # Number of commands to include
     --echo (-e) # Return text instead of copying
 ]: nothing -> any {
     let tmp = $nu.temp-dir | path join 'copy-out.txt'
