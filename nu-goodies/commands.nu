@@ -1558,33 +1558,60 @@ def 'completions-copy-out' []: nothing -> list<record<value: int, description: s
     }
 }
 
-# Copy last command(s) with output to clipboard from Zellij pane scrollback
+# Copy command(s) with output to clipboard from Zellij pane scrollback
+#
+# > copy-out 3     # from 3rd-to-last command through the last
+# > copy-out 3 1   # 3rd-to-last and last, separately
 export def 'copy-out' [
-    n: int@completions-copy-out = 1 # Number of commands to include
+    ...rest: int@completions-copy-out # Command indices (1 = last)
     --echo (-e) # Return text instead of copying
+    --ansi (-a) # Keep ANSI escape codes
 ]: nothing -> any {
+    let indices = $rest | if ($in | is-empty) { [1] } else { }
+
     let tmp = $nu.temp-dir | path join 'copy-out.txt'
     zellij action dump-screen $tmp --full
 
-    let all_lines = open $tmp
-    | ansi strip
-    | lines
+    let raw_lines = open $tmp | lines
+    let stripped = $raw_lines | each { ansi strip }
 
-    let prompts = $all_lines
+    let prompts = $stripped
     | enumerate
     | where { $in.item =~ '^> ' }
     | get index
 
-    if ($prompts | length) < 2 {
-        error make --unspanned {msg: 'Not enough commands in scrollback'}
+    let max_n = $indices | math max
+    if ($prompts | length) < ($max_n + 1) {
+        error make --unspanned {msg: $'Not enough commands in scrollback \(need ($max_n + 1) prompts\)'}
     }
 
-    let end = $prompts | last
-    let start = $prompts | drop 1 | last $n | first
+    let reversed = $prompts | reverse
+    let output_lines = $raw_lines
+    | if $ansi { } else { each { ansi strip } }
 
-    $all_lines
-    | skip $start
-    | first ($end - $start)
+    if ($indices | length) == 1 {
+        # Single index: from that command through the current prompt
+        let start = $reversed | get ($indices | first)
+        let end = $reversed | get 0
+
+        $output_lines
+        | skip $start
+        | first ($end - $start)
+    } else {
+        # Multiple indices: each command separately, in given order
+        $indices
+        | each {|n|
+            let start = $reversed | get $n
+            let end = $reversed | get ($n - 1)
+
+            $output_lines
+            | skip $start
+            | first ($end - $start)
+            | str join (char nl)
+        }
+        | str join "\n\n"
+        | lines
+    }
     | str join (char nl)
     | str replace -ra '\n+$' ''
     | if $echo { } else { pbcopy }
