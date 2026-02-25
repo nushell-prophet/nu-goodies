@@ -1517,13 +1517,7 @@ export def 'wez-to-png' [
     let out = wez-to-ansi $n_last_commands
 
     $out | save -f ($output_path | str replace -a '.png' '.ans')
-    (
-        $out | to png $output_path
-        --custom-font-regular '/Users/user/Library/Fonts/ZedMonoNerdFont-Extended.ttf'
-        --custom-font-bold '/Users/user/Library/Fonts/ZedMonoNerdFont-ExtendedBold.ttf'
-        --custom-font-italic '/Users/user/Library/Fonts/ZedMonoNerdFont-ExtendedItalic.ttf'
-        --custom-font-bold_italic '/Users/user/Library/Fonts/ZedMonoNerdFont-ExtendedBoldItalic.ttf'
-    )
+    ($out | to png $output_path --font IosevkaFont)
 
     ^open -R $output_path
 }
@@ -1689,13 +1683,7 @@ export def 'zellij-to-png' [
     }
 
     $out | save -f ($output_path | str replace -a '.png' '.ans')
-    (
-        $out | to png $output_path
-        --custom-font-regular '/Users/user/Library/Fonts/ZedMonoNerdFont-Extended.ttf'
-        --custom-font-bold '/Users/user/Library/Fonts/ZedMonoNerdFont-ExtendedBold.ttf'
-        --custom-font-italic '/Users/user/Library/Fonts/ZedMonoNerdFont-ExtendedItalic.ttf'
-        --custom-font-bold_italic '/Users/user/Library/Fonts/ZedMonoNerdFont-ExtendedBoldItalic.ttf'
-    )
+    ($out | to png $output_path --font IosevkaFont)
 
     ^open -R $output_path
 }
