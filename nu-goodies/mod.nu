@@ -67,6 +67,7 @@ export use commands.nu [
     "wez-to-ansi"
     "wez-to-gif"
     "wez-to-png"
+    "zellij-to-png"
     # "width-safe"
     # "wrapit"
     "z"

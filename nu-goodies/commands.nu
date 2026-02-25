@@ -1433,7 +1433,6 @@ export def 'wez-to-ansi' [
     ^wezterm cli get-text --escapes --start-line ($lines_before_top_of_term * -1)
     | str replace -a $"\n(ansi blue_bold)> " "\n>"
     | str replace -ra '(\r|\n)+$' ''
-    | inspect
     | lines
     | skip until {|i| $i =~ $regex }
     | split list --regex $regex
@@ -1517,11 +1516,14 @@ export def 'wez-to-png' [
 
     let out = wez-to-ansi $n_last_commands
 
-    $out | freeze --config user -o ($output_path | str replace -a '.png' '.svg')
-    $out | freeze --config user -o ($output_path | str replace -a '.png' '.webp')
-    $out | freeze --config user -o $output_path
     $out | save -f ($output_path | str replace -a '.png' '.ans')
-    # | to png $output_path
+    (
+        $out | to png $output_path
+        --custom-font-regular '/Users/user/Library/Fonts/ZedMonoNerdFont-Extended.ttf'
+        --custom-font-bold '/Users/user/Library/Fonts/ZedMonoNerdFont-ExtendedBold.ttf'
+        --custom-font-italic '/Users/user/Library/Fonts/ZedMonoNerdFont-ExtendedItalic.ttf'
+        --custom-font-bold_italic '/Users/user/Library/Fonts/ZedMonoNerdFont-ExtendedBoldItalic.ttf'
+    )
 
     ^open -R $output_path
 }
@@ -1624,6 +1626,78 @@ export def 'copy-out' [
     | str join (char nl)
     | str replace -ra '\n+$' ''
     | if $echo { } else { pbcopy }
+}
+
+# Capture commands from Zellij pane scrollback and render to PNG
+#
+# > zellij-to-png 3     # from 3rd-to-last command through the last
+# > zellij-to-png 3 1   # 3rd-to-last and last, separately
+export def 'zellij-to-png' [
+    ...rest: int@completions-copy-out # Command indices (1 = last)
+    --output-path: path = '' # Path for saving output image
+]: nothing -> nothing {
+    let indices = $rest | if ($in | is-empty) { [1] } else { }
+
+    let tmp = $nu.temp-dir | path join 'zellij-to-png.txt'
+    zellij action dump-screen $tmp --full
+
+    let raw_lines = open $tmp | lines
+    let stripped = $raw_lines | each { ansi strip }
+
+    let prompts = $stripped
+    | enumerate
+    | where { $in.item =~ '^> ' }
+    | get index
+
+    let max_n = $indices | math max
+    if ($prompts | length) < ($max_n + 1) {
+        error make --unspanned {msg: $'Not enough commands in scrollback \(need ($max_n + 1) prompts\)'}
+    }
+
+    let reversed = $prompts | reverse
+
+    let out = if ($indices | length) == 1 {
+        let start = $reversed | get ($indices | first)
+        let end = $reversed | get 0
+
+        $raw_lines
+        | skip $start
+        | first ($end - $start)
+    } else {
+        $indices
+        | each {|n|
+            let start = $reversed | get $n
+            let end = $reversed | get ($n - 1)
+
+            $raw_lines
+            | skip $start
+            | first ($end - $start)
+        }
+        | flatten
+    }
+    | str join (char nl)
+
+    let output_path = $output_path
+    | if $in != '' { } else {
+        let filename = last-commands ($indices | math max)
+        | to-safe-filename --prefix 'zel-out-' --suffix '.png' --date
+
+        ['/Users/user/temp/freeze_images/' (pwd | path split | last)]
+        | path join
+        | $'($in)(mkdir $in)'
+        | path join $filename
+    }
+
+    $out | save -f ($output_path | str replace -a '.png' '.ans')
+    (
+        $out | to png $output_path
+        --custom-font-regular '/Users/user/Library/Fonts/ZedMonoNerdFont-Extended.ttf'
+        --custom-font-bold '/Users/user/Library/Fonts/ZedMonoNerdFont-ExtendedBold.ttf'
+        --custom-font-italic '/Users/user/Library/Fonts/ZedMonoNerdFont-ExtendedItalic.ttf'
+        --custom-font-bold_italic '/Users/user/Library/Fonts/ZedMonoNerdFont-ExtendedBoldItalic.ttf'
+    )
+
+    ^open -R $output_path
 }
 
 # Helper function to get all unique directories from command history
