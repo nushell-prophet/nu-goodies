@@ -2024,55 +2024,6 @@ export def 'fs' [...files: path@completions-files-modified]: nothing -> any {
     } else { }
 }
 
-# Retrieve LLM conversation messages by hash suffix
-export def 'llm message' [
-    ...rest: string@completions-llm-message
-]: nothing -> string {
-    let dict = llm-open-log
-
-    $rest
-    | parse -r '(.{4})$'
-    | get capture0
-    | each {|i|
-        $dict
-        | where 'content-hash' == $i
-        | last | get content
-    }
-    | str join "\n\n---\n\n"
-}
-
-# Load and deduplicate LLM conversation log
-export def 'llm-open-log' []: nothing -> table {
-    open ~/short_log.yaml
-    | uniq-by content-hash
-    | sort-by timestamp -r
-}
-
-# Generate completions for llm message command
-export def 'completions-llm-message' [
-    --first: int = 200
-]: nothing -> record {
-    llm-open-log
-    | each {|i|
-        $i.content
-        | str replace -ar (char nl) '·' | str substring --grapheme-clusters 0..(
-            term size | get columns | $in - 19
-        )
-        | str c $in $i.content-hash
-        | str replace -a '"' "'"
-        | to nuon
-    }
-    | {
-        options: {
-            case_sensitive: false
-            completion_algorithm: fuzzy
-            positional: false
-            sort: false
-        }
-        completions: $in
-    }
-}
-
 # Concatenate rest parameters into a string
 @example escape-interpolation { 1 + 1 | str c 'result is ' $in } --result 'result is 2'
 export def 'str c' [...rest: any]: nothing -> string { $rest | into string | str join }

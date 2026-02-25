@@ -32,7 +32,6 @@ export use commands.nu [
     # "indent"
     # "indentit"
     "L"
-    "llm message"
     # "launch-downloaded"
     "ln-for-preview"
     "mc"
