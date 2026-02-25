@@ -1421,28 +1421,8 @@ export def 'transcribe' [file: path]: nothing -> nothing {
 
 ###file wez-to-ansi.nu
 # Capture recent commands from Wezterm scrollback with ANSI codes
-export def 'wez-to-ansi' [
-    n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
-    --regex: string = '^>' # Regex to separate prompts from outputs. Default is ''.
-    --lines-before-top-of-term: int = 100 # Lines from top of scrollback in Wezterm to capture.
-    --min-term-width: int = 0 # Minimum output width (pads with spaces)
-]: nothing -> string {
-
-    # let regex = '^' + (ansi green_italic) + '>'
-
-    ^wezterm cli get-text --escapes --start-line ($lines_before_top_of_term * -1)
-    | str replace -a $"\n(ansi blue_bold)> " "\n>"
-    | str replace -ra '(\r|\n)+$' ''
-    | lines
-    | skip until {|i| $i =~ $regex }
-    | split list --regex $regex
-    | drop
-    | last $n_last_commands
-    | flatten
-    | if $min_term_width == 0 { } else {
-        prepend (seq 1 $min_term_width | each { ' ' } | str join)
-    }
-    | str join (char nl)
+export def 'wez-to-ansi' []: nothing -> string {
+    ^wezterm cli get-text --escapes
 }
 
 # Record Wezterm session to asciicast format
@@ -1514,7 +1494,7 @@ export def 'wez-to-png' [
         | path join $filename
     }
 
-    let out = wez-to-ansi $n_last_commands
+    let out = wez-to-ansi
 
     $out | save -f ($output_path | str replace -a '.png' '.ans')
     ($out | to png $output_path --font IosevkaFont)
