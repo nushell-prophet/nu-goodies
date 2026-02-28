@@ -626,7 +626,7 @@ export def 'in-hx' [
 ]: any -> nothing {
     let input = $in
     let type = $input | describe
-    let filename = $nu.temp-path | path join (date now | format date "%Y%m%d_%H%M%S" | $in + '.nu')
+    let filename = $nu.temp-dir | path join (date now | format date "%Y%m%d_%H%M%S" | $in + '.nu')
 
     $input
     | if ($type =~ '(table|record|list)') { to nuon --indent 4 } else { }
@@ -719,7 +719,7 @@ export def --env ln-for-preview [
 ]: [list -> nothing table -> nothing] {
     let input = $in
     let temp_path = [
-        $nu.temp-path
+        $nu.temp-dir
         'hard_links'
         (date now | format date "%Y%m%d_%H%M%S")
     ]
@@ -769,7 +769,7 @@ export def --env mc [
     path1?: path
     path2?: path
 ]: nothing -> nothing {
-    let path = ($nu.temp-path | path join (random chars))
+    let path = ($nu.temp-dir | path join (random chars))
     if $path2 != null {
         ^mc --nosubshell $path1 $path2 -P $path
     } else if $path1 != null {
@@ -1394,7 +1394,7 @@ export def 'to-temp-file' [
     content?: any # Commands used to generate the content of the file.
 ]: [any -> path nothing -> path] {
     let content = if $content == null { } else { $content }
-    let output_file = $nu.temp-path
+    let output_file = $nu.temp-dir
     | path join $'(date now | into int).yaml'
 
     $content | save $output_file
@@ -1878,7 +1878,7 @@ export def 'completions-cwds' []: nothing -> record {
                ORDER BY MAX(h.id) DESC"
     | where cwd != null
     | update cwd {|i|
-        do -i { $i.cwd | path relative-to $nu.home-path }
+        do -i { $i.cwd | path relative-to $nu.home-dir }
         | match $in {
             null => $i.cwd
             '' => '~'
