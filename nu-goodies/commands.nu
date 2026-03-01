@@ -1496,8 +1496,11 @@ export def 'wez-to-png' [
 
     let out = wez-to-ansi
 
-    $out | save -f ($output_path | str replace -a '.png' '.ans')
-    ($out | to png $output_path --font IosevkaFont)
+    let ans_path = $output_path | str replace -a '.png' '.ans'
+    $out | save -f $ans_path
+    if (which 'to png' | is-not-empty) {
+        nu --plugin-config $nu.plugin-path -c $"open --raw ($ans_path) | to png ($output_path) --font IosevkaFont"
+    }
 
     ^open -R $output_path
 }
@@ -1662,8 +1665,11 @@ export def 'zellij-to-png' [
         | path join $filename
     }
 
-    $out | save -f ($output_path | str replace -a '.png' '.ans')
-    ($out | to png $output_path --font IosevkaFont)
+    let ans_path = $output_path | str replace -a '.png' '.ans'
+    $out | save -f $ans_path
+    if (which 'to png' | is-not-empty) {
+        nu --plugin-config $nu.plugin-path -c $"open --raw ($ans_path) | to png ($output_path) --font IosevkaFont"
+    }
 
     ^open -R $output_path
 }
