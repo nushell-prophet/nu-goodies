@@ -1,4 +1,3 @@
-###file L.nu
 # Open table in Less
 export def 'L' [
     --abbreviated (-a): int = 1000
@@ -7,7 +6,6 @@ export def 'L' [
     table -e --abbreviated $abbreviated | into string | if $bat { bat } else { less -R }
 }
 
-###file bar.nu
 # use std repeat
 
 # Construct bars based on a given percentage from a given width (5 is default)
@@ -53,7 +51,6 @@ export def 'bar' [
     }
 }
 
-###file bye.nu
 # use gradient-screen.nu
 
 # Display gradient screen and exit the shell
@@ -66,7 +63,6 @@ export def 'bye' [
     if not $n { exit }
 }
 
-###file center.nu
 # Center text within terminal width
 export def 'center' [
     --factor: int = 1 # Divide terminal width by this factor
@@ -74,7 +70,6 @@ export def 'center' [
     fill -a center --width ((term size).columns // $factor)
 }
 
-###file copy-cmd.nu
 # Copy this command to clipboard
 export def 'copy-cmd' []: nothing -> nothing {
     let commands = history
@@ -91,7 +86,6 @@ export def 'copy-cmd' []: nothing -> nothing {
     | pbcopy
 }
 
-###file cprint.nu
 # Print a string colorfully with bells and whistles
 export def 'cprint' [
     text?: string # Text to format, if omitted stdin will be used
@@ -211,13 +205,11 @@ def 'completions-colors' []: nothing -> list<string> {
     ansi --list | take until {|it| $it.name == reset } | get name
 }
 
-###file example.nu
 # output a command from a pipe where `example` is used, and truncate the output table
 #
 # > ls nu-goodies | first 3 | reject modified | example
 # ╭───────────name───────────┬─type─┬──size──╮
 # │ nu-goodies/str.nu        │ file │ 1.4 KB │
-# │ nu-goodies/cb.nu         │ file │  170 B │
 # │ nu-goodies/abbreviate.nu │ file │  898 B │
 # ╰───────────name───────────┴─type─┴──size──╯
 export def 'example' [
@@ -269,7 +261,6 @@ def get-last-commands-from-sql [n: int = 1]: nothing -> any {
     } else { }
 }
 
-###file fill non-exist.nu
 # Fill missing columns for each row
 #
 # This is how empty columns are represented
@@ -291,7 +282,6 @@ export def 'fill non-exist' [
     }
 }
 
-###file format profile.nu
 # use normalize.nu
 # use bar.nu
 
@@ -321,7 +311,6 @@ export def 'format profile' []: table -> table {
     | reject span source fullspan parent_id id depth
 }
 
-###file gradient-screen.nu
 # Fill screen with repeated texts from arguments or $env.gradient-screen.texts with random color gradient
 export def --env gradient-screen [
     ...strings: string
@@ -480,7 +469,6 @@ def rand-hex-col2 []: nothing -> list<string> {
     | each { make-hex }
 }
 
-###file hist.nu
 alias core_hist = history
 # use in-vd.nu
 
@@ -598,7 +586,6 @@ export def 'hist-to-script' [
     }
 }
 
-###file in-fx.nu
 # Convert data structure to JSON and open it in fx
 export def --wrapped in-fx [
     ...rest
@@ -630,7 +617,6 @@ export def 'in-hx' [
     }
 }
 
-###file in-vd.nu
 # https://github.com/nushell-prophet/nu-kv
 use kv
 
@@ -698,7 +684,6 @@ def has_hier []: any -> bool {
     | is-empty
 }
 
-###file ln-for-preview.nu
 # Hard-link an input table to temp directory (useful for previewing files from large directories in external programs)
 #
 # > ls | where modified > (date now | $in - 20min) | ln-for-preview
@@ -732,7 +717,6 @@ export def --env ln-for-preview [
     cd $temp_path
 }
 
-###file main.nu
 # source /Users/user/git/nu-goodies/nu-goodies/wez-to-ansi.nu
 #dotnu-vars-end
 
@@ -751,7 +735,6 @@ export def --env ln-for-preview [
 #     | str join (char nl)
 # }
 
-###file mc.nu
 # Open Midnight Commander and cd to its exit directory
 export def --env mc [
     path1?: path
@@ -771,7 +754,6 @@ export def --env mc [
     }
 }
 
-###file md.nu
 # Create directory and cd into it
 export def --env md [
     target_dir: string
@@ -792,7 +774,6 @@ export def --env md [
     cd $dir
 }
 
-###file mv1.nu
 # Toggle suffix `_back` for a file
 export def 'mv1' [
     file: path
@@ -804,7 +785,6 @@ export def 'mv1' [
     }
 }
 
-###file mygit log.nu
 # Backup dotfiles and config directories to their git repos
 export def 'mygit log' [
     --message (-m): string
@@ -841,7 +821,6 @@ export def 'mygit log' [
 
 # history-backup moved to ~/.config/nushell/toolkit.nu
 
-###file normalize.nu
 # Normalize values in given columns
 #
 # > [[a b]; [1 2] [3 4] [a null]] | normalize a b
@@ -876,7 +855,6 @@ export def 'normalize' [
     $table
 }
 
-###file nu-test.nu
 # Install nushell or polars from the HEAD or the specified PR
 export def 'nu-test install' [
     --nushell # Update nushell only
@@ -965,7 +943,6 @@ export def 'launch-downloaded' []: nothing -> nothing {
     commandline edit -r $path
 }
 
-###file number-col-format.nu
 # use number-format.nu
 
 # Format number column in a table using number-format
@@ -1016,7 +993,6 @@ export def 'number-col-format' [
     }
 }
 
-###file number-format.nu
 # use significant-digits.nu
 
 # Format big numbers nicely
@@ -1076,7 +1052,6 @@ export def 'number-format' [
     $"(ansi $color)($whole_part)($dec_part)(ansi reset)(ansi green_bold)($denom)(ansi reset)"
 }
 
-###file orbita.nu
 # Generate 14 lines of spaces (placeholder grid)
 export def 'orbita' []: nothing -> list<string> {
     1..14 | each { line ' ' }
@@ -1088,7 +1063,6 @@ def line [
     1..61 | each { $symbol } | str join
 }
 
-###file print-and-pass.nu
 # An alternative to `inspect` that doesn't break debugging output
 export def 'print-and-pass' [
     callback?: closure
@@ -1104,7 +1078,6 @@ export def 'print-and-pass' [
     $input
 }
 
-###file select-i.nu
 # https://discord.com/channels/601130461678272522/615253963645911060/1182672999921504336
 # by @melmass at discord
 
@@ -1123,7 +1096,6 @@ export def 'select-i' []: table -> nothing {
     | commandline edit -r $in
 }
 
-###file side-by-side.nu
 # Display two tables side by side for comparison
 export def 'side-by-side' [
     r: any # Right side table
@@ -1177,7 +1149,6 @@ export def 'side-by-side' [
     } else { }
 }
 
-###file significant-digits.nu
 # The same version as https://github.com/nushell/nu_scripts/blob/significant-digits/stdlib-candidate/std-rfc/math/mod.nu
 
 # Replace all insignificant digits with 0
@@ -1252,8 +1223,6 @@ export def 'significant-digits' [
 # > 3456789 | math round --precision -5
 # 3499999.9999999995
 # so I use what I have now.
-
-###file str.nu
 
 alias std_append = append
 alias std_prepend = prepend
@@ -1347,7 +1316,6 @@ export def 'tt' --env [] {
     }
 }
 
-###file testcd.nu
 # Test helper for cd command
 export def --env 'testcd' [destination: path]: nothing -> nothing { cd $destination }
 
@@ -1368,7 +1336,6 @@ export def 'to-safe-filename' [
     | str c $prefix $in $suffix
 }
 
-###file to-temp-file.nu
 # author @CabalCrow
 # https://discord.com/channels/601130461678272522/615253963645911060/1247651613531705436
 
@@ -1390,7 +1357,6 @@ export def 'to-temp-file' [
     $output_file
 }
 
-###file transcribe.nu
 # Transcribe audio file to text using whisper.cpp
 export def 'transcribe' [file: path]: nothing -> nothing {
     let file = $file
@@ -1407,7 +1373,6 @@ export def 'transcribe' [file: path]: nothing -> nothing {
     )
 }
 
-###file wez-to-ansi.nu
 # Capture recent commands from Wezterm scrollback with ANSI codes
 export def 'wez-to-ansi' []: nothing -> string {
     ^wezterm cli get-text --escapes
@@ -1458,7 +1423,6 @@ export def 'wez-to-gif' [
     ^open -R $gif_name # Reveal in Finder
 }
 
-###file wez-to-png.nu
 # Capture wezterm scrollback, split by prompts, output chosen ones to an image file
 # Uses nu_plugin_image
 # https://wezfurlong.org/wezterm/index.html
@@ -1517,7 +1481,6 @@ def 'last-commands' [
     | str join '_'
 }
 
-###file copy-out.nu
 def 'completions-copy-out' []: nothing -> list<record<value: int, description: string>> {
     let session = history session
     let width = term size | get columns | $in - 5
