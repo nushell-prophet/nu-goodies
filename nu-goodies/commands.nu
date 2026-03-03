@@ -28,23 +28,23 @@ export def 'bar' [
     let blocks = [null "▏" "▎" "▍" "▌" "▋" "▊" "▉" "█"]
     let full_bar = $blocks | last
     let whole_part = ($percentage * $width) // 1
-    | into int
-    | seq 1 $in
-    | each { $full_bar }
-    | str join
+        | into int
+        | seq 1 $in
+        | each { $full_bar }
+        | str join
 
     let fraction = $blocks
-    | get (
-        ($percentage * $width) mod 1
-        | $in * ($blocks | length | $in - 1)
-        | math round
-    )
+        | get (
+            ($percentage * $width) mod 1
+            | $in * ($blocks | length | $in - 1)
+            | math round
+        )
 
     let result = $"($whole_part)($fraction)"
-    | fill --character ' ' -w $width
-    | if ($foreground == 'default') and ($background == 'default') { } else {
-        $"(ansi -e {fg: ($foreground) bg: ($background)})($in)(ansi reset)"
-    }
+        | fill --character ' ' -w $width
+        | if ($foreground == 'default') and ($background == 'default') { } else {
+            $"(ansi -e {fg: ($foreground) bg: ($background)})($in)(ansi reset)"
+        }
 
     if $progress {
         print -n $"($result)\r"
@@ -66,18 +66,6 @@ export def 'bye' [
     if not $n { exit }
 }
 
-###file cb.nu
-# Shortcut for pbpaste and pbcopy. But is it needed?
-export def 'cb' [
-    --paste
-]: [any -> nothing nothing -> string] {
-    if $paste or ($in == null) {
-        pbpaste
-    } else {
-        pbcopy
-    }
-}
-
 ###file center.nu
 # Center text within terminal width
 export def 'center' [
@@ -90,9 +78,9 @@ export def 'center' [
 # Copy this command to clipboard
 export def 'copy-cmd' []: nothing -> nothing {
     let commands = history
-    | last 2
-    | get command
-    | str trim
+        | last 2
+        | get command
+        | str trim
 
     $commands
     | last
@@ -239,26 +227,26 @@ export def 'example' [
     --bare # Don't wrap in `nu -c`, output the raw nushell command
 ]: any -> string {
     let input = table --abbreviated $abbreviated
-    | if $no_comment { } else { into string | ansi strip }
+        | if $no_comment { } else { into string | ansi strip }
 
     let command = get-last-commands-from-sql 1
-    | str replace -r '\| example.*' ''
-    | if $no_comment {
-        nu-highlight # for making screnshots
-    } else { }
-    | if $bare { } else {
-        if "'" not-in $in {
-            # no single quotes — single-quote wrap (both shells)
-            $"nu -c '($in)'"
-        } else if ($in !~ '["$`\\]') {
-            # only single quotes — double-quote wrap (both shells)
-            $'nu -c "($in)"'
-        } else {
-            # both quotes or bash-unsafe chars — bash-only fallback
-            $"nu -c '($in | str replace -a "'" "'\\''")'"
+        | str replace -r '\| example.*' ''
+        | if $no_comment {
+            nu-highlight # for making screnshots
+        } else { }
+        | if $bare { } else {
+            if "'" not-in $in {
+                # no single quotes — single-quote wrap (both shells)
+                $"nu -c '($in)'"
+            } else if ($in !~ '["$`\\]') {
+                # only single quotes — double-quote wrap (both shells)
+                $'nu -c "($in)"'
+            } else {
+                # both quotes or bash-unsafe chars — bash-only fallback
+                $"nu -c '($in | str replace -a "'" "'\\''")'"
+            }
         }
-    }
-    | str c $in (char nl)
+        | str c $in (char nl)
 
     $input
     | if $no_comment { } else {
@@ -342,22 +330,22 @@ export def --env gradient-screen [
     --rows: int
 ]: nothing -> any {
     let strings = $strings
-    | if $in == [] {
-        $env.gradient-screen?.texts?
-        | default [
-            '<nushell<is<awesome<'
-            '<wezterm<is<awesome<'
-            'and<you<are<awesome<'
-        ]
-    } else { }
+        | if $in == [] {
+            $env.gradient-screen?.texts?
+            | default [
+                '<nushell<is<awesome<'
+                '<wezterm<is<awesome<'
+                'and<you<are<awesome<'
+            ]
+        } else { }
 
     let term_size = term size
 
     let screen_size = $term_size
-    | if $rows == null { values } else {
-        $in.columns * $rows
-    }
-    | math product
+        | if $rows == null { values } else {
+            $in.columns * $rows
+        }
+        | math product
 
     let 1_list = $strings.0 | split chars
     let 1_len = $1_list | length
@@ -368,36 +356,36 @@ export def --env gradient-screen [
     $env.gradient-screen-last-colors = $colors
 
     let other_strings = $strings
-    | skip
-    | each {|i|
-        str c $i ($1_list | last ($1_len - ($i | str length) mod $1_len) | str join)
-    }
-    | append ''
+        | skip
+        | each {|i|
+            str c $i ($1_list | last ($1_len - ($i | str length) mod $1_len) | str join)
+        }
+        | append ''
 
     let other_len = $other_strings
-    | str length
-    | math sum
+        | str length
+        | math sum
 
     let n_chunks = ($screen_size - $other_len) // $1_len
 
     let base = seq 0 $n_chunks
-    | each { $strings.0 }
+        | each { $strings.0 }
 
     let output = $other_strings
-    | reduce -f $base {|i acc|
-        $acc
-        | insert (random int 3..$n_chunks) $i
-    }
-    | str join
-    | split chars --grapheme-clusters
-    | first $screen_size
-    | if $no_date { } else {
-        drop ($date_text | str length)
-        | append ($date_text | split chars)
-    }
-    | window $1_len --stride $1_len --remainder
-    | each { str join | ansi gradient --fgstart $colors.0 --fgend $colors.1 }
-    | str join
+        | reduce -f $base {|i acc|
+            $acc
+            | insert (random int 3..$n_chunks) $i
+        }
+        | str join
+        | split chars --grapheme-clusters
+        | first $screen_size
+        | if $no_date { } else {
+            drop ($date_text | str length)
+            | append ($date_text | split chars)
+        }
+        | window $1_len --stride $1_len --remainder
+        | each { str join | ansi gradient --fgstart $colors.0 --fgend $colors.1 }
+        | str join
 
     split-ansi-chars $output
     | window $term_size.columns --stride $term_size.columns
@@ -417,28 +405,28 @@ export def ls-git-modified-date [
     let path = $path | default { pwd }
 
     let gitlog = git log --all --format="===%ai" --name-only --diff-filter=ACMRT -- $path
-    | $"\n($in)"
-    | split row "\n==="
-    | skip # skip the first empty group
-    | each {|i|
-        let lines = $i | lines
+        | $"\n($in)"
+        | split row "\n==="
+        | skip # skip the first empty group
+        | each {|i|
+            let lines = $i | lines
 
-        let ts = $lines | first | into datetime
+            let ts = $lines | first | into datetime
 
-        $lines
-        | skip 2
-        | if ($in | length) <= $max_files_in_commit {
-            each {|file| {name: $file commit-ts: $ts} }
+            $lines
+            | skip 2
+            | if ($in | length) <= $max_files_in_commit {
+                each {|file| {name: $file commit-ts: $ts} }
+            }
         }
-    }
-    | compact
-    | flatten
-    | uniq-by name
+        | compact
+        | flatten
+        | uniq-by name
 
     let path_candidate = git ls-files --full-name -- $path
-    | lines
-    | wrap name
-    | join $gitlog name --inner
+        | lines
+        | wrap name
+        | join $gitlog name --inner
 
     let root = find-root
 
@@ -481,7 +469,7 @@ def rand-hex-col2 []: nothing -> list<string> {
             {next: ($i + 1)}
         }
     }
-    | get 0?
+        | get 0?
 
     # Fallback: force contrast if no good pair found
     $pair | default {
@@ -512,28 +500,28 @@ export def 'hist' [
         SELECT command_line as command, start_timestamp / 1000 as start_timestamp, session_id, hostname, cwd,
         duration_ms / 1000000.0 as duration_s, exit_status FROM history WHERE 1=1
     "
-    | if $like_filter != null {
-        append $" AND command_line LIKE '%($like_filter)%'"
-    } else { }
-    | append " AND command_line NOT LIKE 'hist %'" # Build where clauses based on parameters Exclude 'hist' commands
-    | append " AND exit_status = 0" # Only successful commands
-    | if $session {
-        # Session filter
-        append $" AND session_id = (history session)"
-    } else { }
-    | if $cwd {
-        # Folder filter
-        append $" AND cwd = '(pwd)'"
-    } else { }
-    | if $last_x != null {
-        # Time filter
-        append $" AND start_timestamp > ((date now) - $last_x | into int)" # Convert to nanoseconds
-    } else { }
-    | append ' ORDER BY id DESC'
-    | if not ($all or $entries == 0 or $like_filter != null) {
-        append $" LIMIT ($entries)"
-    } else { }
-    | str join
+        | if $like_filter != null {
+            append $" AND command_line LIKE '%($like_filter)%'"
+        } else { }
+        | append " AND command_line NOT LIKE 'hist %'" # Build where clauses based on parameters Exclude 'hist' commands
+        | append " AND exit_status = 0" # Only successful commands
+        | if $session {
+            # Session filter
+            append $" AND session_id = (history session)"
+        } else { }
+        | if $cwd {
+            # Folder filter
+            append $" AND cwd = '(pwd)'"
+        } else { }
+        | if $last_x != null {
+            # Time filter
+            append $" AND start_timestamp > ((date now) - $last_x | into int)" # Convert to nanoseconds
+        } else { }
+        | append ' ORDER BY id DESC'
+        | if not ($all or $entries == 0 or $like_filter != null) {
+            append $" LIMIT ($entries)"
+        } else { }
+        | str join
 
     # Execute the query
     let results = open $nu.history-path | query db $sql_query
@@ -577,31 +565,31 @@ export def 'hist-to-script' [
     let session = history session
 
     let filepath = $filename
-    | if ($in != null) { } else { $"history($session)" }
-    | path parse
-    | update extension 'nu'
-    | path join
+        | if ($in != null) { } else { $"history($session)" }
+        | path parse
+        | update extension 'nu'
+        | path join
 
     let hist = history -l
-    | if $directory_hist {
-        where cwd == (pwd)
-    } else {
-        where session_id == $session
-    }
-    | get command
-    | str replace -ar $';(char nl)\$.*? in-vd' ''
-    | drop 1
+        | if $directory_hist {
+            where cwd == (pwd)
+        } else {
+            where session_id == $session
+        }
+        | get command
+        | str replace -ar $';(char nl)\$.*? in-vd' ''
+        | drop 1
 
     let buffer = $hist
-    | if $up > 1 {
-        last ($up + 1)
-    } else if $all { } else {
-        where {|i|
-            $i =~ '(^(let|def|export) )|#|\b(save|source|mkdir|polars to-csv|polars to-avro|polars to-jsonl|polars to-arrow|polars to-parquet)\b'
+        | if $up > 1 {
+            last ($up + 1)
+        } else if $all { } else {
+            where {|i|
+                $i =~ '(^(let|def|export) )|#|\b(save|source|mkdir|polars to-csv|polars to-avro|polars to-jsonl|polars to-arrow|polars to-parquet)\b'
+            }
         }
-    }
-    | str join "\n\n"
-    | $"\n#($filepath)\n($in)\n#---\n"
+        | str join "\n\n"
+        | $"\n#($filepath)\n($in)\n#---\n"
 
     $buffer | save -a $filepath
 
@@ -723,7 +711,7 @@ export def --env ln-for-preview [
         'hard_links'
         (date now | format date "%Y%m%d_%H%M%S")
     ]
-    | path join
+        | path join
 
     mkdir $temp_path
 
@@ -822,10 +810,10 @@ export def 'mygit log' [
     --message (-m): string
 ]: nothing -> nothing {
     let message = $message
-    | default (date now | format date "%Y-%m-%d")
+        | default (date now | format date "%Y-%m-%d")
 
     let dot_dir = '~/.config/dot_home_dir'
-    | path expand
+        | path expand
 
     $nu.home-dir
     | path join '.*'
@@ -839,7 +827,7 @@ export def 'mygit log' [
         '~/.config/'
         # '~/.visidata/'
     ]
-    | path expand
+        | path expand
 
     for $dir in $paths {
         try {
@@ -871,18 +859,18 @@ export def 'normalize' [
 
     for column in $column_names {
         let max_value = $table
-        | get $column
-        | where ($it | describe | $in in $allowed_types)
-        | math max
+            | get $column
+            | where ($it | describe | $in in $allowed_types)
+            | math max
 
         $table = $table
-        | upsert $'($column)($suffix)' {|i|
-            $i
-            | get $column
-            | if ($in | describe | $in in $allowed_types) {
-                $in / $max_value
-            } else { }
-        }
+            | upsert $'($column)($suffix)' {|i|
+                $i
+                | get $column
+                | if ($in | describe | $in in $allowed_types) {
+                    $in / $max_value
+                } else { }
+            }
     }
 
     $table
@@ -935,9 +923,9 @@ export def 'nu-test launch' [
         "--execute"
         "$env.PATH = ($env.PATH | prepend '/Users/user/.cargo_test/bin/')"
     ]
-    | if $no_plugin { } else {
-        prepend ['--plugin-config' '/Users/user/.test_config/nushell/polars_test.msgpackz']
-    }
+        | if $no_plugin { } else {
+            prepend ['--plugin-config' '/Users/user/.test_config/nushell/polars_test.msgpackz']
+        }
 
     ^$exec ...$params
 }
@@ -953,9 +941,9 @@ export def --env download-nushell-nightly [
     let most_recent_nightly = (http get https://api.github.com/repos/nushell/nightly/releases | get 0)
     let nightly_name = ($most_recent_nightly.name | str replace -r '^Nu-nightly-' '')
     let asset = http get $most_recent_nightly.assets_url
-    | where name =~ $arch
-    | where name =~ $'($ext)$'
-    | get 0
+        | where name =~ $arch
+        | where name =~ $'($ext)$'
+        | get 0
 
     let filename = (
         $asset.name
@@ -1003,19 +991,19 @@ export def 'number-col-format' [
     let thousands_delim_length = $thousands_delim | str length --grapheme-clusters
 
     let integers = $input
-    | get $column_name
-    | math max
-    | split row '.'
-    | get 0
-    | str length
-    | if $thousands_delim_length > 0 {
-        $in * ((3 + $thousands_delim_length) / 3 - 0.001) | math floor
-    } else { }
-    | append (
-        $column_name | str length
-        | $in - $decimals - $thousands_delim_length - ($denom | str length --grapheme-clusters)
-    )
-    | math max
+        | get $column_name
+        | math max
+        | split row '.'
+        | get 0
+        | str length
+        | if $thousands_delim_length > 0 {
+            $in * ((3 + $thousands_delim_length) / 3 - 0.001) | math floor
+        } else { }
+        | append (
+            $column_name | str length
+            | $in - $decimals - $thousands_delim_length - ($denom | str length --grapheme-clusters)
+        )
+        | math max
 
     $input
     | upsert $column_name {|i|
@@ -1056,23 +1044,23 @@ export def 'number-format' [
     let in_num = $in
 
     let parts = $num
-    | default $in_num
-    | if $significant_digits == 0 { } else {
-        significant-digits $significant_digits
-    }
-    | into string
-    | split chars
-    | split list '.'
+        | default $in_num
+        | if $significant_digits == 0 { } else {
+            significant-digits $significant_digits
+        }
+        | into string
+        | split chars
+        | split list '.'
 
     let whole_part = $parts.0
-    | reverse
-    | window 3 -s 3 --remainder
-    | each { reverse | str join }
-    | reverse
-    | str join $thousands_delim
-    | if $integers == 0 { } else {
-        fill -w $integers -c ' ' -a r
-    }
+        | reverse
+        | window 3 -s 3 --remainder
+        | each { reverse | str join }
+        | reverse
+        | str join $thousands_delim
+        | if $integers == 0 { } else {
+            fill -w $integers -c ' ' -a r
+        }
 
     let dec_part = if $decimals == 0 {
         ''
@@ -1124,9 +1112,9 @@ export def 'print-and-pass' [
 export def 'select-i' []: table -> nothing {
     let tgt = $in
     let choices = $tgt
-    | columns
-    | input list -m "Pick columns to get: "
-    | str join " "
+        | columns
+        | input list -m "Pick columns to get: "
+        | str join " "
 
     history
     | last
@@ -1165,18 +1153,18 @@ export def 'side-by-side' [
     let r_n_lines = $r_strip | length
 
     let res = $l | append (
-        seq 1 ($r_n_lines - $l_n_lines)
-        | each { seq 1 $l_str_len_max | each { ' ' } | str join }
-    )
-    | each { fill --width $l_str_len_max }
-    | zip (
-        $r | append (
-            seq 1 ($l_n_lines - $r_n_lines)
-            | each { '' }
+            seq 1 ($r_n_lines - $l_n_lines)
+            | each { seq 1 $l_str_len_max | each { ' ' } | str join }
         )
-    )
-    | each {|i| $i.0 + $delimiter + $i.1 }
-    | str join (char nl)
+        | each { fill --width $l_str_len_max }
+        | zip (
+            $r | append (
+                seq 1 ($l_n_lines - $r_n_lines)
+                | each { '' }
+            )
+        )
+        | each {|i| $i.0 + $delimiter + $i.1 }
+        | str join (char nl)
 
     let width = term size | get columns
 
@@ -1226,30 +1214,30 @@ export def 'significant-digits' [
     }
 
     let insignif_position = $num
-    | if $in == 0 {
-        0 # it's impoosbile to calculate `math log` from 0, thus 0 errors here
-    } else {
-        math abs
-        | math log 10
-        | math floor
-        | $n - 1 - $in
-    }
+        | if $in == 0 {
+            0 # it's impoosbile to calculate `math log` from 0, thus 0 errors here
+        } else {
+            math abs
+            | math log 10
+            | math floor
+            | $n - 1 - $in
+        }
 
     # See the note below the code for an explanation of the construct used.
     let scaling_factor = 10 ** ($insignif_position | math abs)
 
     let res = $num
-    | if $insignif_position > 0 {
-        $in * $scaling_factor
-    } else {
-        $in / $scaling_factor
-    }
-    | math floor
-    | if $insignif_position <= 0 {
-        $in * $scaling_factor
-    } else {
-        $in / $scaling_factor
-    }
+        | if $insignif_position > 0 {
+            $in * $scaling_factor
+        } else {
+            $in / $scaling_factor
+        }
+        | math floor
+        | if $insignif_position <= 0 {
+            $in * $scaling_factor
+        } else {
+            $in / $scaling_factor
+        }
 
     match $type {
         'duration' => { $res | into duration }
@@ -1395,7 +1383,7 @@ export def 'to-temp-file' [
 ]: [any -> path nothing -> path] {
     let content = if $content == null { } else { $content }
     let output_file = $nu.temp-dir
-    | path join $'(date now | into int).yaml'
+        | path join $'(date now | into int).yaml'
 
     $content | save $output_file
 
@@ -1406,11 +1394,11 @@ export def 'to-temp-file' [
 # Transcribe audio file to text using whisper.cpp
 export def 'transcribe' [file: path]: nothing -> nothing {
     let file = $file
-    | if $in =~ '\.wav$' { } else {
-        let f = $in + '.wav';
-        ffmpeg -i $file -ar 16000 $f;
-        $f
-    }
+        | if $in =~ '\.wav$' { } else {
+            let f = $in + '.wav';
+            ffmpeg -i $file -ar 16000 $f;
+            $f
+        }
 
     (
         ^/Users/user/git/whisper.cpp/build/bin/whisper-cli -f $file
@@ -1431,17 +1419,17 @@ export def 'wez-to-asciicast' [
     --filename: path # Output file path (unused)
 ]: nothing -> path {
     let err = ^wezterm record --cwd (pwd) -- $nu.current-exe --execute $'source $nu.env-path; clear; ($command)'
-    | complete
-    | get stderr
+        | complete
+        | get stderr
 
     let wezrec = $err
-    | str replace -r '\s+$' ''
-    | parse -r '(?<path>\S+$)'
-    | get path.0
+        | str replace -r '\s+$' ''
+        | parse -r '(?<path>\S+$)'
+        | get path.0
 
     let target_folder = '/Users/user/temp/wezterm-asciinemas'
-    | path join $'gif_(pwd | path split | last)'
-    | $'($in)(mkdir $in)'
+        | path join $'gif_(pwd | path split | last)'
+        | $'($in)(mkdir $in)'
 
     try { mv $wezrec $target_folder } catch { print "wasn't moved, the original err with path is:" $err }
 
@@ -1458,11 +1446,11 @@ export def 'wez-to-gif' [
     let wezrec = wez-to-asciicast
 
     let gif_name = $wezrec
-    | path dirname
-    | path join (
-        $filename
-        | default $'_wez_gif_(date now | format date `%s`).gif'
-    )
+        | path dirname
+        | path join (
+            $filename
+            | default $'_wez_gif_(date now | format date `%s`).gif'
+        )
 
     ^agg --font-family $font_family --font-size $font_size -v $wezrec $gif_name
     print ''
@@ -1504,12 +1492,12 @@ export def 'wez-to-png' [
     --output-path: path = '' # Path for saving output images.
 ]: nothing -> nothing {
     let output_path = $output_path
-    | if $in != '' { } else {
-        let filename = last-commands $n_last_commands
-        | to-safe-filename --prefix 'wez-out-' --suffix '.png' --date
+        | if $in != '' { } else {
+            let filename = last-commands $n_last_commands
+                | to-safe-filename --prefix 'wez-out-' --suffix '.png' --date
 
-        default-image-path $filename
-    }
+            default-image-path $filename
+        }
 
     wez-to-ansi | ansi-to-png $output_path
 }
@@ -1557,16 +1545,16 @@ def 'zellij-dump-prompts' [
     let stripped = $raw_lines | each { ansi strip }
 
     let prompts = $stripped
-    | enumerate
-    | where { $in.item =~ '^> ' }
-    | get index
+        | enumerate
+        | where { $in.item =~ '^> ' }
+        | get index
 
     let max_n = $indices | math max
     if ($prompts | length) < ($max_n + 1) {
         error make --unspanned {msg: $'Not enough commands in scrollback \(need ($max_n + 1) prompts\)'}
     }
 
-    {raw_lines: $raw_lines, reversed_prompts: ($prompts | reverse)}
+    {raw_lines: $raw_lines reversed_prompts: ($prompts | reverse)}
 }
 
 def 'extract-by-prompts' [
@@ -1623,7 +1611,7 @@ export def 'copy-out' [
 
     let dump = zellij-dump-prompts $indices --name 'copy-out'
     let output_lines = $dump.raw_lines
-    | if $ansi { } else { each { ansi strip } }
+        | if $ansi { } else { each { ansi strip } }
 
     extract-by-prompts $indices $output_lines $dump.reversed_prompts
     | if $no_comment { } else {
@@ -1652,15 +1640,15 @@ export def 'zellij-to-png' [
     let dump = zellij-dump-prompts $indices --name 'zellij-to-png'
 
     let out = extract-by-prompts $indices $dump.raw_lines $dump.reversed_prompts --flatten
-    | str join (char nl)
+        | str join (char nl)
 
     let output_path = $output_path
-    | if $in != '' { } else {
-        let filename = last-commands ($indices | math max)
-        | to-safe-filename --prefix 'zel-out-' --suffix '.png' --date
+        | if $in != '' { } else {
+            let filename = last-commands ($indices | math max)
+                | to-safe-filename --prefix 'zel-out-' --suffix '.png' --date
 
-        default-image-path $filename
-    }
+            default-image-path $filename
+        }
 
     $out | ansi-to-png $output_path
 }
@@ -1713,7 +1701,7 @@ def 'update-dead-dirs' []: nothing -> list<string> {
 
     # Check which directories no longer exist
     let dead_cwds = $all_cwds
-    | where {|dir| $dir | path exists | not $in }
+        | where {|dir| $dir | path exists | not $in }
 
     # Clear existing dead_cwds table and insert new values
     # (table already initialized by get-history-dirs above)
@@ -1801,8 +1789,8 @@ def 'zellij-navigate' [
 
     # Check if tab with this name already exists
     let matching_tab = zellij-tab-names
-    | where { $in =~ (zellij-tab-pattern $dir_name) }
-    | get 0?
+        | where { $in =~ (zellij-tab-pattern $dir_name) }
+        | get 0?
 
     let request: closure = {
         [
@@ -1867,36 +1855,36 @@ export def 'completions-cwds' []: nothing -> record {
     let zellij_tabs = zellij-tab-names
 
     let variants = open $nu.history-path
-    | query db "SELECT h.cwd, MAX(h.start_timestamp) as last_timestamp
+        | query db "SELECT h.cwd, MAX(h.start_timestamp) as last_timestamp
                FROM history h
                LEFT JOIN dead_cwds d ON h.cwd = d.path
                WHERE d.path IS NULL
                GROUP BY h.cwd
                ORDER BY MAX(h.id) DESC"
-    | where cwd != null
-    | update cwd {|i|
-        do -i { $i.cwd | path relative-to $nu.home-dir }
-        | match $in {
-            null => $i.cwd
-            '' => '~'
-            $relative_pwd => ([~ $relative_pwd] | path join)
+        | where cwd != null
+        | update cwd {|i|
+            do -i { $i.cwd | path relative-to $nu.home-dir }
+            | match $in {
+                null => $i.cwd
+                '' => '~'
+                $relative_pwd => ([~ $relative_pwd] | path join)
+            }
+            | if ($in has ' ') { $'"($in)"' } else { }
         }
-        | if ($in has ' ') { $'"($in)"' } else { }
-    }
-    # Filter by depth - skip paths deeper than max_depth
-    | where { $in.cwd | path split | length | $in <= $max_depth }
-    # Filter by length
-    | where ($it.cwd | str length --grapheme-clusters) < $termsize
-    | update last_timestamp {|row|
-        let timestamp = $row.last_timestamp | into int | $in / 1000 | into int | into datetime -f '%s' | date humanize
+        # Filter by depth - skip paths deeper than max_depth
+        | where { $in.cwd | path split | length | $in <= $max_depth }
+        # Filter by length
+        | where ($it.cwd | str length --grapheme-clusters) < $termsize
+        | update last_timestamp {|row|
+            let timestamp = $row.last_timestamp | into int | $in / 1000 | into int | into datetime -f '%s' | date humanize
 
-        # Check if a Zellij tab exists for this directory
-        let dir_name = $row.cwd | path split | last | str replace '"' ''
-        let has_tab = $zellij_tabs | any { $in =~ (zellij-tab-pattern $dir_name) }
+            # Check if a Zellij tab exists for this directory
+            let dir_name = $row.cwd | path split | last | str replace '"' ''
+            let has_tab = $zellij_tabs | any { $in =~ (zellij-tab-pattern $dir_name) }
 
-        if $has_tab { $"⇆ ($timestamp)" } else { $timestamp }
-    }
-    | rename value description
+            if $has_tab { $"⇆ ($timestamp)" } else { $timestamp }
+        }
+        | rename value description
 
     {
         options: {
@@ -1919,8 +1907,8 @@ export def 'replace-in-all-files' [
     --extensions: list<string> = [nu md py] # File extensions to process
 ]: nothing -> any {
     let glob = $extensions
-    | str join ','
-    | str c '**/*.{' $in '}'
+        | str join ','
+        | str c '**/*.{' $in '}'
 
     let files_total = glob --no-dir $glob
 
@@ -1937,15 +1925,15 @@ export def 'replace-in-all-files' [
     }
 
     let updated = $files_found
-    | each {|i|
-        if not $no_git_check { git-check-file-clean $i }
+        | each {|i|
+            if not $no_git_check { git-check-file-clean $i }
 
-        $i | open
-        | str replace -a $find $replace
-        | str replace -r '\n*$' (char nl)
-        | save -f $i
-    }
-    | length
+            $i | open
+            | str replace -a $find $replace
+            | str replace -r '\n*$' (char nl)
+            | save -f $i
+        }
+        | length
 
     if not $quiet {
         let field_name = $'total .($extensions) files'
@@ -2075,13 +2063,13 @@ export def find-root [dir?: path]: [nothing -> path nothing -> nothing] {
     let dir2 = $dir | default { pwd }
 
     let root_candidate = 1..($dir2 | path split | length)
-    | reduce -f $dir2 {|_ acc|
-        if ($acc | path join '.git' | path exists) {
-            $acc
-        } else {
-            $acc | path dirname
+        | reduce -f $dir2 {|_ acc|
+            if ($acc | path join '.git' | path exists) {
+                $acc
+            } else {
+                $acc | path dirname
+            }
         }
-    }
 
     # We need to do the last check in case the reduce loop ran to the end
     # without finding nupm.nuon
@@ -2102,12 +2090,12 @@ export def rename-tab [name: string = '']: nothing -> nothing {
     let name = if $name == '' { pwd | path basename | str replace -r '^-+' '' } else { $name }
 
     let name_with_index = zellij action query-tab-names
-    | lines
-    | where $it =~ $"^($name)\(·|\$)"
-    | [($in | length) ($in | parse --regex '(\d+)$' | get -o capture0 | default [0] | into int)]
-    | flatten
-    | math max
-    | if $in > 0 { $'($name)·($in + 1)' } else { $name }
+        | lines
+        | where $it =~ $"^($name)\(·|\$)"
+        | [($in | length) ($in | parse --regex '(\d+)$' | get -o capture0 | default [0] | into int)]
+        | flatten
+        | math max
+        | if $in > 0 { $'($name)·($in + 1)' } else { $name }
 
     ^zellij action rename-tab $name_with_index
 }
