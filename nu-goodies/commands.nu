@@ -1478,6 +1478,26 @@ export def 'wez-to-gif' [
 
 # use wez-to-ansi.nu
 
+def 'default-image-path' [
+    filename: string
+]: nothing -> path {
+    ['/Users/user/temp/freeze_images/' (pwd | path split | last)]
+    | path join
+    | $'($in)(mkdir $in)'
+    | path join $filename
+}
+
+def 'ansi-to-png' [
+    output_path: path
+]: string -> nothing {
+    let ans_path = $output_path | str replace -a '.png' '.ans'
+    $in | save -f $ans_path
+    if (which 'to png' | is-not-empty) {
+        nu --plugin-config $nu.plugin-path -c $"open --raw ($ans_path) | to png ($output_path) --font IosevkaFont"
+    }
+    ^open -R $output_path
+}
+
 # Capture wezterm scrollback, split by prompts, output chosen ones to an image file
 export def 'wez-to-png' [
     n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
@@ -1488,21 +1508,10 @@ export def 'wez-to-png' [
         let filename = last-commands $n_last_commands
         | to-safe-filename --prefix 'wez-out-' --suffix '.png' --date
 
-        ['/Users/user/temp/freeze_images/' (pwd | path split | last)]
-        | path join
-        | $'($in)(mkdir $in)'
-        | path join $filename
+        default-image-path $filename
     }
 
-    let out = wez-to-ansi
-
-    let ans_path = $output_path | str replace -a '.png' '.ans'
-    $out | save -f $ans_path
-    if (which 'to png' | is-not-empty) {
-        nu --plugin-config $nu.plugin-path -c $"open --raw ($ans_path) | to png ($output_path) --font IosevkaFont"
-    }
-
-    ^open -R $output_path
+    wez-to-ansi | ansi-to-png $output_path
 }
 
 def 'now-fn' []: nothing -> string {
@@ -1537,19 +1546,11 @@ def 'completions-copy-out' []: nothing -> list<record<value: int, description: s
     }
 }
 
-# Copy command(s) with output to clipboard from Zellij pane scrollback
-#
-# > copy-out 3     # from 3rd-to-last command through the last
-# > copy-out 3 1   # 3rd-to-last and last, separately
-export def 'copy-out' [
-    ...rest: int@completions-copy-out # Command indices (1 = last)
-    --echo (-e) # Return text instead of copying
-    --ansi (-a) # Keep ANSI escape codes
-    --no-comment (-C) # Don't comment output with # =>
-]: nothing -> any {
-    let indices = $rest | if ($in | is-empty) { [1] } else { }
-
-    let tmp = $nu.temp-dir | path join 'copy-out.txt'
+def 'zellij-dump-prompts' [
+    indices: list<int>
+    --name: string = 'scrollback'
+]: nothing -> record<raw_lines: list<string>, reversed_prompts: list<int>> {
+    let tmp = $nu.temp-dir | path join $'($name).txt'
     zellij action dump-screen $tmp --full
 
     let raw_lines = open $tmp | lines
@@ -1565,26 +1566,40 @@ export def 'copy-out' [
         error make --unspanned {msg: $'Not enough commands in scrollback \(need ($max_n + 1) prompts\)'}
     }
 
-    let reversed = $prompts | reverse
-    let output_lines = $raw_lines
-    | if $ansi { } else { each { ansi strip } }
+    {raw_lines: $raw_lines, reversed_prompts: ($prompts | reverse)}
+}
 
+def 'extract-by-prompts' [
+    indices: list<int>
+    lines: list<string>
+    reversed_prompts: list<int>
+    --flatten
+]: nothing -> list<string> {
     if ($indices | length) == 1 {
-        # Single index: from that command through the current prompt
-        let start = $reversed | get ($indices | first)
-        let end = $reversed | get 0
+        let start = $reversed_prompts | get ($indices | first)
+        let end = $reversed_prompts | get 0
 
-        $output_lines
+        $lines
         | skip $start
         | first ($end - $start)
-    } else {
-        # Multiple indices: each command separately, in given order
+    } else if $flatten {
         $indices
         | each {|n|
-            let start = $reversed | get $n
-            let end = $reversed | get ($n - 1)
+            let start = $reversed_prompts | get $n
+            let end = $reversed_prompts | get ($n - 1)
 
-            $output_lines
+            $lines
+            | skip $start
+            | first ($end - $start)
+        }
+        | flatten
+    } else {
+        $indices
+        | each {|n|
+            let start = $reversed_prompts | get $n
+            let end = $reversed_prompts | get ($n - 1)
+
+            $lines
             | skip $start
             | first ($end - $start)
             | str join (char nl)
@@ -1592,6 +1607,25 @@ export def 'copy-out' [
         | str join "\n\n"
         | lines
     }
+}
+
+# Copy command(s) with output to clipboard from Zellij pane scrollback
+#
+# > copy-out 3     # from 3rd-to-last command through the last
+# > copy-out 3 1   # 3rd-to-last and last, separately
+export def 'copy-out' [
+    ...rest: int@completions-copy-out # Command indices (1 = last)
+    --echo (-e) # Return text instead of copying
+    --ansi (-a) # Keep ANSI escape codes
+    --no-comment (-C) # Don't comment output with # =>
+]: nothing -> any {
+    let indices = $rest | if ($in | is-empty) { [1] } else { }
+
+    let dump = zellij-dump-prompts $indices --name 'copy-out'
+    let output_lines = $dump.raw_lines
+    | if $ansi { } else { each { ansi strip } }
+
+    extract-by-prompts $indices $output_lines $dump.reversed_prompts
     | if $no_comment { } else {
         each {
             if ($in =~ '^> ') {
@@ -1615,43 +1649,9 @@ export def 'zellij-to-png' [
 ]: nothing -> nothing {
     let indices = $rest | if ($in | is-empty) { [1] } else { }
 
-    let tmp = $nu.temp-dir | path join 'zellij-to-png.txt'
-    zellij action dump-screen $tmp --full
+    let dump = zellij-dump-prompts $indices --name 'zellij-to-png'
 
-    let raw_lines = open $tmp | lines
-    let stripped = $raw_lines | each { ansi strip }
-
-    let prompts = $stripped
-    | enumerate
-    | where { $in.item =~ '^> ' }
-    | get index
-
-    let max_n = $indices | math max
-    if ($prompts | length) < ($max_n + 1) {
-        error make --unspanned {msg: $'Not enough commands in scrollback \(need ($max_n + 1) prompts\)'}
-    }
-
-    let reversed = $prompts | reverse
-
-    let out = if ($indices | length) == 1 {
-        let start = $reversed | get ($indices | first)
-        let end = $reversed | get 0
-
-        $raw_lines
-        | skip $start
-        | first ($end - $start)
-    } else {
-        $indices
-        | each {|n|
-            let start = $reversed | get $n
-            let end = $reversed | get ($n - 1)
-
-            $raw_lines
-            | skip $start
-            | first ($end - $start)
-        }
-        | flatten
-    }
+    let out = extract-by-prompts $indices $dump.raw_lines $dump.reversed_prompts --flatten
     | str join (char nl)
 
     let output_path = $output_path
@@ -1659,19 +1659,10 @@ export def 'zellij-to-png' [
         let filename = last-commands ($indices | math max)
         | to-safe-filename --prefix 'zel-out-' --suffix '.png' --date
 
-        ['/Users/user/temp/freeze_images/' (pwd | path split | last)]
-        | path join
-        | $'($in)(mkdir $in)'
-        | path join $filename
+        default-image-path $filename
     }
 
-    let ans_path = $output_path | str replace -a '.png' '.ans'
-    $out | save -f $ans_path
-    if (which 'to png' | is-not-empty) {
-        nu --plugin-config $nu.plugin-path -c $"open --raw ($ans_path) | to png ($output_path) --font IosevkaFont"
-    }
-
-    ^open -R $output_path
+    $out | ansi-to-png $output_path
 }
 
 # Helper function to get all unique directories from command history
