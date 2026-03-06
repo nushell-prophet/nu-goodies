@@ -6,10 +6,7 @@ export use commands.nu [
     # "git-check-file-clean"
     "copy-out"
     "cd-root"
-    # "dedent"
     # "download-nushell-nightly"
-    # "escape-nushell-escapes"
-    # "escape-regex"
     "example"
     "fs"
     "fill non-exist"
@@ -20,7 +17,6 @@ export use commands.nu [
     "in-fx"
     "in-hx"
     "in-vd"
-    # "indent"
     "L"
     # "launch-downloaded"
     "ln-for-preview"
@@ -41,13 +37,8 @@ export use commands.nu [
     "select-i"
     "side-by-side"
     # "significant-digits"
-    # "str append"
-    "str c"
-    # "str prepend"
-    # "str repeat"
     # "testcd"
     "tt"
-    "to-safe-filename"
     "to-temp-file"
     "transcribe"
     "wez-to-asciicast"
@@ -55,6 +46,18 @@ export use commands.nu [
     "wez-to-gif"
     "wez-to-png"
     "zellij-to-png"
+]
+
+export use str.nu [
+    # "dedent"
+    # "escape-nushell-escapes"
+    # "escape-regex"
+    # "indent"
+    # "str append"
+    "str c"
+    # "str prepend"
+    # "str repeat"
+    "to-safe-filename"
 ]
 
 export use cprint.nu [
