@@ -1,13 +1,11 @@
 export use commands.nu [
     # "alignit"
-    # "history-backup"
     "bar"
     "bye"
     # "cb"
     "center"
     # "git-check-file-clean"
     # "colorit"
-    "copy-cmd"
     "copy-out"
     "cprint"
     "cd-root"
@@ -23,11 +21,8 @@ export use commands.nu [
     # "frameit"
     "gradient-screen"
     "ls-git-modified-date"
-    "hist"
-    "hist-to-script"
     "in-fx"
     "in-hx"
-    # "in-vd history"
     "in-vd"
     # "indent"
     # "indentit"
@@ -40,7 +35,6 @@ export use commands.nu [
     "mygit log"
     # "newlineit"
     "normalize"
-    # "nu-completions-cwds"
     "nu-format"
     "nu-test install"
     "nu-test launch"
@@ -70,6 +64,15 @@ export use commands.nu [
     "zellij-to-png"
     # "width-safe"
     # "wrapit"
+]
+
+export use history.nu [
+    "copy-cmd"
+    # "completions-cwds"
+    "get-last-commands-from-sql"
+    "hist"
+    "hist-to-script"
+    "in-vd history"
     "z"
 ]
 
