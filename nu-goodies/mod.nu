@@ -3,7 +3,6 @@ export use commands.nu [
     # "cb"
     "center"
     # "git-check-file-clean"
-    "copy-out"
     "cd-root"
     # "download-nushell-nightly"
     "example"
@@ -36,8 +35,12 @@ export use commands.nu [
     "tt"
     "to-temp-file"
     "transcribe"
-    "wez-to-asciicast"
+]
+
+export use capture.nu [
+    "copy-out"
     "wez-to-ansi"
+    "wez-to-asciicast"
     "wez-to-gif"
     "wez-to-png"
     "zellij-to-png"
