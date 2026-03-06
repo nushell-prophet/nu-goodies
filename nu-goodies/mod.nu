@@ -1,6 +1,5 @@
 export use commands.nu [
     "bar"
-    "bye"
     # "cb"
     "center"
     # "git-check-file-clean"
@@ -12,7 +11,6 @@ export use commands.nu [
     "fill non-exist"
     "find-root"
     "format profile"
-    "gradient-screen"
     "ls-git-modified-date"
     "in-fx"
     "in-hx"
@@ -46,6 +44,11 @@ export use commands.nu [
     "wez-to-gif"
     "wez-to-png"
     "zellij-to-png"
+]
+
+export use gradient-screen.nu [
+    "bye"
+    main
 ]
 
 export use str.nu [
