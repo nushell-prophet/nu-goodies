@@ -484,6 +484,11 @@ export def 'hist' [
     --last-x: duration # Duration for the period to check commands
     --not-in-vd (-V) # Disable opening command in visidata
 ]: nothing -> any {
+    if ($nu.history-path | str ends-with 'txt') {
+        print "hist requires SQLite history format"
+        return
+    }
+
     # Start building the SQL query
     let sql_query = "
         SELECT command_line as command, start_timestamp / 1000 as start_timestamp, session_id, hostname, cwd,
@@ -551,6 +556,11 @@ export def 'hist-to-script' [
     --all # Save all history into .nu file
     --directory-hist # Get history for a directory instead of session
 ]: nothing -> nothing {
+    if ($nu.history-path | str ends-with 'txt') {
+        print "hist-to-script requires SQLite history format"
+        return
+    }
+
     let session = history session
 
     let filepath = $filename
@@ -559,13 +569,13 @@ export def 'hist-to-script' [
         | update extension 'nu'
         | path join
 
-    let hist = history -l
-        | if $directory_hist {
-            where cwd == (pwd)
+    let hist = open $nu.history-path
+        | query db (if $directory_hist {
+            "SELECT command_line FROM history WHERE cwd = ? ORDER BY id"
         } else {
-            where session_id == $session
-        }
-        | get command
+            "SELECT command_line FROM history WHERE session_id = ? ORDER BY id"
+        }) -p [(if $directory_hist { $env.PWD } else { $session })]
+        | get command_line
         | str replace -ar $';(char nl)\$.*? in-vd' ''
         | drop 1
 
@@ -1479,6 +1489,8 @@ def 'last-commands' [
 }
 
 def 'completions-copy-out' []: nothing -> list<record<value: int, description: string>> {
+    if ($nu.history-path | str ends-with 'txt') { return [] }
+
     let session = history session
     let width = term size | get columns | $in - 5
 
@@ -1779,6 +1791,11 @@ export def --env 'z' [
     --new-tab (-n) # Open in new Zellij tab
     --update-dead-dirs (-u) # Rebuild nonexistent directories cache
 ]: nothing -> nothing {
+    if ($nu.history-path | str ends-with 'txt') {
+        print "z requires SQLite history format"
+        return
+    }
+
     # Handle update dead dirs
     if $update_dead_dirs {
         print "Updating dead directories list..."
@@ -1805,6 +1822,8 @@ export def --env 'z' [
 
 # Generate completions for z command from history
 export def 'completions-cwds' []: nothing -> record {
+    if ($nu.history-path | str ends-with 'txt') { return {completions: [], options: {}} }
+
     # Using SQL-level filtering for completions as well
     init-dead-cwds-table
 
