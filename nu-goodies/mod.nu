@@ -12,9 +12,6 @@ export use commands.nu [
     "find-root"
     "format profile"
     "ls-git-modified-date"
-    "in-fx"
-    "in-hx"
-    "in-vd"
     "L"
     # "launch-downloaded"
     "ln-for-preview"
@@ -44,6 +41,12 @@ export use commands.nu [
     "wez-to-gif"
     "wez-to-png"
     "zellij-to-png"
+]
+
+export use editors.nu [
+    "in-fx"
+    "in-hx"
+    "in-vd"
 ]
 
 export use gradient-screen.nu [
