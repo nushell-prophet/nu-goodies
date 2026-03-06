@@ -72,9 +72,7 @@ export def 'center' [
 
 # Copy this command to clipboard
 export def 'copy-cmd' []: nothing -> nothing {
-    let commands = history
-        | last 2
-        | get command
+    let commands = get-last-commands-from-sql 2
         | str trim
 
     $commands
@@ -253,12 +251,15 @@ export def 'example' [
 }
 
 def get-last-commands-from-sql [n: int = 1]: nothing -> any {
+    if ($nu.history-path | str ends-with 'txt') {
+        return (history | last $n | get command | if $n == 1 { get 0 } else { })
+    }
+
     open $nu.history-path
     | query db "select command_line from history order by id desc limit ?" -p [$n]
     | get command_line
-    | if $n == 1 {
-        get 0
-    } else { }
+    | reverse
+    | if $n == 1 { get 0 } else { }
 }
 
 # Fill missing columns for each row
@@ -1089,9 +1090,7 @@ export def 'select-i' []: table -> nothing {
         | input list -m "Pick columns to get: "
         | str join " "
 
-    history
-    | last
-    | get command
+    get-last-commands-from-sql 1
     | str replace 'select-i' $'select ($choices)'
     | commandline edit -r $in
 }
@@ -1473,10 +1472,8 @@ def 'now-fn' []: nothing -> string {
 def 'last-commands' [
     n_last_commands: int
 ]: nothing -> string {
-    history
-    | last ($n_last_commands + 1)
-    | drop # drop the last command to initiate image capture
-    | get command
+    get-last-commands-from-sql ($n_last_commands + 1)
+    | drop 1
     | str trim
     | str join '_'
 }
@@ -1948,10 +1945,7 @@ export def 'nu-format' [
     let input = $in
 
     let cmd = if $input == null {
-        history
-        | last 2
-        | first
-        | get command
+        get-last-commands-from-sql 2 | first
     } else { $input }
 
     $cmd
