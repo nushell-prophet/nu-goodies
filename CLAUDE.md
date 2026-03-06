@@ -27,27 +27,67 @@ Use [Topiary](https://github.com/tweag/topiary) for formatting `.nu` files.
 
 ### Module Entry Point
 
-`nu-goodies/mod.nu` is the module entry point. It re-exports commands from three sources:
-- `commands.nu` - the main collection of utilities (majority of the code)
-- `macos.nu` - macOS-specific commands (`O`, `ramdisk-create`, `figlet-demo`)
-- `update-public-git.nu` - script for syncing patches between private/public repos
+`nu-goodies/mod.nu` is the module entry point. It re-exports commands from dedicated submodules:
+
+- `commands.nu` — general-purpose utilities (the largest file, ~980 lines)
+- `capture.nu` — terminal capture and screenshot commands
+- `cprint.nu` — colorful text printing with wrapping, framing, alignment
+- `editors.nu` — editor integration (Helix, fx, VisiData)
+- `gradient-screen.nu` — decorative gradient screen fill and `bye`
+- `history.nu` — shell history search and manipulation
+- `str.nu` — string utilities (`str c`, `str repeat`, `str append`, etc.)
+- `macos.nu` — macOS-specific commands (`O`, `ramdisk-create`, `figlet-demo`)
+- `update-public-git.nu` — script for syncing patches between private/public repos
 
 ### commands.nu
 
-Single large file (~1500 lines) containing all general-purpose commands. Key command categories:
+Remaining general-purpose commands (~980 lines). Key categories:
 
-- **Text formatting**: `cprint` (colorful printing with wrapping, framing, alignment, highlight), plus internal helpers `wrapit`, `colorit`, `alignit`, `frameit`, `indentit`, `newlineit`, `remove-single-nls`, `width-safe`
-- **History/shell**: `hist` (SQL-based history search with filters), `hist-to-script`, `copy-cmd`, `copy-out`, `example` (format command + output for sharing)
 - **Data display**: `bar` (Unicode progress bars), `L` (pipe table to less/bat), `normalize`, `number-format`, `number-col-format`, `side-by-side`
-- **File/navigation**: `fs` (interactive file selector), `z` (zoxide wrapper), `cd-root`, `find-root`, `mc` (midnight commander-style dual pane)
-- **Editor integration**: `in-hx` (open in Helix), `in-fx` (open in fx JSON viewer), `in-vd` (open in Visidata)
-- **Text utilities**: `str c` (string concatenation), `fill non-exist` (fill missing table columns), `select-i` (interactive column selector)
-- **Terminal visuals**: `gradient-screen`, `bye` (gradient screen + exit)
-- **Media**: `transcribe`, `wez-to-gif`, `wez-to-png`, `wez-to-ansi`, `wez-to-asciicast`, `zellij-to-png`
+- **File/navigation**: `fs` (interactive file selector), `cd-root`, `find-root`, `mc` (midnight commander-style dual pane)
+- **Shell productivity**: `example` (format command + output for sharing), `select-i` (interactive column selector), `fill non-exist`, `replace-in-all-files`
+- **Nushell dev**: `nu-test install`, `nu-test launch`, `nu-format`, `significant-digits`
+- **Media**: `transcribe`
+
+### capture.nu
+
+Terminal capture and screenshot commands: `copy-out` (clipboard from Zellij scrollback), `wez-to-ansi`, `wez-to-asciicast`, `wez-to-gif`, `wez-to-png`, `zellij-to-png`. Imports from `history.nu` and `str.nu`.
+
+### cprint.nu
+
+Colorful printing with wrapping, framing, alignment, and highlight. Exported as `main` (called as `cprint`). Internal helpers: `wrapit`, `colorit`, `alignit`, `frameit`, `indentit`, `newlineit`, `remove-single-nls`, `width-safe`. Imports from `str.nu`.
+
+### editors.nu
+
+Editor integration: `in-fx` (open in fx JSON viewer), `in-hx` (open in Helix), `in-vd` (open in VisiData). Imports `kv` submodule.
+
+### gradient-screen.nu
+
+Decorative terminal visuals: `gradient-screen` (exported as `main`), `bye` (gradient screen + exit). Imports from `str.nu`.
+
+### history.nu
+
+Shell history commands: `hist` (SQL-based history search with filters), `hist-to-script`, `copy-cmd`, `z` (zoxide wrapper), `in-vd history`, `get-last-commands-from-sql` (shared helper).
+
+### str.nu
+
+String utilities: `str c` (concatenation), `str repeat`, `str append`, `str prepend`, `indent`, `dedent`, `escape-regex`, `escape-nushell-escapes`, `to-safe-filename`. No imports from other submodules.
 
 ### kv/ Submodule
 
 File-backed key-value store (originally by @clipplerblood). Stores values as individual files (`.txt` or `.nuon`) with a `kv.nuon` index. Commands: `ls`, `set`, `get`, `get-file`, `del`, `reset`, `push`, `pop`. Configurable via `$env.kv.path`.
+
+### Inter-module Dependencies
+
+```
+str.nu          ← (no deps)
+cprint.nu       ← str.nu
+gradient-screen.nu ← str.nu
+history.nu      ← (no deps)
+editors.nu      ← kv/
+capture.nu      ← str.nu, history.nu
+commands.nu     ← str.nu, history.nu
+```
 
 ### History Access Pattern
 
@@ -57,6 +97,7 @@ Commands that access shell history use a helper `get-last-commands-from-sql` whi
 
 - Commands use Nushell's typed input/output signatures (e.g., `]: string -> string {`)
 - Internal helpers are non-exported `def` commands; public API commands use `export def`
-- `mod.nu` controls the public API by selectively importing from `commands.nu` - commented-out entries are intentionally hidden
+- `mod.nu` controls the public API by selectively importing from each submodule - commented-out entries are intentionally hidden
+- When extracting a command to a new file, the command named the same as the module file must be renamed to `main` (Nushell restriction)
 - The `str c` command (string concatenation) is used extensively instead of string interpolation for building strings
 - `par-each` is preferred over `each` for parallelizable operations
