@@ -41,7 +41,11 @@ export def 'tile-right' [
     | zip ($right_lines | append (seq 1 ($left_n - $right_n) | each {''}))
     | each {|pair| $pair.0 + $gap_str + $pair.1}
     | if not $no_truncate {
-        each {ansi strip | str substring 0..<$width --grapheme-clusters}
+        each {|line|
+            if ($line | ansi strip | str length --grapheme-clusters) > $width {
+                $line | ansi strip | str substring 0..<$width --grapheme-clusters
+            } else { $line }
+        }
     } else { }
     | str join (char nl)
 }
