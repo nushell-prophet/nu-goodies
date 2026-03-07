@@ -38,7 +38,9 @@ export use commands.nu [
 export use arrange.nu [
     "center"
     "tile-right"
+    "tile-left"
     "tile-down"
+    "tile-up"
 ]
 
 export use capture.nu [

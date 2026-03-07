@@ -58,3 +58,26 @@ export def 'tile-down' [
     let separator = 1..($gap + 1) | each {(char nl)} | str join
     ($in | table | into string) + $separator + (do $bottom | table | into string)
 }
+
+# Tile another output to the left of the piped input
+export def 'tile-left' [
+    left: closure # Closure producing the left panel
+    --gap: int = 2 # Number of spaces between panels
+    --no-truncate (-T) # Don't truncate lines to terminal width
+]: any -> string {
+    let right = $in
+    if $no_truncate {
+        do $left | tile-right -T --gap $gap {$right}
+    } else {
+        do $left | tile-right --gap $gap {$right}
+    }
+}
+
+# Tile another output above the piped input
+export def 'tile-up' [
+    top: closure # Closure producing the top panel
+    --gap: int = 0 # Number of blank lines between panels
+]: any -> string {
+    let bottom = $in
+    do $top | tile-down --gap $gap {$bottom}
+}
