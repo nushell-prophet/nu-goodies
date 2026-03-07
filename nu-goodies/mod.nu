@@ -1,7 +1,6 @@
 export use commands.nu [
     "bar"
     # "cb"
-    "center"
     # "git-check-file-clean"
     "cd-root"
     # "download-nushell-nightly"
@@ -29,14 +28,18 @@ export use commands.nu [
     "replace-in-all-files"
     "rename-tab"
     "select-i"
-    "side-by-side"
-    "tile-right"
-    "tile-down"
     # "significant-digits"
     # "testcd"
     "tt"
     "to-temp-file"
     "transcribe"
+]
+
+export use arrange.nu [
+    "center"
+    "side-by-side"
+    "tile-right"
+    "tile-down"
 ]
 
 export use capture.nu [
