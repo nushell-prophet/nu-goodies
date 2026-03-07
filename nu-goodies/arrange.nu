@@ -75,6 +75,7 @@ export def 'side-by-side' [
 export def 'tile-right' [
     right: closure # Closure producing the right panel
     --gap: int = 2 # Number of spaces between panels
+    --no-truncate (-T) # Don't truncate lines to terminal width
 ]: any -> string {
     let left = $in | table | into string | lines
     let right_lines = do $right | table | into string | lines
@@ -84,11 +85,16 @@ export def 'tile-right' [
     let right_n = $right_lines | length
     let gap_str = ('' | fill -c ' ' -w $gap)
 
+    let width = if $no_truncate { 0 } else { (term size).columns }
+
     $left
     | append (seq 1 ($right_n - $left_n) | each {''})
     | each {fill -w $left_width}
     | zip ($right_lines | append (seq 1 ($left_n - $right_n) | each {''}))
     | each {|pair| $pair.0 + $gap_str + $pair.1}
+    | if not $no_truncate {
+        each {ansi strip | str substring 0..<$width --grapheme-clusters}
+    } else { }
     | str join (char nl)
 }
 
