@@ -37,7 +37,6 @@ export use commands.nu [
 
 export use arrange.nu [
     "center"
-    "side-by-side"
     "tile-right"
     "tile-down"
 ]
