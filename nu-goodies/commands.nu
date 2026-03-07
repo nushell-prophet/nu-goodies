@@ -482,6 +482,7 @@ export def 'number-col-format' [
     let integers = $input
         | get $column_name
         | math max
+        | into string
         | split row '.'
         | get 0
         | str length
@@ -531,16 +532,20 @@ export def 'number-format' [
 ]: [int -> string float -> string nothing -> string] {
     let in_num = $in
 
-    let parts = $num
+    let formatted = $num
         | default $in_num
         | if $significant_digits == 0 { } else {
             significant-digits $significant_digits
         }
-        | into string
-        | split chars
-        | split list '.'
+        | if $decimals > 0 {
+            into string --decimals $decimals
+        } else {
+            into string
+        }
+        | split row '.'
 
-    let whole_part = $parts.0
+    let whole_part = $formatted.0
+        | split chars
         | reverse
         | window 3 -s 3 --remainder
         | each { reverse | str join }
@@ -553,12 +558,7 @@ export def 'number-format' [
     let dec_part = if $decimals == 0 {
         ''
     } else {
-        $parts.1?
-        | default [0]
-        | first $decimals
-        | str join
-        | '.' + $in
-        | fill -w ($decimals + 1) -c '0' -a l
+        '.' + ($formatted | get 1? | default '0')
     }
 
     $"(ansi $color)($whole_part)($dec_part)(ansi reset)(ansi green_bold)($denom)(ansi reset)"
