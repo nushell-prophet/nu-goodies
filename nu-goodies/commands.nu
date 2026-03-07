@@ -487,7 +487,7 @@ export def 'number-col-format' [
         | get 0
         | str length
         | if $thousands_delim_length > 0 {
-            $in * ((3 + $thousands_delim_length) / 3 - 0.001) | math floor
+            $in + (($in - 1) / 3 | math floor) * $thousands_delim_length
         } else { }
         | append (
             $column_name | str length
@@ -496,13 +496,10 @@ export def 'number-col-format' [
         | math max
 
     $input
-    | upsert $column_name {|i|
-        (
-            number-format ($i | get $column_name)
-            --denom $denom --decimals $decimals
+    | upsert $column_name {
+        (number-format --denom $denom --decimals $decimals
             --thousands-delim $thousands_delim --integers $integers
-            --significant-digits $significant_digits
-        )
+            --significant-digits $significant_digits)
     }
 }
 
