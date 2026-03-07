@@ -58,7 +58,16 @@ export def 'bar' [
 export def 'center' [
     --factor: int = 1 # Divide terminal width by this factor
 ]: string -> string {
-    fill -a center --width ((term size).columns // $factor)
+    let input = $in | lines | str trim --right
+
+    let max_length = $input | each {ansi strip | str length --grapheme-clusters} | math max
+    let term_width = (term size).columns / $factor
+    let left_pad = [0 (($term_width - $max_length) // 2)] | math max
+    let padding = ('' | fill -c ' ' -w ($left_pad | into int))
+
+    $input
+    | each {|line| $padding + $line}
+    | str join (char nl)
 }
 
 # output a command from a pipe where `example` is used, and truncate the output table
