@@ -1,8 +1,13 @@
+# Render any value as lines of text
+def to-lines []: any -> list<string> {
+    table | into string | lines
+}
+
 # Center text within terminal width
 export def 'center' [
     --factor: int = 1 # Divide terminal width by this factor
-]: string -> string {
-    let input = $in | lines | str trim --right
+]: any -> string {
+    let input = $in | to-lines | str trim --right
 
     let max_length = $input | each {ansi strip | str length --grapheme-clusters} | math max
     let term_width = (term size).columns / $factor
@@ -14,7 +19,6 @@ export def 'center' [
     | str join (char nl)
 }
 
-
 # Tile another output to the right of the piped input
 #
 # > "ab\ncd" | tile-right { "12\n34" }
@@ -25,8 +29,8 @@ export def 'tile-right' [
     --gap: int = 2 # Number of spaces between panels
     --no-truncate (-T) # Don't truncate lines to terminal width
 ]: any -> string {
-    let left = $in | table | into string | lines
-    let right_lines = do $right | table | into string | lines
+    let left = $in | to-lines
+    let right_lines = do $right | to-lines
 
     let left_width = $left | each {ansi strip | str length --grapheme-clusters} | math max
     let left_n = $left | length
@@ -60,7 +64,7 @@ export def 'tile-down' [
     --gap: int = 0 # Number of blank lines between panels
 ]: any -> string {
     let separator = 1..($gap + 1) | each {(char nl)} | str join
-    ($in | table | into string) + $separator + (do $bottom | table | into string)
+    ($in | to-lines | str join (char nl)) + $separator + (do $bottom | to-lines | str join (char nl))
 }
 
 # Tile another output to the left of the piped input
