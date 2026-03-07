@@ -30,6 +30,8 @@ export use commands.nu [
     "rename-tab"
     "select-i"
     "side-by-side"
+    "tile-right"
+    "tile-down"
     # "significant-digits"
     # "testcd"
     "tt"
