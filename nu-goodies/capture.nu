@@ -192,8 +192,7 @@ def 'match-history-command' [
 
     let session = history session
     let match = open $nu.history-path
-        | query db "SELECT command_line FROM history WHERE session_id = ? ORDER BY id DESC LIMIT 100"
-          -p [$session]
+        | query db "SELECT command_line FROM history WHERE session_id = ? ORDER BY id DESC LIMIT 100" -p [$session]
         | get command_line
         | where { ($in | lines | first | str trim -r) == ($first_line | str trim -r) }
         | get 0?
@@ -246,7 +245,7 @@ export def 'copy-out' [
 
     # Build per-command blocks for history-assisted formatting
     let block_indices = if ($indices | length) == 1 {
-        1..($indices | first) | reverse
+        1..($indices | first) | each {} | reverse
     } else {
         $indices
     }
