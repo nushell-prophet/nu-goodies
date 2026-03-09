@@ -217,8 +217,7 @@ def 'format-block' [
         let command_text = $hist.command | lines
         let output = $block | skip $hist.line_count
             | each {
-                if ($in | is-empty) { }
-                else { str c '# => ' $in }
+                if ($in | is-empty) { } else { str c '# => ' $in }
             }
         $command_text | append $output | str join (char nl)
     } else {
