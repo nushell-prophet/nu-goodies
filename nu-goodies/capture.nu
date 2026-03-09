@@ -184,6 +184,50 @@ def 'extract-by-prompts' [
     }
 }
 
+# Look up a command in session history by matching its first line
+def 'match-history-command' [
+    first_line: string
+]: nothing -> any {
+    if ($nu.history-path | str ends-with 'txt') { return null }
+
+    let session = history session
+    let match = open $nu.history-path
+        | query db "SELECT command_line FROM history WHERE session_id = ? ORDER BY id DESC LIMIT 100"
+          -p [$session]
+        | get command_line
+        | where { ($in | lines | first | str trim -r) == ($first_line | str trim -r) }
+        | get 0?
+
+    if ($match == null) { return null }
+    {command: $match, line_count: ($match | lines | length)}
+}
+
+# Format a scrollback block (command + output) using history-assisted splitting
+def 'format-block' [
+    block: list<string>
+    no_comment: bool
+]: nothing -> string {
+    if $no_comment {
+        return ($block | str join (char nl))
+    }
+
+    let cmd_first_line = $block | first | str replace -r '^> ' ''
+    let hist = match-history-command $cmd_first_line
+
+    if ($hist != null) {
+        let command_text = $hist.command | lines
+        let output = $block | skip $hist.line_count
+            | each {
+                if ($in | is-empty) { }
+                else { str c '# => ' $in }
+            }
+        $command_text | append $output | str join (char nl)
+    } else {
+        print -e "note: command not found in history, outputting raw"
+        $block | each { str replace -r '^> ' '' } | str join (char nl)
+    }
+}
+
 # Copy command(s) with output to clipboard from Zellij pane scrollback
 #
 # > copy-out 3     # from 3rd-to-last command through the last
@@ -200,16 +244,21 @@ export def 'copy-out' [
     let output_lines = $dump.raw_lines
         | if $ansi { } else { each { ansi strip } }
 
-    extract-by-prompts $indices $output_lines $dump.reversed_prompts
-    | if $no_comment { } else {
-        each {
-            if ($in =~ '^> ') {
-                str replace -r '^> ' ''
-            } else if ($in | is-empty) {
-            } else { str c '# => ' $in }
-        }
+    # Build per-command blocks for history-assisted formatting
+    let block_indices = if ($indices | length) == 1 {
+        1..($indices | first) | reverse
+    } else {
+        $indices
     }
-    | str join (char nl)
+
+    $block_indices
+    | each {|n|
+        let start = $dump.reversed_prompts | get $n
+        let end = $dump.reversed_prompts | get ($n - 1)
+        $output_lines | skip $start | first ($end - $start)
+    }
+    | each {|block| format-block $block $no_comment }
+    | str join "\n\n"
     | str replace -ra '\n+$' ''
     | if $echo { } else { pbcopy }
 }
