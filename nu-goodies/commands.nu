@@ -223,7 +223,7 @@ export def --env ln-for-preview [
     cd $temp_path
 }
 
-# source /Users/user/git/nu-goodies/nu-goodies/wez-to-ansi.nu
+# source ~/git/nu-goodies/nu-goodies/wez-to-ansi.nu
 #dotnu-vars-end
 
 # def main [ $n_last_commands: int = 2 --regex: string --lines_before_top_of_term: int --min_term_width: int ] {
@@ -264,10 +264,10 @@ export def --env mc [
 export def --env md [
     target_dir: string
     -d # Use standard directory
-    --dest-dir: path = '/Users/user/temp'
+    --dest-dir: path = '~/temp'
 ]: nothing -> nothing {
     let dir = (
-        if $d or ($dest_dir != '/Users/user/temp') {
+        if $d or ($dest_dir != '~/temp') {
             $dest_dir | path join ($target_dir | str replace -a ' ' '_')
         } else { $target_dir }
         | path expand
@@ -365,9 +365,9 @@ export def 'normalize' [
 export def 'nu-test install' [
     --nushell # Update nushell only
     --polars # Update polars plugin only
-    --nushell-repo-path: path = '/Users/user/git/nushell/'
-    --cargo-test-path: path = '/Users/user/.cargo_test/'
-    --plugin-config: path = '/Users/user/.test_config/nushell/polars_test.msgpackz'
+    --nushell-repo-path: path = '~/git/nushell/'
+    --cargo-test-path: path = '~/.cargo_test/'
+    --plugin-config: path = '~/.test_config/nushell/polars_test.msgpackz'
     --pr: string # A PR to checkout like ayax79:polars_pivot
 ]: nothing -> nothing {
     cd $nushell_repo_path
@@ -402,13 +402,13 @@ export def 'nu-test install' [
 export def 'nu-test launch' [
     --no-plugin
 ]: nothing -> nothing {
-    let exec = '/Users/user/.cargo_test/' | path join bin nu
+    let exec = '~/.cargo_test/' | path join bin nu
     let params = [
         "--execute"
-        "$env.PATH = ($env.PATH | prepend '/Users/user/.cargo_test/bin/')"
+        "$env.PATH = ($env.PATH | prepend '~/.cargo_test/bin/')"
     ]
         | if $no_plugin { } else {
-            prepend ['--plugin-config' '/Users/user/.test_config/nushell/polars_test.msgpackz']
+            prepend ['--plugin-config' '~/.test_config/nushell/polars_test.msgpackz']
         }
 
     ^$exec ...$params
@@ -717,8 +717,8 @@ export def 'transcribe' [file: path]: nothing -> nothing {
         }
 
     (
-        ^/Users/user/git/whisper.cpp/build/bin/whisper-cli -f $file
-        -m /Users/user/git/whisper.cpp/models/ggml-base.en.bin
+        ^~/git/whisper.cpp/build/bin/whisper-cli -f $file
+        -m ~/git/whisper.cpp/models/ggml-base.en.bin
         -otxt $'($file).txt' -osrt $'($file).srt' -np
     )
 }

@@ -20,7 +20,7 @@ export def 'wez-to-asciicast' [
         | parse -r '(?<path>\S+$)'
         | get path.0
 
-    let target_folder = '/Users/user/temp/wezterm-asciinemas'
+    let target_folder = '~/temp/wezterm-asciinemas'
         | path join $'gif_(pwd | path split | last)'
         | $'($in)(mkdir $in)'
 
@@ -61,7 +61,7 @@ export def 'wez-to-gif' [
 def 'default-image-path' [
     filename: string
 ]: nothing -> path {
-    ['/Users/user/temp/freeze_images/' (pwd | path split | last)]
+    ['~/temp/freeze_images/' (pwd | path split | last)]
     | path join
     | $'($in)(mkdir $in)'
     | path join $filename
