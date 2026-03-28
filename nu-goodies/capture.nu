@@ -126,7 +126,7 @@ def 'zellij-dump-prompts' [
     --name: string = 'scrollback'
 ]: nothing -> record<raw_lines: list<string>, reversed_prompts: list<int>> {
     let tmp = $nu.temp-dir | path join $'($name).txt'
-    zellij action dump-screen $tmp --full
+    zellij action dump-screen --path $tmp --full
 
     let raw_lines = open $tmp | lines
     let stripped = $raw_lines | each { ansi strip }
