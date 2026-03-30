@@ -261,6 +261,24 @@ export def 'copy-out' [
     | if $echo { } else { pbcopy }
 }
 
+# Delete last N prompts with their outputs from Zellij pane scrollback
+# Uses ANSI escapes to clear terminal lines; works for on-screen content
+export def 'delete-prompts' [
+    n: int = 1 # Number of prompts (with outputs) to delete
+]: nothing -> nothing {
+    let dump = zellij-dump-prompts [$n] --name 'delete-prompts'
+    let reversed = $dump.reversed_prompts
+
+    let target_line = $reversed | get $n
+    let current_line = $reversed | get 0
+
+    # Include the blank line before target prompt (transient prompt emits \n before "> ")
+    let start = [($target_line - 1) 0] | math max
+    let lines_up = $current_line - $start + 1
+
+    print -n $"\e[($lines_up)A\e[0J"
+}
+
 # Capture commands from Zellij pane scrollback and render to PNG
 #
 # > zellij-to-png 3     # from 3rd-to-last command through the last
