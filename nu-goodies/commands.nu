@@ -295,34 +295,14 @@ export def 'mv1' [
 export def 'mygit log' [
     --message (-m): string
 ]: nothing -> nothing {
-    let message = $message
-        | default (date now | format date "%Y-%m-%d")
-
-    let dot_dir = '~/.config/dot_home_dir'
-        | path expand
+    let message = $message | default (date now | format date "%Y-%m-%d")
 
     $nu.home-dir
     | path join '.*'
     | glob $in -d 1 --no-dir --exclude ['.CFUserTextEncoding']
-    | par-each {|i| cp --update $i $dot_dir }
+    | cp --update ...$in '~/.config/dot_home_dir' 
 
     nu ~/.config/nushell/toolkit.nu history backup
-
-    let paths = [
-        '~/.config/nushell'
-        '~/.config/'
-        # '~/.visidata/'
-    ]
-        | path expand
-
-    for $dir in $paths {
-        try {
-            print (ansi yellow) $dir (ansi reset) '';
-            cd $dir;
-            git add --all
-            git commit -a -m $message
-        }
-    }
 }
 
 # history-backup moved to ~/.config/nushell/toolkit.nu
