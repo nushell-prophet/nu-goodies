@@ -29,11 +29,11 @@ export def --env main [
 
     let term_size = term size
 
-    let screen_size = $term_size
-        | if $rows == null { values } else {
-            $in.columns * $rows
+    let screen_size = if $rows == null {
+            $term_size | values | math product
+        } else {
+            $term_size.columns * $rows
         }
-        | math product
 
     let pattern_len = $strings.0 | split chars | length
     let colors = rand-hex-col2
