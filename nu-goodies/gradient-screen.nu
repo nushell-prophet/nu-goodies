@@ -35,13 +35,38 @@ export def --env main [
         }
         | math product
 
-    let pattern_chars = $strings.0 | split chars
-    let pattern_len = $pattern_chars | length
-    let date_text = date now | format date "%Y%m%d_%H%M%S"
-
+    let pattern_len = $strings.0 | split chars | length
     let colors = rand-hex-col2
 
     $env.gradient-screen-last-colors = $colors
+
+    let chars = build-screen-buffer $strings $screen_size --no-date=$no_date
+
+    let output = $chars
+        | window $pattern_len --stride $pattern_len --remainder
+        | each { str join | ansi gradient --fgstart $colors.0 --fgend $colors.1 }
+        | str join
+
+    # Why: re-window by terminal width to insert newlines — the gradient
+    # was applied per pattern_len chunk, but display needs column breaks
+    split-ansi-chars $output
+    | window $term_size.columns --stride $term_size.columns
+    | each { str join }
+    | str join (char nl)
+    | $'($in)(ansi reset)'
+    | if $echo { } else {
+        print; sleep 2sec;
+    }
+}
+
+def build-screen-buffer [
+    strings: list<string>
+    screen_size: int
+    --no-date
+]: nothing -> list<string> {
+    let pattern_chars = $strings.0 | split chars
+    let pattern_len = $pattern_chars | length
+    let date_text = date now | format date "%Y%m%d_%H%M%S"
 
     # Why: pad each filler text with trailing pattern chars so its length
     # is a multiple of pattern_len — keeps gradient windows aligned
@@ -61,31 +86,17 @@ export def --env main [
     let base = seq 0 $repeat_count
         | each { $strings.0 }
 
-    let output = $filler_texts
-        | reduce -f $base {|i acc|
-            $acc
-            | insert (random int 3..$repeat_count) $i
-        }
-        | str join
-        | split chars --grapheme-clusters
-        | first $screen_size
-        | if $no_date { } else {
-            drop ($date_text | str length)
-            | append ($date_text | split chars)
-        }
-        | window $pattern_len --stride $pattern_len --remainder
-        | each { str join | ansi gradient --fgstart $colors.0 --fgend $colors.1 }
-        | str join
-
-    # Why: re-window by terminal width to insert newlines — the gradient
-    # was applied per pattern_len chunk, but display needs column breaks
-    split-ansi-chars $output
-    | window $term_size.columns --stride $term_size.columns
-    | each { str join }
-    | str join (char nl)
-    | $'($in)(ansi reset)'
-    | if $echo { } else {
-        print; sleep 2sec;
+    $filler_texts
+    | reduce -f $base {|i acc|
+        $acc
+        | insert (random int 3..$repeat_count) $i
+    }
+    | str join
+    | split chars --grapheme-clusters
+    | first $screen_size
+    | if $no_date { } else {
+        drop ($date_text | str length)
+        | append ($date_text | split chars)
     }
 }
 
