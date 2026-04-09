@@ -90,7 +90,12 @@ def build-screen-buffer [
         | str length
         | math sum
 
-    let repeat_count = ($screen_size - $filler_len) // $pattern_len
+    # Why: clamp to 4 minimum so `random int 3..$repeat_count` is always
+    # a valid range — fillers alone can exceed screen_size with many strings
+    let repeat_count = [
+        (($screen_size - $filler_len) // $pattern_len)
+        4
+    ] | math max
 
     let base = seq 0 $repeat_count
         | each { $strings.0 }
