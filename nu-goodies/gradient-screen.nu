@@ -36,13 +36,13 @@ export def --env main [
         }
 
     let pattern_len = $strings.0 | split chars | length
-    let colors = rand-hex-col2
+    let color_pairs = [(rand-hex-col2) (rand-hex-col2) (rand-hex-col2) (rand-hex-col2)]
 
-    $env.gradient-screen-last-colors = $colors
+    $env.gradient-screen-last-colors = $color_pairs
 
     let chars = build-screen-buffer $strings $screen_size --no-date=$no_date
 
-    apply-gradient $chars $pattern_len $colors $term_size.columns
+    apply-gradient $chars $pattern_len $color_pairs $term_size.columns
     | if $echo { } else {
         print; sleep 2sec;
     }
@@ -51,19 +51,21 @@ export def --env main [
 def apply-gradient [
     chars: list<string>
     pattern_len: int
-    colors: list<string>
+    color_pairs: list<list<string>>
     columns: int
 ]: nothing -> string {
-    let output = $chars
+    let pair_count = $color_pairs | length
+
+    $chars
+    | window $columns --stride $columns --remainder
+    | enumerate
+    | each {|row|
+        let colors = $color_pairs | get ($row.index mod $pair_count)
+        $row.item
         | window $pattern_len --stride $pattern_len --remainder
         | each { str join | ansi gradient --fgstart $colors.0 --fgend $colors.1 }
         | str join
-
-    # Why: re-window by terminal width to insert newlines — the gradient
-    # was applied per pattern_len chunk, but display needs column breaks
-    split-ansi-chars $output
-    | window $columns --stride $columns
-    | each { str join }
+    }
     | str join (char nl)
     | $'($in)(ansi reset)'
 }
