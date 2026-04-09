@@ -42,6 +42,18 @@ export def --env main [
 
     let chars = build-screen-buffer $strings $screen_size --no-date=$no_date
 
+    apply-gradient $chars $pattern_len $colors $term_size.columns
+    | if $echo { } else {
+        print; sleep 2sec;
+    }
+}
+
+def apply-gradient [
+    chars: list<string>
+    pattern_len: int
+    colors: list<string>
+    columns: int
+]: nothing -> string {
     let output = $chars
         | window $pattern_len --stride $pattern_len --remainder
         | each { str join | ansi gradient --fgstart $colors.0 --fgend $colors.1 }
@@ -50,13 +62,10 @@ export def --env main [
     # Why: re-window by terminal width to insert newlines — the gradient
     # was applied per pattern_len chunk, but display needs column breaks
     split-ansi-chars $output
-    | window $term_size.columns --stride $term_size.columns
+    | window $columns --stride $columns
     | each { str join }
     | str join (char nl)
     | $'($in)(ansi reset)'
-    | if $echo { } else {
-        print; sleep 2sec;
-    }
 }
 
 def build-screen-buffer [
