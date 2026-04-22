@@ -25,6 +25,7 @@ export use commands.nu [
     "number-format"
     "orbita"
     "print-and-pass"
+    "rgv"
     "replace-in-all-files"
     "rename-tab"
     "select-i"
