@@ -703,6 +703,16 @@ export def 'transcribe' [file: path]: nothing -> nothing {
     )
 }
 
+# riggrep to output table to capture paths via "[^\\s│]+:\\d+:\\d+" in wezterm
+export def 'rgv' --wrapped [...rest] {
+    rg --vimgrep ...$rest
+    | lines
+    | each {
+        split row ':' --number 4
+        | {path: ($in | first 3 | str join ':') content: ($in | last)}
+    }
+}
+
 # Find and replace text across multiple files by extension
 export def 'replace-in-all-files' [
     find: string # Text to search for
