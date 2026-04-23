@@ -138,7 +138,7 @@ def 'zellij-dump-prompts' [
 
     let max_n = $indices | math max
     if ($prompts | length) < ($max_n + 1) {
-        error make --unspanned {msg: $'Not enough commands in scrollback \(need ($max_n + 1) prompts\)'}
+        error make --unspanned {msg: $"Not enough commands in scrollback \(need ($max_n + 1) prompts\)"}
     }
 
     {raw_lines: $raw_lines reversed_prompts: ($prompts | reverse)}
