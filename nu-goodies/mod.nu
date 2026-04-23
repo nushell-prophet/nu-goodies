@@ -47,6 +47,7 @@ export use arrange.nu [
 export use capture.nu [
     "copy-out"
     "delete-prompts"
+    "in-pane"
     "wez-to-ansi"
     "wez-to-asciicast"
     "wez-to-gif"

@@ -261,6 +261,16 @@ export def 'copy-out' [
     | if $echo { } else { pbcopy }
 }
 
+# Open a new Zellij pane in the current tab running `nu --execute <command>`.
+# Pane closes automatically when nushell exits (--close-on-exit).
+export def 'in-pane' [
+    command: string # Command to run in the new pane (nushell syntax; pipes allowed)
+    --right (-r) # Split right instead of down
+]: nothing -> nothing {
+    let direction = if $right { 'right' } else { 'down' }
+    zellij action new-pane --close-on-exit --direction $direction -- nu --execute $command | ignore
+}
+
 # Delete last N prompts with their outputs from Zellij pane scrollback
 # Uses ANSI escapes to clear terminal lines; works for on-screen content
 export def 'delete-prompts' [
