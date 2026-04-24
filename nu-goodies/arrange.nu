@@ -9,13 +9,13 @@ export def 'center' [
 ]: any -> string {
     let input = $in | to-lines | str trim --right
 
-    let max_length = $input | each {ansi strip | str length --grapheme-clusters} | math max
+    let max_length = $input | each { ansi strip | str length --grapheme-clusters } | math max
     let term_width = (term size).columns / $factor
     let left_pad = [0 (($term_width - $max_length) // 2)] | math max
     let padding = ('' | fill -c ' ' -w ($left_pad | into int))
 
     $input
-    | each {|line| $padding + $line}
+    | each {|line| $padding + $line }
     | str join (char nl)
 }
 
@@ -32,7 +32,7 @@ export def 'tile-right' [
     let left = $in | to-lines
     let right_lines = do $right | to-lines
 
-    let left_width = $left | each {ansi strip | str length --grapheme-clusters} | math max
+    let left_width = $left | each { ansi strip | str length --grapheme-clusters } | math max
     let left_n = $left | length
     let right_n = $right_lines | length
     let gap_str = ('' | fill -c ' ' -w $gap)
@@ -40,10 +40,10 @@ export def 'tile-right' [
     let width = if $no_truncate { 0 } else { (term size).columns }
 
     $left
-    | append (seq 1 ($right_n - $left_n) | each {''})
-    | each {fill -w $left_width}
-    | zip ($right_lines | append (seq 1 ($left_n - $right_n) | each {''}))
-    | each {|pair| $pair.0 + $gap_str + $pair.1}
+    | append (seq 1 ($right_n - $left_n) | each { '' })
+    | each { fill -w $left_width }
+    | zip ($right_lines | append (seq 1 ($left_n - $right_n) | each { '' }))
+    | each {|pair| $pair.0 + $gap_str + $pair.1 }
     | if not $no_truncate {
         each {|line|
             if ($line | ansi strip | str length --grapheme-clusters) > $width {
@@ -63,7 +63,7 @@ export def 'tile-down' [
     bottom: closure # Closure producing the bottom panel
     --gap: int = 0 # Number of blank lines between panels
 ]: any -> string {
-    let separator = 1..($gap + 1) | each {(char nl)} | str join
+    let separator = 1..($gap + 1) | each { (char nl) } | str join
     ($in | to-lines | str join (char nl)) + $separator + (do $bottom | to-lines | str join (char nl))
 }
 
@@ -75,9 +75,9 @@ export def 'tile-left' [
 ]: any -> string {
     let right = $in
     if $no_truncate {
-        do $left | tile-right -T --gap $gap {$right}
+        do $left | tile-right -T --gap $gap { $right }
     } else {
-        do $left | tile-right --gap $gap {$right}
+        do $left | tile-right --gap $gap { $right }
     }
 }
 
@@ -87,5 +87,5 @@ export def 'tile-up' [
     --gap: int = 0 # Number of blank lines between panels
 ]: any -> string {
     let bottom = $in
-    do $top | tile-down --gap $gap {$bottom}
+    do $top | tile-down --gap $gap { $bottom }
 }

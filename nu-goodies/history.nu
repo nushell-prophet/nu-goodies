@@ -125,11 +125,13 @@ export def 'hist-to-script' [
         | path join
 
     let hist = open $nu.history-path
-        | query db (if $directory_hist {
-            "SELECT command_line FROM history WHERE cwd = ? ORDER BY id"
-        } else {
-            "SELECT command_line FROM history WHERE session_id = ? ORDER BY id"
-        }) -p [(if $directory_hist { $env.PWD } else { $session })]
+        | query db (
+            if $directory_hist {
+                "SELECT command_line FROM history WHERE cwd = ? ORDER BY id"
+            } else {
+                "SELECT command_line FROM history WHERE session_id = ? ORDER BY id"
+            }
+        ) -p [(if $directory_hist { $env.PWD } else { $session })]
         | get command_line
         | str replace -ar $';(char nl)\$.*? in-vd' ''
         | drop 1
@@ -365,7 +367,7 @@ export def --env 'z' [
 
 # Generate completions for z command from history
 export def 'completions-cwds' []: nothing -> record {
-    if ($nu.history-path | str ends-with 'txt') { return {completions: [], options: {}} }
+    if ($nu.history-path | str ends-with 'txt') { return {completions: [] options: {}} }
 
     # Using SQL-level filtering for completions as well
     init-dead-cwds-table

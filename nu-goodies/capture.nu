@@ -1,5 +1,5 @@
-use history.nu [get-last-commands-from-sql]
-use str.nu ["str c" "to-safe-filename"]
+use history.nu [ get-last-commands-from-sql ]
+use str.nu [ "str c" "to-safe-filename" ]
 
 # Capture recent commands from Wezterm scrollback with ANSI codes
 export def 'wez-to-ansi' []: nothing -> string {
@@ -198,7 +198,7 @@ def 'match-history-command' [
         | get 0?
 
     if ($match == null) { return null }
-    {command: $match, line_count: ($match | lines | length)}
+    {command: $match line_count: ($match | lines | length)}
 }
 
 # Format a scrollback block (command + output) using history-assisted splitting

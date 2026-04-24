@@ -1,4 +1,4 @@
-use str.nu ["str c"]
+use str.nu [ "str c" ]
 
 # Display gradient screen and exit the shell
 export def 'bye' [
@@ -30,10 +30,10 @@ export def --env main [
     let term_size = term size
 
     let screen_size = if $rows == null {
-            $term_size | values | math product
-        } else {
-            $term_size.columns * $rows
-        }
+        $term_size | values | math product
+    } else {
+        $term_size.columns * $rows
+    }
 
     let pattern_len = $strings.0 | split chars | length
     let colors = rand-hex-col2

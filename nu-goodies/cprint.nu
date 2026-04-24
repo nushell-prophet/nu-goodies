@@ -1,4 +1,4 @@
-use str.nu ["str c" "str repeat"]
+use str.nu [ "str c" "str repeat" ]
 
 # Print a string colorfully with bells and whistles
 export def main [

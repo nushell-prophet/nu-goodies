@@ -323,7 +323,7 @@ export def kv-catch [
 
     if $env.kv?.debug-catch? == true {
         let modified_key = $env.kv?.debug-tag?
-        | if $in != null { $'($key)_($in)' } else { $key }
+            | if $in != null { $'($key)_($in)' } else { $key }
 
         kv set $modified_key $value
     }

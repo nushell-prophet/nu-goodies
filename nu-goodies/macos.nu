@@ -35,7 +35,7 @@ export def figlet-demo [text: string]: nothing -> record {
     glob /opt/homebrew/Cellar/figlet/2.2.5/share/figlet/fonts/*.flf
     | par-each {|i|
         let i = $i
-        | path basename;
+            | path basename;
 
         $text
         | figlet -f $i -C utf8
