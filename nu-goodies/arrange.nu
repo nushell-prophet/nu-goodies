@@ -3,6 +3,47 @@ def to-lines []: any -> list<string> {
     table | into string | lines
 }
 
+# Truncate to a visible width while preserving ANSI escape codes.
+# Why: `str substring --grapheme-clusters` counts ANSI bytes as graphemes, so we
+# walk the string and skip CSI sequences from the visible count.
+def truncate-visible [width: int]: string -> string {
+    let chars = $in | split chars
+    let n = $chars | length
+    let esc = "\u{1b}"
+    mut out = ''
+    mut i = 0
+    mut visible = 0
+    mut state = 'normal'
+    while $i < $n {
+        let c = $chars | get $i
+        match $state {
+            'normal' => {
+                if $c == $esc {
+                    $out = $out + $c
+                    $state = 'after_esc'
+                } else if $visible < $width {
+                    $out = $out + $c
+                    $visible = $visible + 1
+                } else {
+                    break
+                }
+            }
+            'after_esc' => {
+                $out = $out + $c
+                $state = if $c == '[' { 'in_csi' } else { 'normal' }
+            }
+            'in_csi' => {
+                $out = $out + $c
+                if ($c =~ '[A-Za-z]') {
+                    $state = 'normal'
+                }
+            }
+        }
+        $i = $i + 1
+    }
+    $out + (ansi reset)
+}
+
 # Center text within terminal width
 export def 'center' [
     --factor: int = 1 # Divide terminal width by this factor
@@ -47,7 +88,7 @@ export def 'tile-right' [
     | if not $no_truncate {
         each {|line|
             if ($line | ansi strip | str length --grapheme-clusters) > $width {
-                $line | ansi strip | str substring 0..<$width --grapheme-clusters
+                $line | truncate-visible $width
             } else { $line }
         }
     } else { }
