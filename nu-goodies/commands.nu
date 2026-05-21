@@ -887,7 +887,7 @@ esac'
 
     $in
     | if ($in | describe | str starts-with 'list') { wrap name } else { }
-    | get name
+    | if 'name' in ($in | columns) { get name } else { get path }
     | to text
     | fzf --preview $preview --preview-window 'right:70%'
     | str trim
