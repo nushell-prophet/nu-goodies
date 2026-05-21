@@ -880,9 +880,14 @@ if ! [ -r "$f" ]; then
     fi
   fi
 fi
+start=1
+if [ "$l" -gt 0 ]; then
+  start=$((l - ${FZF_PREVIEW_LINES:-40} / 2))
+  [ "$start" -lt 1 ] && start=1
+fi
 case $(file --brief --mime -- "$f") in
   *binary*) file -- "$f" ;;
-  *) bat --color=always --pager=never --style=numbers --highlight-line=$l -- "$f" ;;
+  *) bat --color=always --pager=never --style=numbers --line-range=$start: --highlight-line=$l -- "$f" ;;
 esac'
 
     $in
