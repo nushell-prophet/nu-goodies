@@ -865,12 +865,31 @@ export def 'fs' [...files: path@completions-files-modified]: nothing -> any {
 }
 
 # Pipe files into fzf with bat preview in the right pane. Returns the selected path.
+# Lines like `file:line` or `file:line:col` (e.g. from `rgv`) highlight that line.
+# Binary files show `file --brief` info instead of bat output.
 export def 'fzf-preview' []: [list<string> -> string, table -> string] {
+    let preview = 'f={}
+l=0
+if ! [ -r "$f" ]; then
+  rest=$(printf %s "$f" | grep -oE ":[0-9]+(:[0-9]+)?$")
+  if [ -n "$rest" ]; then
+    base=${f%$rest}
+    if [ -r "$base" ]; then
+      f=$base
+      l=$(printf %s "$rest" | grep -oE "[0-9]+" | head -1)
+    fi
+  fi
+fi
+case $(file --brief --mime -- "$f") in
+  *binary*) file -- "$f" ;;
+  *) bat --color=always --pager=never --style=numbers --highlight-line=$l -- "$f" ;;
+esac'
+
     $in
     | if ($in | describe | str starts-with 'list') { wrap name } else { }
     | get name
     | to text
-    | fzf --preview "bat --color=always {}" --preview-window 'right:70%'
+    | fzf --preview $preview --preview-window 'right:70%'
     | str trim
 }
 
