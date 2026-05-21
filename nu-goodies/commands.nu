@@ -868,6 +868,7 @@ export def 'fs' [...files: path@completions-files-modified]: nothing -> any {
 # Lines like `file:line` or `file:line:col` (e.g. from `rgv`) highlight that line.
 # Binary files show `file --brief` info instead of bat output.
 export def 'fzf-preview' []: [list<string> -> string, table -> string] {
+    let input = $in
     let preview = 'f={}
 l=0
 if ! [ -r "$f" ]; then
@@ -890,9 +891,10 @@ case $(file --brief --mime -- "$f") in
   *) bat --color=always --pager=never --style=numbers --line-range=$start: --highlight-line=$l -- "$f" ;;
 esac'
 
-    $in
-    | if ($in | describe | str starts-with 'list') { wrap name } else { }
-    | if 'name' in ($in | columns) { get name } else { get path }
+    $input
+    | if ($in | describe | str starts-with 'list') { } else {
+         if 'name' in ($in | columns) { get name } else { get path }
+    }
     | to text
     | fzf --preview $preview --preview-window 'right:70%'
     | str trim
