@@ -6,6 +6,7 @@ export use commands.nu [
     # "download-nushell-nightly"
     "example"
     "fs"
+    "fzf-preview"
     "fill non-exist"
     "find-root"
     "format profile"

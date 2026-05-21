@@ -864,8 +864,18 @@ export def 'fs' [...files: path@completions-files-modified]: nothing -> any {
     } else { }
 }
 
+# Pipe files into fzf with bat preview in the right pane. Returns the selected path.
+export def 'fzf-preview' []: [list<string> -> string, table -> string] {
+    $in
+    | if ($in | describe | str starts-with 'list') { wrap name } else { }
+    | get name
+    | to text
+    | fzf --preview "bat --color=always {}" --preview-window 'right:70%'
+    | str trim
+}
+
 # Helper function initially from nupm/utils/dirs.nu
-# 
+#
 # Try to find the package root directory by looking for nupm.nuon in parent
 # directories.
 export def find-root [dir?: path]: [nothing -> path nothing -> nothing] {
