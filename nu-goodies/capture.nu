@@ -67,15 +67,75 @@ def 'default-image-path' [
     | path join $filename
 }
 
-def 'ansi-to-png' [
-    output_path: path
-]: string -> nothing {
-    let ans_path = $output_path | str replace -a '.png' '.ans'
-    $in | save -f $ans_path
-    if (which 'to png' | is-not-empty) {
-        nu --plugin-config $nu.plugin-path -c $"open --raw ($ans_path) | to png ($output_path) --font IosevkaFont"
+const bg_presets = [
+    '#0d0d0d'      # wezterm SANDBOX_MODE
+    '#000000'      # pure black
+    '#ffffff'      # white
+    'transparent'  # no background fill
+]
+
+# Render ANSI on stdin to a PNG file via ansisvg -> rsvg-convert.
+# Returns the output path so callers can pass it to ^open or chafa.
+export def 'ansi-to-png' [
+    out?: path                                    # Why: when omitted, auto-pick the next free img<N>.png in cwd
+    --font-size: int = 50
+    --font-name: string = 'ZedMono Nerd Font'    # Why: matches wezterm config; rsvg-convert resolves via fontconfig after `brew install --cask font-zed-mono-nerd-font`
+    --line-height: float = 1.0
+    --background: string@$bg_presets = '#0d0d0d'  # Why: matches wezterm SANDBOX_MODE background in dotfiles/wezterm/wezterm.lua
+    --show
+]: string -> path {
+    let $out = $out | default (next_img_path)
+    # Not ansisvg --fontfile + resvg because: resvg ignores SVG @font-face and CSS class selectors,
+    # so colors collapse to grey. rsvg-convert (librsvg) handles both via fontconfig + simplecss.
+    $in
+    | ansisvg --transparent --fontname $font_name --fontsize $font_size --lineheight $line_height
+    | rsvg-convert -b $background -o $out
+    if $show { chafa $out }
+    $out
+}
+
+def 'next_img_path' []: nothing -> string {
+    let $nums = ls
+    | get name
+    | each { |n| $n | parse --regex `^img(?<n>\d+)\.png$` | get n.0? }
+    | compact
+    | each { into int }
+    let $next = ($nums | append 0 | math max) + 1
+    $'img($next).png'
+}
+
+# Idempotent installer for the four pieces ansi-to-png needs:
+# ansisvg (no brew formula, fetched via go install + symlinked into brew prefix),
+# librsvg for rsvg-convert, chafa, and the ZedMono Nerd Font cask.
+export def 'install-deps' []: nothing -> nothing {
+    if (which ansisvg | is-empty) {
+        # Not brew because: ansisvg has no formula. Go install puts the binary in $GOPATH/bin;
+        # symlink into brew prefix so it lands on the same PATH as the rest.
+        if (which go | is-empty) {
+            error make { msg: 'go required to install ansisvg; install go first' }
+        }
+        print 'installing ansisvg...'
+        ^go install github.com/wader/ansisvg@latest
+        let $src = ^go env GOPATH | str trim | path join 'bin' 'ansisvg'
+        let $dst = ^brew --prefix | str trim | path join 'bin' 'ansisvg'
+        ^ln -sf $src $dst
     }
-    ^open -R $output_path
+    if (which rsvg-convert | is-empty) {
+        print 'installing librsvg...'
+        ^brew install librsvg
+    }
+    if (which chafa | is-empty) {
+        print 'installing chafa...'
+        ^brew install chafa
+    }
+    let $font_installed = [
+        '~/.local/share/fonts/ZedMonoNerdFont-Extended.ttf'
+        '~/Library/Fonts/ZedMonoNerdFont-Extended.ttf'
+    ] | each { path expand } | any { |p| $p | path exists }
+    if not $font_installed {
+        print 'installing ZedMono Nerd Font...'
+        ^brew install --cask font-zed-mono-nerd-font
+    }
 }
 
 # Capture wezterm scrollback, split by prompts, output chosen ones to an image file
@@ -91,7 +151,7 @@ export def 'wez-to-png' [
             default-image-path $filename
         }
 
-    wez-to-ansi | ansi-to-png $output_path
+    wez-to-ansi | ansi-to-png $output_path | ^open -R $in
 }
 
 def 'last-commands' [
@@ -312,5 +372,5 @@ export def 'zellij-to-png' [
             default-image-path $filename
         }
 
-    $out | ansi-to-png $output_path
+    $out | ansi-to-png $output_path | ^open -R $in
 }

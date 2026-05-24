@@ -46,9 +46,11 @@ export use arrange.nu [
 ]
 
 export use capture.nu [
+    "ansi-to-png"
     "copy-out"
     "delete-prompts"
     "in-pane"
+    "install-deps"
     "wez-to-ansi"
     "wez-to-asciicast"
     "wez-to-gif"
