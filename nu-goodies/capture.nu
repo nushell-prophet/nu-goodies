@@ -68,8 +68,8 @@ def 'default-image-path' [
 }
 
 const bg_presets = [
-    '#0d0d0d'      # wezterm SANDBOX_MODE
-    '#000000'      # pure black
+    '#0d0d0d'      # near-black
+    '#000000'      # pure black (cozy sandbox background)
     '#ffffff'      # white
     'transparent'  # no background fill
 ]
@@ -81,7 +81,7 @@ export def 'ansi-to-png' [
     --font-size: int = 50
     --font-name: string = 'ZedMono Nerd Font'    # Why: matches wezterm config; rsvg-convert resolves via fontconfig after `brew install --cask font-zed-mono-nerd-font`
     --line-height: float = 1.0
-    --background: string@$bg_presets = '#0d0d0d'  # Why: matches wezterm SANDBOX_MODE background in dotfiles/wezterm/wezterm.lua
+    --background: string@$bg_presets = '#000000'  # Why: matches the cozy sandbox background (black), set via `wezterm-cozy --background`
     --show
 ]: string -> path {
     let $out = $out | default (next_img_path)
