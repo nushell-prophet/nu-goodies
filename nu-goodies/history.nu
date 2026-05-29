@@ -38,6 +38,7 @@ export def 'hist' [
     --cwd # Show only entries from the current folder
     --last-x: duration # Duration for the period to check commands
     --not-in-vd (-V) # Disable opening command in visidata
+    --all-codes # Output all the commands, no only with 0 code
 ]: nothing -> any {
     if ($nu.history-path | str ends-with 'txt') {
         print "hist requires SQLite history format"
@@ -53,7 +54,7 @@ export def 'hist' [
             append $" AND command_line LIKE '%($like_filter)%'"
         } else { }
         | append " AND command_line NOT LIKE 'hist %'" # Build where clauses based on parameters Exclude 'hist' commands
-        | append " AND exit_status = 0" # Only successful commands
+        | if $all_codes { } else { append " AND exit_status = 0" } # Only successful commands
         | if $session {
             # Session filter
             append $" AND session_id = (history session)"
