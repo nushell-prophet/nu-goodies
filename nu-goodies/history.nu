@@ -1,5 +1,7 @@
 alias core_hist = history
 
+use kv
+
 # use in-vd.nu
 
 export def get-last-commands-from-sql [n: int = 1]: nothing -> any {
@@ -164,6 +166,7 @@ export def 'in-vd history' []: table -> nothing {
     | get stdout
     | if ($in == null) { return } else { }
     | from csv
+    | kv set vd-history --return-to-stdout
     | get command
     | reverse
     | str join $'(char nl)'
