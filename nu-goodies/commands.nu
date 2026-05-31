@@ -888,7 +888,7 @@ if [ "$l" -gt 0 ]; then
 fi
 case $(file --brief --mime -- "$f") in
   *binary*) file -- "$f" ;;
-  *) bat --color=always --pager=never --style=numbers --line-range=$start: --highlight-line=$l -- "$f" ;;
+  *) bat --wrap=auto --terminal-width=${FZF_PREVIEW_COLUMNS:-80} --color=always --pager=never --style=numbers --line-range=$start: --highlight-line=$l -- "$f" ;;
 esac'
 
     $input
