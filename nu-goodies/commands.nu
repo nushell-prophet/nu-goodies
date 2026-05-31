@@ -29,23 +29,23 @@ export def 'bar' [
     let blocks = [null "▏" "▎" "▍" "▌" "▋" "▊" "▉" "█"]
     let full_bar = $blocks | last
     let whole_part = ($percentage * $width) // 1
-    | into int
-    | seq 1 $in
-    | each { $full_bar }
-    | str join
+        | into int
+        | seq 1 $in
+        | each { $full_bar }
+        | str join
 
     let fraction = $blocks
-    | get (
-        ($percentage * $width) mod 1
-        | $in * ($blocks | length | $in - 1)
-        | math round
-    )
+        | get (
+            ($percentage * $width) mod 1
+            | $in * ($blocks | length | $in - 1)
+            | math round
+        )
 
     let result = $"($whole_part)($fraction)"
-    | fill --character ' ' -w $width
-    | if ($foreground == 'default') and ($background == 'default') { } else {
-        $"(ansi -e {fg: ($foreground) bg: ($background)})($in)(ansi reset)"
-    }
+        | fill --character ' ' -w $width
+        | if ($foreground == 'default') and ($background == 'default') { } else {
+            $"(ansi -e {fg: ($foreground) bg: ($background)})($in)(ansi reset)"
+        }
 
     if $progress {
         print -n $"($result)\r"
@@ -68,26 +68,26 @@ export def 'example' [
     --bare # Don't wrap in `nu -c`, output the raw nushell command
 ]: any -> string {
     let input = table --abbreviated $abbreviated
-    | if $no_comment { } else { into string | ansi strip }
+        | if $no_comment { } else { into string | ansi strip }
 
     let command = get-last-commands-from-sql 1
-    | str replace -r '\| example.*' ''
-    | if $no_comment {
-        nu-highlight # for making screnshots
-    } else { }
-    | if $bare { } else {
-        if "'" not-in $in {
-            # no single quotes — single-quote wrap (both shells)
-            $"nu -c '($in)'"
-        } else if ($in !~ '["$`\\]') {
-            # only single quotes — double-quote wrap (both shells)
-            $'nu -c "($in)"'
-        } else {
-            # both quotes or bash-unsafe chars — bash-only fallback
-            $"nu -c '($in | str replace -a "'" "'\\''")'"
+        | str replace -r '\| example.*' ''
+        | if $no_comment {
+            nu-highlight # for making screnshots
+        } else { }
+        | if $bare { } else {
+            if "'" not-in $in {
+                # no single quotes — single-quote wrap (both shells)
+                $"nu -c '($in)'"
+            } else if ($in !~ '["$`\\]') {
+                # only single quotes — double-quote wrap (both shells)
+                $'nu -c "($in)"'
+            } else {
+                # both quotes or bash-unsafe chars — bash-only fallback
+                $"nu -c '($in | str replace -a "'" "'\\''")'"
+            }
         }
-    }
-    | str c $in (char nl)
+        | str c $in (char nl)
 
     $input
     | if $no_comment { } else {
@@ -159,28 +159,28 @@ export def ls-git-modified-date [
     let path = $path | default { pwd }
 
     let gitlog = git log --all --format="===%ai" --name-only --diff-filter=ACMRT -- $path
-    | $"\n($in)"
-    | split row "\n==="
-    | skip # skip the first empty group
-    | each {|i|
-        let lines = $i | lines
+        | $"\n($in)"
+        | split row "\n==="
+        | skip # skip the first empty group
+        | each {|i|
+            let lines = $i | lines
 
-        let ts = $lines | first | into datetime
+            let ts = $lines | first | into datetime
 
-        $lines
-        | skip 2
-        | if ($in | length) <= $max_files_in_commit {
-            each {|file| {name: $file commit-ts: $ts} }
+            $lines
+            | skip 2
+            | if ($in | length) <= $max_files_in_commit {
+                each {|file| {name: $file commit-ts: $ts} }
+            }
         }
-    }
-    | compact
-    | flatten
-    | uniq-by name
+        | compact
+        | flatten
+        | uniq-by name
 
     let path_candidate = git ls-files --full-name -- $path
-    | lines
-    | wrap name
-    | join $gitlog name --inner
+        | lines
+        | wrap name
+        | join $gitlog name --inner
 
     let root = find-root
 
@@ -201,7 +201,7 @@ export def --env ln-for-preview [
         'hard_links'
         (date now | format date "%Y%m%d_%H%M%S")
     ]
-    | path join
+        | path join
 
     mkdir $temp_path
 
@@ -323,18 +323,18 @@ export def 'normalize' [
 
     for column in $column_names {
         let max_value = $table
-        | get $column
-        | where ($it | describe | $in in $allowed_types)
-        | math max
+            | get $column
+            | where ($it | describe | $in in $allowed_types)
+            | math max
 
         $table = $table
-        | upsert $'($column)($suffix)' {|i|
-            $i
-            | get $column
-            | if ($in | describe | $in in $allowed_types) {
-                $in / $max_value
-            } else { }
-        }
+            | upsert $'($column)($suffix)' {|i|
+                $i
+                | get $column
+                | if ($in | describe | $in in $allowed_types) {
+                    $in / $max_value
+                } else { }
+            }
     }
 
     $table
@@ -386,9 +386,9 @@ export def 'nu-test launch' [
         "--execute"
         "$env.PATH = ($env.PATH | prepend '~/.cargo_test/bin/')"
     ]
-    | if $no_plugin { } else {
-        prepend ['--plugin-config' '~/.test_config/nushell/polars_test.msgpackz']
-    }
+        | if $no_plugin { } else {
+            prepend ['--plugin-config' '~/.test_config/nushell/polars_test.msgpackz']
+        }
 
     ^$exec ...$params
 }
@@ -404,9 +404,9 @@ export def --env download-nushell-nightly [
     let most_recent_nightly = (http get https://api.github.com/repos/nushell/nightly/releases | get 0)
     let nightly_name = ($most_recent_nightly.name | str replace -r '^Nu-nightly-' '')
     let asset = http get $most_recent_nightly.assets_url
-    | where name =~ $arch
-    | where name =~ $'($ext)$'
-    | get 0
+        | where name =~ $arch
+        | where name =~ $'($ext)$'
+        | get 0
 
     let filename = (
         $asset.name
@@ -453,20 +453,20 @@ export def 'number-col-format' [
     let thousands_delim_length = $thousands_delim | str length --grapheme-clusters
 
     let integers = $input
-    | get $column_name
-    | math max
-    | into string
-    | split row '.'
-    | get 0
-    | str length
-    | if $thousands_delim_length > 0 {
-        $in + (($in - 1) / 3 | math floor) * $thousands_delim_length
-    } else { }
-    | append (
-        $column_name | str length
-        | $in - $decimals - $thousands_delim_length - ($denom | str length --grapheme-clusters)
-    )
-    | math max
+        | get $column_name
+        | math max
+        | into string
+        | split row '.'
+        | get 0
+        | str length
+        | if $thousands_delim_length > 0 {
+            $in + (($in - 1) / 3 | math floor) * $thousands_delim_length
+        } else { }
+        | append (
+            $column_name | str length
+            | $in - $decimals - $thousands_delim_length - ($denom | str length --grapheme-clusters)
+        )
+        | math max
 
     $input
     | upsert $column_name {
@@ -505,27 +505,27 @@ export def 'number-format' [
     let in_num = $in
 
     let formatted = $num
-    | default $in_num
-    | if $significant_digits == 0 { } else {
-        significant-digits $significant_digits
-    }
-    | if $decimals > 0 {
-        into string --decimals $decimals
-    } else {
-        into string
-    }
-    | split row '.'
+        | default $in_num
+        | if $significant_digits == 0 { } else {
+            significant-digits $significant_digits
+        }
+        | if $decimals > 0 {
+            into string --decimals $decimals
+        } else {
+            into string
+        }
+        | split row '.'
 
     let whole_part = $formatted.0
-    | split chars
-    | reverse
-    | window 3 -s 3 --remainder
-    | each { reverse | str join }
-    | reverse
-    | str join $thousands_delim
-    | if $integers == 0 { } else {
-        fill -w $integers -c ' ' -a r
-    }
+        | split chars
+        | reverse
+        | window 3 -s 3 --remainder
+        | each { reverse | str join }
+        | reverse
+        | str join $thousands_delim
+        | if $integers == 0 { } else {
+            fill -w $integers -c ' ' -a r
+        }
 
     let dec_part = if $decimals == 0 {
         ''
@@ -569,9 +569,9 @@ export def 'print-and-pass' [
 export def 'select-i' []: table -> nothing {
     let tgt = $in
     let choices = $tgt
-    | columns
-    | input list -m "Pick columns to get: "
-    | str join " "
+        | columns
+        | input list -m "Pick columns to get: "
+        | str join " "
 
     get-last-commands-from-sql 1
     | str replace 'select-i' $'select ($choices)'
@@ -614,30 +614,30 @@ export def 'significant-digits' [
     }
 
     let insignif_position = $num
-    | if $in == 0 {
-        0 # it's impoosbile to calculate `math log` from 0, thus 0 errors here
-    } else {
-        math abs
-        | math log 10
-        | math floor
-        | $n - 1 - $in
-    }
+        | if $in == 0 {
+            0 # it's impoosbile to calculate `math log` from 0, thus 0 errors here
+        } else {
+            math abs
+            | math log 10
+            | math floor
+            | $n - 1 - $in
+        }
 
     # See the note below the code for an explanation of the construct used.
     let scaling_factor = 10 ** ($insignif_position | math abs)
 
     let res = $num
-    | if $insignif_position > 0 {
-        $in * $scaling_factor
-    } else {
-        $in / $scaling_factor
-    }
-    | math floor
-    | if $insignif_position <= 0 {
-        $in * $scaling_factor
-    } else {
-        $in / $scaling_factor
-    }
+        | if $insignif_position > 0 {
+            $in * $scaling_factor
+        } else {
+            $in / $scaling_factor
+        }
+        | math floor
+        | if $insignif_position <= 0 {
+            $in * $scaling_factor
+        } else {
+            $in / $scaling_factor
+        }
 
     match $type {
         'duration' => { $res | into duration }
@@ -680,7 +680,7 @@ export def 'to-temp-file' [
 ]: [any -> path nothing -> path] {
     let content = if $content == null { } else { $content }
     let output_file = $nu.temp-dir
-    | path join $'(date now | into int).yaml'
+        | path join $'(date now | into int).yaml'
 
     $content | save $output_file
 
@@ -690,11 +690,11 @@ export def 'to-temp-file' [
 # Transcribe audio file to text using whisper.cpp
 export def 'transcribe' [file: path]: nothing -> nothing {
     let file = $file
-    | if $in =~ '\.wav$' { } else {
-        let f = $in + '.wav';
-        ffmpeg -i $file -ar 16000 $f;
-        $f
-    }
+        | if $in =~ '\.wav$' { } else {
+            let f = $in + '.wav';
+            ffmpeg -i $file -ar 16000 $f;
+            $f
+        }
 
     (
         ^~/git/whisper.cpp/build/bin/whisper-cli -f $file
@@ -723,8 +723,8 @@ export def 'replace-in-all-files' [
     --extensions: list<string> = [nu md py] # File extensions to process
 ]: nothing -> any {
     let glob = $extensions
-    | str join ','
-    | str c '**/*.{' $in '}'
+        | str join ','
+        | str c '**/*.{' $in '}'
 
     let files_total = glob --no-dir $glob
 
@@ -741,15 +741,15 @@ export def 'replace-in-all-files' [
     }
 
     let updated = $files_found
-    | each {|i|
-        if not $no_git_check { git-check-file-clean $i }
+        | each {|i|
+            if not $no_git_check { git-check-file-clean $i }
 
-        $i | open
-        | str replace -a $find $replace
-        | str replace -r '\n*$' (char nl)
-        | save -f $i
-    }
-    | length
+            $i | open
+            | str replace -a $find $replace
+            | str replace -r '\n*$' (char nl)
+            | save -f $i
+        }
+        | length
 
     if not $quiet {
         let field_name = $'total .($extensions) files'
@@ -867,7 +867,7 @@ export def 'fs' [...files: path@completions-files-modified]: nothing -> any {
 # Pipe files into fzf with bat preview in the right pane. Returns the selected path.
 # Lines like `file:line` or `file:line:col` (e.g. from `rgv`) highlight that line.
 # Binary files show `file --brief` info instead of bat output.
-export def 'fzf-preview' []: [list<string> -> string, table -> string] {
+export def 'fzf-preview' []: [list<string> -> string table -> string] {
     let input = $in
     let preview = 'f={}
 l=0
@@ -893,7 +893,7 @@ esac'
 
     $input
     | if ($in | describe | str starts-with 'list') { } else {
-         if 'name' in ($in | columns) { get name } else { get path }
+        if 'name' in ($in | columns) { get name } else { get path }
     }
     | to text
     | fzf --preview $preview --preview-window 'right:70%'
@@ -908,13 +908,13 @@ export def find-root [dir?: path]: [nothing -> path nothing -> nothing] {
     let dir2 = $dir | default { pwd }
 
     let root_candidate = 1..($dir2 | path split | length)
-    | reduce -f $dir2 {|_ acc|
-        if ($acc | path join '.git' | path exists) {
-            $acc
-        } else {
-            $acc | path dirname
+        | reduce -f $dir2 {|_ acc|
+            if ($acc | path join '.git' | path exists) {
+                $acc
+            } else {
+                $acc | path dirname
+            }
         }
-    }
 
     # We need to do the last check in case the reduce loop ran to the end
     # without finding nupm.nuon
@@ -935,12 +935,12 @@ export def rename-tab [name: string = '']: nothing -> nothing {
     let name = if $name == '' { pwd | path basename | str replace -r '^-+' '' } else { $name }
 
     let name_with_index = zellij action query-tab-names
-    | lines
-    | where $it =~ $"^($name)\(·|\$)"
-    | [($in | length) ($in | parse --regex '(\d+)$' | get -o capture0 | default [0] | into int)]
-    | flatten
-    | math max
-    | if $in > 0 { $'($name)·($in + 1)' } else { $name }
+        | lines
+        | where $it =~ $"^($name)\(·|\$)"
+        | [($in | length) ($in | parse --regex '(\d+)$' | get -o capture0 | default [0] | into int)]
+        | flatten
+        | math max
+        | if $in > 0 { $'($name)·($in + 1)' } else { $name }
 
     ^zellij action rename-tab $name_with_index
 }

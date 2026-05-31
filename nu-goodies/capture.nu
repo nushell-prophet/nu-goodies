@@ -68,20 +68,20 @@ def 'default-image-path' [
 }
 
 const bg_presets = [
-    '#0d0d0d'      # near-black
-    '#000000'      # pure black (cozy sandbox background)
-    '#ffffff'      # white
-    'transparent'  # no background fill
+    '#0d0d0d' # near-black
+    '#000000' # pure black (cozy sandbox background)
+    '#ffffff' # white
+    'transparent' # no background fill
 ]
 
 # Render ANSI on stdin to a PNG file via ansisvg -> rsvg-convert.
 # Returns the output path so callers can pass it to ^open or chafa.
 export def 'ansi-to-png' [
-    out?: path                                    # Why: when omitted, auto-pick the next free img<N>.png in cwd
+    out?: path # Why: when omitted, auto-pick the next free img<N>.png in cwd
     --font-size: int = 50
-    --font-name: string = 'ZedMono Nerd Font'    # Why: matches wezterm config; rsvg-convert resolves via fontconfig after `brew install --cask font-zed-mono-nerd-font`
+    --font-name: string = 'ZedMono Nerd Font' # Why: matches wezterm config; rsvg-convert resolves via fontconfig after `brew install --cask font-zed-mono-nerd-font`
     --line-height: float = 1.0
-    --background: string@$bg_presets = '#000000'  # Why: matches the cozy sandbox background (black), set via `wezterm-cozy --background`
+    --background: string@$bg_presets = '#000000' # Why: matches the cozy sandbox background (black), set via `wezterm-cozy --background`
     --show
 ]: string -> path {
     let $out = $out | default (next_img_path)
@@ -96,10 +96,10 @@ export def 'ansi-to-png' [
 
 def 'next_img_path' []: nothing -> string {
     let $nums = ls
-    | get name
-    | each { |n| $n | parse --regex `^img(?<n>\d+)\.png$` | get n.0? }
-    | compact
-    | each { into int }
+        | get name
+        | each {|n| $n | parse --regex `^img(?<n>\d+)\.png$` | get n.0? }
+        | compact
+        | each { into int }
     let $next = ($nums | append 0 | math max) + 1
     $'img($next).png'
 }
@@ -112,7 +112,7 @@ export def 'install-deps' []: nothing -> nothing {
         # Not brew because: ansisvg has no formula. Go install puts the binary in $GOPATH/bin;
         # symlink into brew prefix so it lands on the same PATH as the rest.
         if (which go | is-empty) {
-            error make { msg: 'go required to install ansisvg; install go first' }
+            error make {msg: 'go required to install ansisvg; install go first'}
         }
         print 'installing ansisvg...'
         ^go install github.com/wader/ansisvg@latest
@@ -131,7 +131,7 @@ export def 'install-deps' []: nothing -> nothing {
     let $font_installed = [
         '~/.local/share/fonts/ZedMonoNerdFont-Extended.ttf'
         '~/Library/Fonts/ZedMonoNerdFont-Extended.ttf'
-    ] | each { path expand } | any { |p| $p | path exists }
+    ] | each { path expand } | any {|p| $p | path exists }
     if not $font_installed {
         print 'installing ZedMono Nerd Font...'
         ^brew install --cask font-zed-mono-nerd-font
