@@ -867,8 +867,8 @@ export def 'fs' [...files: path@completions-files-modified]: nothing -> any {
 # Pipe files into fzf with bat preview in the right pane. Returns the selected path.
 # Lines like `file:line` or `file:line:col` (e.g. from `rgv`) highlight that line.
 # Binary files show `file --brief` info instead of bat output.
-export def 'fzf-preview' []: [list<string> -> string table -> string] {
-    let input = $in
+export def 'fzf-preview' []: [list<string> -> path list<path> -> path table -> path nothing -> path] {
+    let input = $in | default { ls }
     let preview = 'f={}
 l=0
 if ! [ -r "$f" ]; then
