@@ -48,7 +48,7 @@ def truncate-visible [width: int]: string -> string {
 #
 # With --vertical, also pads with blank lines so the block sits in the
 # vertical middle of the terminal.
-export def 'center' [
+export def 'screen center' [
     --factor: int = 1 # Divide terminal width by this factor
     --vertical (-v) # Also center vertically within terminal height
 ]: any -> string {
@@ -73,12 +73,12 @@ export def 'center' [
 
 # Clear the screen, show input centered on both axes as a splash, and
 # wait for a keypress before returning the prompt
-export def 'splash' [
+export def 'screen splash' [
     --factor: int = 1 # Divide terminal width by this factor
     --no-wait # Show the splash and return immediately, without waiting for a keypress
 ]: any -> nothing {
     clear
-    print ($in | center --factor $factor --vertical)
+    print ($in | screen center --factor $factor --vertical)
     if not $no_wait {
         input listen --types [key] | ignore
     }
