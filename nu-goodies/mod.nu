@@ -39,6 +39,7 @@ export use commands.nu [
 
 export use arrange.nu [
     "center"
+    "splash"
     "tile-right"
     "tile-left"
     "tile-down"

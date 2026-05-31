@@ -45,8 +45,12 @@ def truncate-visible [width: int]: string -> string {
 }
 
 # Center text within terminal width
+#
+# With --vertical, also pads with blank lines so the block sits in the
+# vertical middle of the terminal.
 export def 'center' [
     --factor: int = 1 # Divide terminal width by this factor
+    --vertical (-v) # Also center vertically within terminal height
 ]: any -> string {
     let input = $in | to-lines | str trim --right
 
@@ -55,9 +59,29 @@ export def 'center' [
     let left_pad = [0 (($term_width - $max_length) // 2)] | math max
     let padding = ('' | fill -c ' ' -w ($left_pad | into int))
 
-    $input
-    | each {|line| $padding + $line }
-    | str join (char nl)
+    let centered = $input | each {|line| $padding + $line }
+
+    let centered = if $vertical {
+        let top_pad = [0 ((((term size).rows - ($input | length)) // 2))] | math max
+        (0..<$top_pad | each { '' }) ++ $centered
+    } else {
+        $centered
+    }
+
+    $centered | str join (char nl)
+}
+
+# Clear the screen, show input centered on both axes as a splash, and
+# wait for a keypress before returning the prompt
+export def 'splash' [
+    --factor: int = 1 # Divide terminal width by this factor
+    --no-wait # Show the splash and return immediately, without waiting for a keypress
+]: any -> nothing {
+    clear
+    print ($in | center --factor $factor --vertical)
+    if not $no_wait {
+        input listen --types [key] | ignore
+    }
 }
 
 # Tile another output to the right of the piped input
