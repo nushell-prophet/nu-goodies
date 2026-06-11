@@ -114,12 +114,7 @@ export def 'fill non-exist' [
 ]: table -> table {
     let table = $in
 
-    $table
-    | columns
-    | reduce --fold $table {|i acc|
-        $acc
-        | default $value_to_replace $i
-    }
+    $table | default $value_to_replace ...($table | columns)
 }
 
 # use normalize.nu
