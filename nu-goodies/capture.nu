@@ -203,6 +203,21 @@ def 'zellij-dump-prompts' [
     {raw_lines: $raw_lines reversed_prompts: ($prompts | reverse)}
 }
 
+# Slice scrollback lines between two prompts (indices into reversed_prompts)
+def 'prompt-block' [
+    lines: list<string>
+    reversed_prompts: list<int>
+    from: int
+    to: int
+]: nothing -> list<string> {
+    let start = $reversed_prompts | get $from
+    let end = $reversed_prompts | get $to
+
+    $lines
+    | skip $start
+    | first ($end - $start)
+}
+
 def 'extract-by-prompts' [
     indices: list<int>
     lines: list<string>
@@ -210,34 +225,14 @@ def 'extract-by-prompts' [
     --flatten
 ]: nothing -> list<string> {
     if ($indices | length) == 1 {
-        let start = $reversed_prompts | get ($indices | first)
-        let end = $reversed_prompts | get 0
-
-        $lines
-        | skip $start
-        | first ($end - $start)
+        prompt-block $lines $reversed_prompts ($indices | first) 0
     } else if $flatten {
         $indices
-        | each {|n|
-            let start = $reversed_prompts | get $n
-            let end = $reversed_prompts | get ($n - 1)
-
-            $lines
-            | skip $start
-            | first ($end - $start)
-        }
+        | each {|n| prompt-block $lines $reversed_prompts $n ($n - 1) }
         | flatten
     } else {
         $indices
-        | each {|n|
-            let start = $reversed_prompts | get $n
-            let end = $reversed_prompts | get ($n - 1)
-
-            $lines
-            | skip $start
-            | first ($end - $start)
-            | str join (char nl)
-        }
+        | each {|n| prompt-block $lines $reversed_prompts $n ($n - 1) | str join (char nl) }
         | str join "\n\n"
         | lines
     }
@@ -303,18 +298,15 @@ export def 'copy-out' [
 
     # Build per-command blocks for history-assisted formatting
     let block_indices = if ($indices | length) == 1 {
-        1..($indices | first) | each {} | reverse
+        ($indices | first)..1
     } else {
         $indices
     }
 
     $block_indices
     | each {|n|
-        let start = $dump.reversed_prompts | get $n
-        let end = $dump.reversed_prompts | get ($n - 1)
-        $output_lines | skip $start | first ($end - $start)
+        format-block (prompt-block $output_lines $dump.reversed_prompts $n ($n - 1)) $no_comment
     }
-    | each {|block| format-block $block $no_comment }
     | str join "\n\n"
     | str replace -ra '\n+$' ''
     | if $echo { } else { pbcopy }
