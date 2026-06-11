@@ -246,13 +246,8 @@ export def --env mc [
     path2?: path
 ]: nothing -> nothing {
     let path = ($nu.temp-dir | path join (random chars))
-    if $path2 != null {
-        ^mc --nosubshell $path1 $path2 -P $path
-    } else if $path1 != null {
-        ^mc --nosubshell $path1 -P $path
-    } else {
-        ^mc --nosubshell -P $path
-    }
+    let dirs = [$path1 $path2] | compact
+    ^mc --nosubshell ...$dirs -P $path
     if ($path | path exists) {
         cd (open -r $path)
         rm $path
