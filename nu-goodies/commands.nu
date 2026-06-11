@@ -883,18 +883,16 @@ export def 'fzf-preview' [
         }
 
     if $content {
-        # Why a temp json file: fzf input is line-based, so multi-line values
-        # are flattened for the list; the preview pulls the full value by row index.
-        let json_file = mktemp --tmpdir fzf-preview-XXX
-        $values | to json | save -f $json_file
+        # Why --read0: NUL-separated items keep their newlines, so {} carries
+        # the full value to the preview while --no-multi-line flattens the list
+        # display; {n} (input index) maps the selection back to the row.
+        # Not a temp json file + jq because: leaks files and adds a dependency.
+        let idx = $values
+            | each { into string }
+            | str join (char --integer 0)
+            | fzf --read0 --no-multi-line --preview 'printf %s {}' --preview-window 'right:70%:wrap' --bind 'enter:become(echo {n})'
+            | into int
 
-        let selected = $values
-            | enumerate
-            | each {|e| $"($e.index)\t($e.item | into string | str replace -ar '[\r\n\t]' ' ')" }
-            | to text
-            | fzf --delimiter "\t" --with-nth '2..' --preview $"jq -r --argjson i {1} '.[$i]' ($json_file)" --preview-window 'right:70%:wrap'
-
-        let idx = $selected | split row "\t" | first | into int
         return ($input | get $idx)
     }
 
