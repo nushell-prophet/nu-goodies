@@ -72,7 +72,5 @@ export def 'in-vd' [
 # > [{a: {c: d}, b: e}] | has_hier
 # true
 def has_hier []: any -> bool {
-    describe
-    | find -r '^table(?!.*: (table|record|list))'
-    | is-empty
+    describe | $in !~ '^table(?!.*: (table|record|list))'
 }
