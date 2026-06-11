@@ -33,13 +33,12 @@ export def 'ramdisk-create' [
 # Preview text in all available figlet fonts
 export def figlet-demo [text: string]: nothing -> record {
     glob /opt/homebrew/Cellar/figlet/2.2.5/share/figlet/fonts/*.flf
-    | par-each {|i|
-        let i = $i
-            | path basename;
+    | par-each --keep-order {|font|
+        let name = $font | path basename
 
         $text
-        | figlet -f $i -C utf8
-        | wrap $i
+        | figlet -f $name -C utf8
+        | wrap $name
     }
     | reduce {|i| merge $i }
 }
