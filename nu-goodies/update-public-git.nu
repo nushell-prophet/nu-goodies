@@ -135,7 +135,7 @@ export def main [
     # Clean up patches if requested
     if $clean and ($failed_patches | is-empty) {
         cd $private_repo
-        rm -rf $patch_dir
+        rm --recursive --force $patch_dir
         print $"\n🧹 Cleaned up patch directory"
     } else {
         cd $private_repo

@@ -5,7 +5,7 @@ use kv
 export def --wrapped in-fx [
     ...rest
 ]: any -> nothing {
-    to json -r
+    to json --raw
     | ansi strip
     | ^fx ...$rest
 }
@@ -28,7 +28,7 @@ export def 'in-hx' [
     if $path {
         print $filename
     } else {
-        commandline edit -r $"r######'(open $filename)'######"
+        commandline edit --replace $"r######'(open $filename)'######"
     }
 }
 

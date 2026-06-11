@@ -57,7 +57,7 @@ export def 'screen center' [
     let max_length = $input | each { ansi strip | str length --grapheme-clusters } | math max
     let term_width = (term size).columns / $factor
     let left_pad = [0 (($term_width - $max_length) // 2)] | math max
-    let padding = ('' | fill -c ' ' -w ($left_pad | into int))
+    let padding = ('' | fill --character ' ' --width ($left_pad | into int))
 
     let centered = $input | each {|line| $padding + $line }
 
@@ -100,13 +100,13 @@ export def 'tile-right' [
     let left_width = $left | each { ansi strip | str length --grapheme-clusters } | math max
     let left_n = $left | length
     let right_n = $right_lines | length
-    let gap_str = ('' | fill -c ' ' -w $gap)
+    let gap_str = ('' | fill --character ' ' --width $gap)
 
     let width = if $no_truncate { 0 } else { (term size).columns }
 
     $left
     | append (seq 1 ($right_n - $left_n) | each { '' })
-    | each { fill -w $left_width }
+    | each { fill --width $left_width }
     | zip ($right_lines | append (seq 1 ($left_n - $right_n) | each { '' }))
     | each {|pair| $pair.0 + $gap_str + $pair.1 }
     | if not $no_truncate {

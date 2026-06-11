@@ -10,7 +10,7 @@ export def get-last-commands-from-sql [n: int = 1]: nothing -> any {
     }
 
     open $nu.history-path
-    | query db "select command_line from history order by id desc limit ?" -p [$n]
+    | query db "select command_line from history order by id desc limit ?" --params [$n]
     | get command_line
     | reverse
     | if $n == 1 { get 0 } else { }
@@ -26,7 +26,7 @@ export def 'copy-cmd' []: nothing -> nothing {
     | if $in == 'copy-cmd' {
         $commands | first
     } else { }
-    | str replace -r '\s*\| copy-cmd.*' ''
+    | str replace --regex '\s*\| copy-cmd.*' ''
     | pbcopy
 }
 
@@ -99,7 +99,7 @@ export def 'hist' [
         # ast --flatten $i.command
         # | where shape == shape_pipe
         $i.command
-        | parse -r '(\s\|)'
+        | parse --regex '(\s\|)'
         | length
     }
     # Display in visidata or return
@@ -134,9 +134,9 @@ export def 'hist-to-script' [
             } else {
                 "SELECT command_line FROM history WHERE session_id = ? ORDER BY id"
             }
-        ) -p [(if $directory_hist { $env.PWD } else { $session })]
+        ) --params [(if $directory_hist { $env.PWD } else { $session })]
         | get command_line
-        | str replace -ar $';(char nl)\$.*? in-vd' ''
+        | str replace --all --regex $';(char nl)\$.*? in-vd' ''
         | drop 1
 
     let buffer = $hist
@@ -150,10 +150,10 @@ export def 'hist-to-script' [
         | str join "\n\n"
         | $"\n#($filepath)\n($in)\n#---\n"
 
-    $buffer | save -a $filepath
+    $buffer | save --append $filepath
 
     if not $dont_open {
-        commandline edit -r $'($env.EDITOR) ($filepath)'
+        commandline edit --replace $'($env.EDITOR) ($filepath)'
     }
 }
 
@@ -170,8 +170,8 @@ export def 'in-vd history' []: table -> nothing {
     | get command
     | reverse
     | str join $'(char nl)'
-    | str replace -r ';.+?\| in-vd;' ';'
-    | commandline edit -r $in
+    | str replace --regex ';.+?\| in-vd;' ';'
+    | commandline edit --replace $in
 }
 
 # Helper function to initialize dead_cwds table if it doesn't exist
@@ -186,7 +186,7 @@ def 'add-dead-dir' [
 ]: nothing -> nothing {
     # Insert new directory if it doesn't exist (parameterized to prevent SQL injection)
     open $nu.history-path
-    | query db "INSERT OR IGNORE INTO dead_cwds (path) VALUES (?)" -p [$dir]
+    | query db "INSERT OR IGNORE INTO dead_cwds (path) VALUES (?)" --params [$dir]
 }
 
 # Helper function to get all unique directories from command history
@@ -391,7 +391,7 @@ export def 'completions-cwds' []: nothing -> record {
                ORDER BY MAX(h.id) DESC"
         | where cwd != null
         | update cwd {|i|
-            do -i { $i.cwd | path relative-to $nu.home-dir }
+            do --ignore-errors { $i.cwd | path relative-to $nu.home-dir }
             | match $in {
                 null => $i.cwd
                 '' => '~'
@@ -404,7 +404,7 @@ export def 'completions-cwds' []: nothing -> record {
         # Filter by length
         | where ($it.cwd | str length --grapheme-clusters) < $termsize
         | update last_timestamp {|row|
-            let timestamp = $row.last_timestamp | into int | $in / 1000 | into int | into datetime -f '%s' | date humanize
+            let timestamp = $row.last_timestamp | into int | $in / 1000 | into int | into datetime --format '%s' | date humanize
 
             # Check if a Zellij tab exists for this directory
             let dir_name = $row.cwd | path split | last | str replace '"' ''

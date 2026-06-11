@@ -101,7 +101,7 @@ def build-screen-buffer [
         | each { $strings.0 }
 
     $filler_texts
-    | reduce -f $base {|i acc|
+    | reduce --fold $base {|i acc|
         $acc
         | insert (random int 3..$repeat_count) $i
     }
@@ -121,7 +121,7 @@ def split-ansi-chars [s: string]: nothing -> list<string> {
     let nul = char nul
 
     $s
-    | str replace -ar $pat $'$1$2($nul)' # capture color + char, add delimiter
+    | str replace --all --regex $pat $'$1$2($nul)' # capture color + char, add delimiter
     | split row $nul
     | compact --empty
 }

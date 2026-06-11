@@ -70,8 +70,8 @@ export def 'to-safe-filename' [
     --regex: string = '[^A-Za-z0-9_А-Яа-я+]' # Characters to replace
     --date # Prepend timestamp for uniqueness
 ]: string -> string {
-    str replace -ra $regex '_'
-    | str replace -ra '__+' '_'
+    str replace --all --regex $regex '_'
+    | str replace --all --regex '__+' '_'
     | if $date {
         $'(now-fn)+($in | str substring ..30)' # make string uniq
     } else if (($in | str length) > 30) {

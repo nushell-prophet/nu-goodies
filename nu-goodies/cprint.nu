@@ -28,7 +28,7 @@ export def main [
     } else { }
     | indentit $indent
     | newlineit $lines_before $lines_after
-    | if $echo { } else { print -n $in }
+    | if $echo { } else { print --no-newline $in }
 }
 
 # Calculate safe text width accounting for terminal size and indent
@@ -49,18 +49,18 @@ export def 'wrapit' [
     width_safe: int
     indent: int
 ]: string -> string {
-    str replace -arm '^[\t ]+' ''
+    str replace --all --regex --multiline '^[\t ]+' ''
     | if $keep_single_breaks { } else { remove-single-nls }
-    | str replace -arm '[\t ]+$' ''
-    | str replace -arm $"\(.{1,($width_safe)}\)\(\\s|$\)|\(.{1,($width_safe)}\)" "$1$3\n"
-    | str replace -r $'\s+$' '' # trailing new line
+    | str replace --all --regex --multiline '[\t ]+$' ''
+    | str replace --all --regex --multiline $"\(.{1,($width_safe)}\)\(\\s|$\)|\(.{1,($width_safe)}\)" "$1$3\n"
+    | str replace --regex $'\s+$' '' # trailing new line
 }
 
 # Collapse single newlines into spaces, preserve double newlines as paragraphs
 export def 'remove-single-nls' []: string -> string {
-    str replace -r -a '(\n[\t ]*){2,}' '⏎'
-    | str replace -arm '(?<!⏎)\n' ' ' # remove single line breaks used for code formatting
-    | str replace -a '⏎' "\n\n"
+    str replace --regex --all '(\n[\t ]*){2,}' '⏎'
+    | str replace --all --regex --multiline '(?<!⏎)\n' ' ' # remove single line breaks used for code formatting
+    | str replace --all '⏎' "\n\n"
 }
 
 # Add newlines before and after text
@@ -91,7 +91,7 @@ export def 'colorit' [
     highlight_color: string
     color: string
 ]: string -> string {
-    str replace -r -a '\*([^*]+?)\*' $'(ansi reset)(ansi $highlight_color)$1(ansi reset)(ansi $color)'
+    str replace --regex --all '\*([^*]+?)\*' $'(ansi reset)(ansi $highlight_color)$1(ansi reset)(ansi $color)'
     | str c (ansi $color) $in (ansi reset)
 }
 
@@ -109,7 +109,7 @@ export def 'alignit' [
 export def 'indentit' [
     indent: int
 ]: string -> string {
-    str replace -arm '^' (char sp | str repeat $indent)
+    str replace --all --regex --multiline '^' (char sp | str repeat $indent)
 }
 
 def 'completions-colors' []: nothing -> list<string> {

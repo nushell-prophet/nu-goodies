@@ -1,6 +1,6 @@
 ###file O.nu
 def completions-macos-apps []: nothing -> list<string> {
-    ls /Applications -s | get name | each { str replace '.app' '' | $'"($in)"' }
+    ls /Applications --short-names | get name | each { str replace '.app' '' | $'"($in)"' }
 }
 
 # Open a file in the specified macOS application or reveal it in Finder (--app flag supports completions)

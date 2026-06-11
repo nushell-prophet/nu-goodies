@@ -6,15 +6,15 @@ export def main [] { }
 
 # Refresh nu-goodies/kv/ from upstream nu-kv.
 export def 'main update-kv' [--local (-l)] {
-    rm -rf $dest
+    rm --recursive --force $dest
     mkdir $dest
 
     if $local {
         ^rsync -a --exclude='.git' $"($local_src)/" $"($dest)/"
     } else {
-        let tmp = mktemp -d
+        let tmp = mktemp --directory
         ^curl -sL $upstream | ^tar xz -C $tmp --strip-components=1
         ^rsync -a --exclude='.git' $"($tmp)/kv/" $"($dest)/"
-        rm -rf $tmp
+        rm --recursive --force $tmp
     }
 }
