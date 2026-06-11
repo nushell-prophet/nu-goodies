@@ -867,7 +867,9 @@ export def 'fs' [...files: path@completions-files-modified]: nothing -> any {
 # Pipe files into fzf with bat preview in the right pane. Returns the selected path.
 # Lines like `file:line` or `file:line:col` (e.g. from `rgv`) highlight that line.
 # Binary files show `file --brief` info instead of bat output.
-export def 'fzf-preview' []: [list<string> -> path list<path> -> path table -> path nothing -> path] {
+export def 'fzf-preview' [
+    --column: string # column to take paths from (table input); defaults to `name` or `path`
+]: [list<string> -> path list<path> -> path table -> path nothing -> path] {
     let input = $in | default { ls }
     let preview = 'f={}
 l=0
@@ -893,7 +895,9 @@ esac'
 
     $input
     | if ($in | describe | str starts-with 'list') { } else {
-        if 'name' in ($in | columns) { get name } else { get path }
+        if $column != null {
+            get $column
+        } else if 'name' in ($in | columns) { get name } else { get path }
     }
     | to text
     | fzf --preview $preview --preview-window 'right:70%'
