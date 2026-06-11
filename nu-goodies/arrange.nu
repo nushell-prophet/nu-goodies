@@ -139,11 +139,7 @@ export def 'tile-left' [
     --no-truncate (-T) # Don't truncate lines to terminal width
 ]: any -> string {
     let right = $in
-    if $no_truncate {
-        do $left | tile-right -T --gap $gap { $right }
-    } else {
-        do $left | tile-right --gap $gap { $right }
-    }
+    do $left | tile-right --no-truncate=$no_truncate --gap $gap { $right }
 }
 
 # Tile another output above the piped input
