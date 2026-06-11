@@ -870,7 +870,7 @@ export def 'fs' [...files: path@completions-files-modified]: nothing -> any {
 # With --content the preview shows the cell value itself (for long texts),
 # and the selection returns the whole row as a record.
 export def 'fzf-preview' [
-    --column: string # column to take values from (table input); defaults to `name` or `path`
+    --column: string # column to take values from (table input); defaults to `name`, `path`, or the first column
     --content # preview cell values themselves instead of files; return the selected row as a record
 ]: [list<string> -> path list<path> -> path table -> path table -> record nothing -> path] {
     let input = $in | default { ls }
@@ -879,7 +879,13 @@ export def 'fzf-preview' [
         | if ($in | describe | str starts-with 'list') { } else {
             if $column != null {
                 get $column
-            } else if 'name' in ($in | columns) { get name } else { get path }
+            } else if 'name' in ($in | columns) {
+                get name
+            } else if 'path' in ($in | columns) {
+                get path
+            } else {
+                get ($in | columns | first)
+            }
         }
 
     if $content {
