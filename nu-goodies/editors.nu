@@ -26,7 +26,7 @@ export def 'in-hx' [
     hx $filename
 
     if $path {
-        print $path
+        print $filename
     } else {
         commandline edit -r $"r######'(open $filename)'######"
     }
