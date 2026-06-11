@@ -67,7 +67,7 @@ export def 'hist' [
         } else { }
         | if $last_x != null {
             # Time filter
-            append $" AND start_timestamp > ((date now) - $last_x | into int)" # Convert to nanoseconds
+            append $" AND start_timestamp > ((date now) - $last_x | into int | $in // 1_000_000)" # ns -> ms, raw start_timestamp column stores milliseconds
         } else { }
         | append ' ORDER BY id DESC'
         | if not ($all or $entries == 0 or $like_filter != null) {
