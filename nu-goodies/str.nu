@@ -6,6 +6,17 @@ export def 'str repeat' [
     seq 1 $n | each { $text } | str join
 }
 
+# Build the separator between input and rest from the convenience flags
+def 'build-concatenator' [
+    new_line: bool
+    tab: bool
+    two_space: bool
+    space: bool
+    extra: string
+]: nothing -> string {
+    $"(if $new_line { char nl })(if $tab { char tab })(if $two_space { '  ' })(if $space { ' ' })($extra)"
+}
+
 # Append strings with optional separators
 export def 'str append' [
     ...text: string
@@ -17,17 +28,7 @@ export def 'str append' [
     --rest-el: string = ' ' # Rest elements concatenator
 ]: string -> string {
     let input = $in
-    let concatenator = $"(
-        if $new_line { (char nl) }
-    )(
-        if $tab { (char tab) }
-    )(
-        if $2space { '  ' }
-    )(
-        if $space { ' ' }
-    )(
-        $concatenator
-    )"
+    let concatenator = build-concatenator $new_line $tab $2space $space $concatenator
 
     $"($input)($concatenator)($text | str join $rest_el)"
 }
@@ -43,17 +44,7 @@ export def 'str prepend' [
     --rest-el: string = ' ' # Rest elements concatenator
 ]: string -> string {
     let input = $in
-    let concatenator = $"(
-        if $new_line { (char nl) }
-    )(
-        if $tab { (char tab) }
-    )(
-        if $2space { '  ' }
-    )(
-        if $space { ' ' }
-    )(
-        $concatenator
-    )"
+    let concatenator = build-concatenator $new_line $tab $2space $space $concatenator
 
     $"($text | str join $rest_el)($concatenator)($input)"
 }
