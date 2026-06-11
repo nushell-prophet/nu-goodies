@@ -867,10 +867,37 @@ export def 'fs' [...files: path@completions-files-modified]: nothing -> any {
 # Pipe files into fzf with bat preview in the right pane. Returns the selected path.
 # Lines like `file:line` or `file:line:col` (e.g. from `rgv`) highlight that line.
 # Binary files show `file --brief` info instead of bat output.
+# With --content the preview shows the cell value itself (for long texts),
+# and the selection returns the whole row as a record.
 export def 'fzf-preview' [
-    --column: string # column to take paths from (table input); defaults to `name` or `path`
-]: [list<string> -> path list<path> -> path table -> path nothing -> path] {
+    --column: string # column to take values from (table input); defaults to `name` or `path`
+    --content # preview cell values themselves instead of files; return the selected row as a record
+]: [list<string> -> path list<path> -> path table -> path table -> record nothing -> path] {
     let input = $in | default { ls }
+
+    let values = $input
+        | if ($in | describe | str starts-with 'list') { } else {
+            if $column != null {
+                get $column
+            } else if 'name' in ($in | columns) { get name } else { get path }
+        }
+
+    if $content {
+        # Why a temp json file: fzf input is line-based, so multi-line values
+        # are flattened for the list; the preview pulls the full value by row index.
+        let json_file = mktemp --tmpdir fzf-preview-XXX
+        $values | to json | save -f $json_file
+
+        let selected = $values
+            | enumerate
+            | each {|e| $"($e.index)\t($e.item | into string | str replace -ar '[\r\n\t]' ' ')" }
+            | to text
+            | fzf --delimiter "\t" --with-nth '2..' --preview $"jq -r --argjson i {1} '.[$i]' ($json_file)" --preview-window 'right:70%:wrap'
+
+        let idx = $selected | split row "\t" | first | into int
+        return ($input | get $idx)
+    }
+
     let preview = 'f={}
 l=0
 if ! [ -r "$f" ]; then
@@ -893,12 +920,7 @@ case $(file --brief --mime -- "$f") in
   *) bat --wrap=auto --terminal-width=${FZF_PREVIEW_COLUMNS:-80} --color=always --pager=never --style=numbers --line-range=$start: --highlight-line=$l -- "$f" ;;
 esac'
 
-    $input
-    | if ($in | describe | str starts-with 'list') { } else {
-        if $column != null {
-            get $column
-        } else if 'name' in ($in | columns) { get name } else { get path }
-    }
+    $values
     | to text
     | fzf --preview $preview --preview-window 'right:70%'
     | str trim
