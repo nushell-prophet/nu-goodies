@@ -291,11 +291,7 @@ export def 'mv1' [
 }
 
 # Backup dotfiles and config directories to their git repos
-export def 'mygit log' [
-    --message (-m): string
-]: nothing -> nothing {
-    let message = $message | default (date now | format date "%Y-%m-%d")
-
+export def 'mygit log' []: nothing -> nothing {
     $nu.home-dir
     | path join '.*'
     | glob $in -d 1 --no-dir --exclude ['.CFUserTextEncoding']
