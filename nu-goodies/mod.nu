@@ -71,10 +71,8 @@ export use gradient-screen.nu [
 ]
 
 export use str.nu [
-    # "dedent"
     # "escape-nushell-escapes"
     # "escape-regex"
-    # "indent"
     # "str append"
     "str c"
     # "str prepend"

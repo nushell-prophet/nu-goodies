@@ -1,6 +1,3 @@
-alias std_append = append
-alias std_prepend = prepend
-
 # Repeat a string n times
 export def 'str repeat' [
     n: int
@@ -60,12 +57,6 @@ export def 'str prepend' [
 
     $"($text | str join $rest_el)($concatenator)($input)"
 }
-
-# Add indentation to text (not implemented)
-export def 'indent' []: string -> string { $in }
-
-# Remove indentation from text (not implemented)
-export def 'dedent' []: string -> string { $in }
 
 # Escape regex special characters in a string
 export def 'escape-regex' []: string -> string {

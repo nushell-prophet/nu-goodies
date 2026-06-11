@@ -71,7 +71,7 @@ Shell history commands: `hist` (SQL-based history search with filters), `hist-to
 
 ### str.nu
 
-String utilities: `str c` (concatenation), `str repeat`, `str append`, `str prepend`, `indent`, `dedent`, `escape-regex`, `escape-nushell-escapes`, `to-safe-filename`. No imports from other submodules.
+String utilities: `str c` (concatenation), `str repeat`, `str append`, `str prepend`, `escape-regex`, `escape-nushell-escapes`, `to-safe-filename`. No imports from other submodules.
 
 ### kv/ Submodule
 
