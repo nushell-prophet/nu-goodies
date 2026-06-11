@@ -4,7 +4,7 @@
 
 export def main [
     private_repo: string # Path to private repository
-    public_repo: string # Path to public repository  
+    public_repo: string # Path to public repository
     --from-tag (-f): string # Create patches from this tag
     --from-commit (-c): string # Create patches from this commit
     --last (-l): int # Create patches for last N commits
@@ -48,11 +48,7 @@ export def main [
     }
 
     # Show what commits will be included
-    let commits = if ($from_tag != null) or ($from_commit != null) {
-        git log --oneline $"($patch_source)..HEAD" | lines
-    } else {
-        git log --oneline -n $last | lines
-    }
+    let commits = git log --oneline $"($patch_source)..HEAD" | lines
 
     if ($commits | is-empty) {
         print "✅ No new commits to patch"
@@ -72,13 +68,7 @@ export def main [
 
     # Generate patches
     print $"\n📦 Creating patches..."
-    let patch_cmd = if ($from_tag != null) or ($from_commit != null) {
-        $"git format-patch ($patch_source) -o ($patch_dir)"
-    } else {
-        $"git format-patch HEAD~($last) -o ($patch_dir)"
-    }
-
-    run-external "sh" "-c" $patch_cmd
+    git format-patch $patch_source -o $patch_dir
 
     let patches = $patch_dir | path join '*.patch' | ls $in | get name | sort
 
