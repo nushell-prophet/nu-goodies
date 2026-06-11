@@ -9,7 +9,6 @@ export def 'wez-to-ansi' []: nothing -> string {
 # Record Wezterm session to asciicast format
 export def 'wez-to-asciicast' [
     command: string = '' # Command to record
-    --filename: path # Output file path (unused)
 ]: nothing -> path {
     let err = ^wezterm record --cwd (pwd) -- $nu.current-exe --execute $'source $nu.env-path; clear; ($command)'
         | complete
