@@ -640,7 +640,7 @@ export def 'significant-digits' [
 # so I use what I have now.
 
 # checks for toolkit.nu file in the dir, and puts into commandline `overlay use as tk`
-export def 'tt' --env [] {
+export def --env 'tt' [] {
     if ('toolkit.nu' | path exists) {
         commandline edit "overlay use 'toolkit.nu' --prefix as tk; commandline edit 'tk'"
     } else {
