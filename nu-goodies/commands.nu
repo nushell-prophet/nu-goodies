@@ -932,7 +932,7 @@ esac'
 
 # Helper function initially from nupm/utils/dirs.nu
 #
-# Try to find the package root directory by looking for nupm.nuon in parent
+# Try to find the repository root directory by looking for .git in parent
 # directories.
 export def find-root [dir?: path]: [nothing -> path nothing -> nothing] {
     let dir2 = $dir | default { pwd }
@@ -947,7 +947,7 @@ export def find-root [dir?: path]: [nothing -> path nothing -> nothing] {
         }
 
     # We need to do the last check in case the reduce loop ran to the end
-    # without finding nupm.nuon
+    # without finding .git
     if ($root_candidate | path join '.git' | path exists) {
         $root_candidate
     } else {
