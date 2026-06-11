@@ -21,7 +21,7 @@ export def 'wez-to-asciicast' [
 
     let target_folder = '~/temp/wezterm-asciinemas'
         | path join $'gif_(pwd | path split | last)'
-        | $'($in)(mkdir $in)'
+        | tee { mkdir $in }
 
     try { mv $wezrec $target_folder } catch { print "wasn't moved, the original err with path is:" $err }
 
@@ -62,7 +62,7 @@ def 'default-image-path' [
 ]: nothing -> path {
     ['~/temp/freeze_images/' (pwd | path split | last)]
     | path join
-    | $'($in)(mkdir $in)'
+    | tee { mkdir $in }
     | path join $filename
 }
 
