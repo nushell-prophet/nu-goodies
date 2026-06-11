@@ -957,7 +957,7 @@ export def find-root [dir?: path]: [nothing -> path nothing -> nothing] {
 
 # Change directory to git repository root
 export def --env cd-root [dir?: path]: [nothing -> nothing] {
-    cd (find-root)
+    cd (find-root $dir)
 }
 
 # Rename Zellij tab, auto-incrementing duplicates
