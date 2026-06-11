@@ -60,10 +60,7 @@ export def 'str prepend' [
 
 # Escape regex special characters in a string
 export def 'escape-regex' []: string -> string {
-    let input = $in
-    let regex = '\.^$*+?{}()[]|/' | split chars | each { $'\($in)' } | str join '|' | $"\(($in))"
-
-    $input | str replace --all --regex $regex '\$1'
+    str replace --all --regex '([\\.^$*+?{}()\[\]|/])' '\$1'
 }
 
 # Escape Nushell special characters for string interpolation
