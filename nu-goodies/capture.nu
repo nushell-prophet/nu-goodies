@@ -294,6 +294,7 @@ export def 'copy-out' [
     --echo (-e) # Return text instead of copying
     --ansi (-a) # Keep ANSI escape codes
     --no-comment (-C) # Don't comment output with # =>
+    --cwd # Include CWD into first line comment
 ]: nothing -> any {
     let indices = $rest | if ($in | is-empty) { [1] } else { }
 
@@ -314,6 +315,7 @@ export def 'copy-out' [
     }
     | str join "\n\n"
     | str replace --all --regex '\n+$' ''
+    | if $cwd { $"# $(pwd)\n($in)" } else { }
     | if $echo { } else { pbcopy }
 }
 
