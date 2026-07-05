@@ -39,6 +39,7 @@ export def 'bar' [
             ($percentage * $width) mod 1
             | $in * ($blocks | length | $in - 1)
             | math round
+            | into int # Why: 0.114 parse-time typing — `get` rejects `number` as cell-path
         )
 
     let result = $"($whole_part)($fraction)"

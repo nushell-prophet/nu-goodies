@@ -142,13 +142,14 @@ export def 'wez-to-png' [
     n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
     --output-path: path = '' # Path for saving output images.
 ]: nothing -> nothing {
-    let output_path = $output_path
-        | if $in != '' { } else {
-            let filename = last-commands $n_last_commands
-                | to-safe-filename --prefix 'wez-out-' --suffix '.png' --date
+    # Not `$output_path | if $in != '' { } else { }` because: 0.114 type-checks the block's
+    # string input against `last-commands` (a `nothing -> string` command) and rejects it
+    let output_path = if $output_path != '' { $output_path } else {
+        let filename = last-commands $n_last_commands
+            | to-safe-filename --prefix 'wez-out-' --suffix '.png' --date
 
-            default-image-path $filename
-        }
+        default-image-path $filename
+    }
 
     wez-to-ansi | ansi-to-png $output_path | ^open -R $in
 }
@@ -362,13 +363,12 @@ export def 'zellij-to-png' [
     let out = extract-by-prompts $indices $dump.raw_lines $dump.reversed_prompts --flatten
         | str join (char nl)
 
-    let output_path = $output_path
-        | if $in != '' { } else {
-            let filename = last-commands ($indices | math max)
-                | to-safe-filename --prefix 'zel-out-' --suffix '.png' --date
+    let output_path = if $output_path != '' { $output_path } else {
+        let filename = last-commands ($indices | math max)
+            | to-safe-filename --prefix 'zel-out-' --suffix '.png' --date
 
-            default-image-path $filename
-        }
+        default-image-path $filename
+    }
 
     $out | ansi-to-png $output_path | ^open -R $in
 }
