@@ -55,6 +55,67 @@ export def 'bar' [
     }
 }
 
+# Check crates.io for newer versions of your `cargo install`-ed binaries.
+#
+# A pure-nushell stand-in for `cargo install-update -a` (from the `cargo-update` crate) —
+# it needs no extra tooling, just `cargo` and network access. Each installed crate is
+# compared against its latest stable version on crates.io. Crates installed from git or a
+# local path carry a `source` and can't be compared, so they are listed but not checked.
+#
+# > cargo-updates
+# > cargo-updates --outdated   # only the ones with a newer stable version
+export def 'cargo-updates' [
+    --outdated (-o) # Show only crates that have a newer stable version
+]: nothing -> table {
+    let installed = cargo install --list
+        | lines
+        | parse --regex '(?m)^(?<name>\S+) v(?<version>[^ :]+)(?: \((?<source>[^)]+)\))?:$'
+
+    let checked = $installed | par-each {|c|
+        if $c.source != null {
+            # Not from crates.io (git/path install) — nothing to compare against.
+            {name: $c.name, installed: $c.version, latest: null, updatable: false, source: $c.source}
+        } else {
+            let latest = try {
+                let cr = http get --headers [User-Agent "nu-goodies cargo-updates"] $"https://crates.io/api/v1/crates/($c.name)"
+                    | get crate
+                # Why: prefer the latest *stable* release; fall back to newest only for
+                # crates that have never cut a stable version.
+                $cr.max_stable_version | default $cr.newest_version
+            } catch { null }
+
+            {
+                name: $c.name
+                installed: $c.version
+                latest: $latest
+                updatable: ($latest != null and (semver-lt $c.version $latest))
+                source: null
+            }
+        }
+    }
+
+    $checked
+    | if $outdated { where updatable } else { $in }
+    | sort-by name
+    | sort-by updatable --reverse # stable sort: updatable crates float to the top, names stay ordered
+}
+
+# True if version string $a is older than $b, compared by numeric release parts.
+# Pre-release (`-rc.1`) and build (`+sha`) metadata are dropped before comparing.
+def semver-lt [a: string, b: string]: nothing -> bool {
+    let pa = $a | split row '+' | first | split row '-' | first | split row '.' | each { into int }
+    let pb = $b | split row '+' | first | split row '-' | first | split row '.' | each { into int }
+    let n = [($pa | length) ($pb | length)] | math max
+    let pa = $pa | append (0..<$n | each { 0 }) | first $n # right-pad with zeros so 1.2 vs 1.2.0 compare equal
+    let pb = $pb | append (0..<$n | each { 0 }) | first $n
+    for i in 0..<$n {
+        let x = $pa | get $i
+        let y = $pb | get $i
+        if $x != $y { return ($x < $y) }
+    }
+    false
+}
+
 # output a command from a pipe where `example` is used, and truncate the output table
 #
 # > ls nu-goodies | first 3 | reject modified | example

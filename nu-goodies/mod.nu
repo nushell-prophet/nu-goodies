@@ -1,5 +1,6 @@
 export use commands.nu [
     "bar"
+    "cargo-updates"
     # "cb"
     # "git-check-file-clean"
     "cd-root"
