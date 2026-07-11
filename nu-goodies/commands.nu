@@ -761,11 +761,61 @@ export def 'rgv' --wrapped [...rest] {
     }
 }
 
+# Find files matching the glob that contain the fixed string
+def 'files-containing' [
+    find: string
+    glob_pattern: string
+    no_rg: bool = false
+]: nothing -> list<string> {
+    if (which rg | is-empty) or $no_rg {
+        glob --no-dir $glob_pattern
+        | where {|i| open --raw $i | str contains $find }
+        | path relative-to (pwd)
+    } else {
+        # explicit `.` — without a path rg reads stdin when stdin is not a tty
+        rg $find --fixed-strings --files-with-matches --glob $glob_pattern .
+        | complete
+        # rg exits 1 on "no matches" — not an error here
+        | if $in.exit_code > 1 { error make --unspanned {msg: $in.stderr} } else { $in.stdout }
+        | lines
+        | str replace --regex '^\./' ''
+    }
+}
+
+# Replace a fixed string in the given files; return the changed lines
+# as a table with rgv-style `path:line:col` links
+def 'replace-in-files' [
+    find: string
+    replace: string
+    files: list<string>
+]: nothing -> table {
+    $files
+    | each {|file|
+        let old = open --raw $file
+
+        $old
+        | str replace --all $find $replace
+        | str replace --regex '\n*$' (char nl)
+        | save --force $file
+
+        $old
+        | lines
+        | enumerate
+        | where {|l| $l.item | str contains $find }
+        | each {|l| {
+            path: ([$file ($l.index + 1) (($l.item | str index-of $find) + 1)] | str join ':')
+            before: $l.item
+            after: ($l.item | str replace --all $find $replace)
+        }}
+    }
+    | flatten
+}
+
 # Find and replace text across multiple files by extension
 export def 'replace-in-all-files' [
     find: string # Text to search for
     replace: string # Replacement text
-    --quiet # Suppress statistics output
+    --quiet # Suppress the changed-lines table and stats
     --no-git-check # Skip uncommitted changes check
     --no-rg # Use Nushell instead of ripgrep
     --extensions: list<string> = [nu md py] # File extensions to process
@@ -774,38 +824,22 @@ export def 'replace-in-all-files' [
         | str join ','
         | str c '**/*.{' $in '}'
 
-    let files_total = glob --no-dir $glob
+    let files_found = files-containing $find $glob $no_rg
 
-    let files_found = if (which rg | is-empty) or $no_rg {
-        $files_total
-        | each {|i|
-            open --raw $i
-            | if ($in | str contains $find) { $i }
-        }
-        | compact
-    } else {
-        rg $find --fixed-strings --files-with-matches --glob $glob
-        | lines
-    }
+    # check all files before writing any, so a dirty file aborts the whole run
+    if not $no_git_check { $files_found | each {|i| git-check-file-clean $i } }
 
-    let updated = $files_found
-        | each {|i|
-            if not $no_git_check { git-check-file-clean $i }
-
-            $i | open
-            | str replace --all $find $replace
-            | str replace --regex '\n*$' (char nl)
-            | save --force $i
-        }
-        | length
+    let changes = replace-in-files $find $replace $files_found
 
     if not $quiet {
         let field_name = $'total .($extensions) files'
         # I use record here just for decoration
-        {
-            $field_name: ($files_total | length)
-            'updated': $updated
+        print {
+            $field_name: (glob --no-dir $glob | length)
+            'updated': ($files_found | length)
         }
+
+        $changes
     }
 }
 
