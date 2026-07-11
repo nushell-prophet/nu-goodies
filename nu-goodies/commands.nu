@@ -843,6 +843,61 @@ export def 'replace-in-all-files' [
     }
 }
 
+# Move/rename a file and update references to it in markdown and code
+#
+# Replaces occurrences of the old path as given, then — if the basename
+# changed — occurrences of the bare basename, which catches relative
+# links like `../old.md` written from other directories.
+export def 'mv-update-links' [
+    from: path # Current path of the file
+    to: path # New path of the file
+    --quiet # Suppress the changed-lines table
+    --no-git-check # Skip uncommitted changes check
+    --extensions: list<string> = [nu md py] # File extensions to scan for references
+]: nothing -> any {
+    if not ($from | path exists) {
+        error make --unspanned {msg: (str c 'file not found: ' $from)}
+    }
+    if ($to | path exists) {
+        error make --unspanned {msg: (str c $to ' already exists')}
+    }
+    let glob = $extensions
+        | str join ','
+        | str c '**/*.{' $in '}'
+
+    let pairs = [
+        [find replace];
+        [($from | into string) ($to | into string)]
+        [($from | path basename) ($to | path basename)]
+    ]
+    | uniq
+    | where find != replace
+
+    # check every file the whole run will touch before doing anything —
+    # the move and the path pass dirty files the later passes see, so
+    # checks made mid-run would abort with the work half-applied
+    if not $no_git_check {
+        git-check-file-clean $from
+
+        $pairs
+        | each {|pair| files-containing $pair.find $glob }
+        | flatten
+        | uniq
+        | each {|i| git-check-file-clean $i }
+    }
+
+    mv $from $to
+
+    let changes = $pairs
+        | each {|pair|
+            let files = files-containing $pair.find $glob
+            replace-in-files $pair.find $pair.replace $files
+        }
+        | flatten
+
+    if not $quiet { $changes }
+}
+
 # Error if file has uncommitted git changes
 export def git-check-file-clean [
     file: path
