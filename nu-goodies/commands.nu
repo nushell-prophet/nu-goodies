@@ -708,6 +708,7 @@ export def 'significant-digits' [
 export def 'tarq' [
     ...paths: path # files or directories to include
     --name: string # archive base name (default: basename of the first path)
+    --no-timestamp # name the archive exactly $base.tar.gz
 ]: nothing -> string {
     if ($paths | is-empty) {
         error make {msg: 'provide at least one path to archive'}
@@ -716,7 +717,11 @@ export def 'tarq' [
     # Why: timestamp is appended even with --name — a backup command that
     # silently overwrites the previous archive on re-run defeats its purpose
     let base = $name | default ($paths.0 | path expand | path basename)
-    let archive = $'($base)_(date now | format date "%Y%m%d_%H%M%S").tar.gz'
+    let archive = $base
+        | if $no_timestamp { } else {
+            $'($in)_(date now | format date "%Y%m%d_%H%M%S")'
+        }
+        | $in + '.tar.gz'
 
     tar -czf $archive ...$paths
 
