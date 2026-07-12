@@ -33,6 +33,7 @@ export use commands.nu [
     "rename-tab"
     "select-i"
     # "significant-digits"
+    "tarq"
     # "testcd"
     "tt"
     "to-temp-file"

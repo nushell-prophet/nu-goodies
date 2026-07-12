@@ -701,6 +701,28 @@ export def 'significant-digits' [
 # 3499999.9999999995
 # so I use what I have now.
 
+# Quick tar archiver: pack paths into a timestamped .tar.gz backup
+#
+# > tarq notes.md pics
+# notes.md_20260712_101010.tar.gz
+export def 'tarq' [
+    ...paths: path # files or directories to include
+    --name: string # archive base name (default: basename of the first path)
+]: nothing -> string {
+    if ($paths | is-empty) {
+        error make {msg: 'provide at least one path to archive'}
+    }
+
+    # Why: timestamp is appended even with --name — a backup command that
+    # silently overwrites the previous archive on re-run defeats its purpose
+    let base = $name | default ($paths.0 | path expand | path basename)
+    let archive = $'($base)_(date now | format date "%Y%m%d_%H%M%S").tar.gz'
+
+    tar -czf $archive ...$paths
+
+    $archive
+}
+
 # checks for toolkit.nu file in the dir, and puts into commandline `overlay use as tk`
 export def --env 'tt' [] {
     if ('toolkit.nu' | path exists) {
