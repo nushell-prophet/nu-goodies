@@ -723,7 +723,7 @@ export def 'tarq' [
         }
         | $in + '.tar.gz'
 
-    tar -czf $archive ...$paths
+    tar -czf $archive -- ...$paths
 
     $archive
 }
