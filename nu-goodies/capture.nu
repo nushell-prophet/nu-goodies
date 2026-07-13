@@ -80,7 +80,7 @@ export def 'ansi-to-png' [
     --font-size: int = 50
     --font-name: string = 'ZedMono Nerd Font' # Why: matches wezterm config; rsvg-convert resolves via fontconfig after `brew install --cask font-zed-mono-nerd-font`
     --line-height: float = 1.0
-    --background: string@$bg_presets = '#000000' # Why: matches the cozy sandbox background (black), set via `wezterm-cozy --background`
+    --background: string@$bg_presets = '#000000' # Why: matches the cozy sandbox background (black), set via `sbxw --background`
     --show
 ]: string -> path {
     let $out = $out | default (next_img_path)
