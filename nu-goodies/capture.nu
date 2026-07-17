@@ -191,9 +191,12 @@ def 'zellij-dump-prompts' [
     let raw_lines = open $tmp | lines
     let stripped = $raw_lines | each { ansi strip }
 
+    # Why: the prompt renders each command as `\n┏ path …\n┗━> cmd` (transient
+    # prompt disabled), so `┗━> ` marks the command line in scrollback.
+    # Keep in sync with create-left-prompt in dotfiles/nushell/env.nu.
     let prompts = $stripped
         | enumerate
-        | where { $in.item =~ '^> ' }
+        | where { $in.item =~ '^┗━> ' }
         | get index
 
     let max_n = $indices | math max
@@ -214,9 +217,11 @@ def 'prompt-block' [
     let start = $reversed_prompts | get $from
     let end = $reversed_prompts | get $to
 
+    # Why: $end points at the next prompt's `┗━>` line; the two lines above it
+    # (blank line + `┏ …` header) belong to that prompt, not to this output
     $lines
     | skip $start
-    | first ($end - $start)
+    | first ($end - $start - 2)
 }
 
 def 'extract-by-prompts' [
@@ -265,7 +270,9 @@ def 'format-block' [
         return ($block | str join (char nl))
     }
 
-    let cmd_first_line = $block | first | str replace --regex '^> ' ''
+    # Why: ansi strip because with --ansi the `┗━` box chars arrive wrapped in
+    # color codes, and match-history-command compares by exact equality
+    let cmd_first_line = $block | first | ansi strip | str replace --regex '^┗━> ' ''
     let hist = match-history-command $cmd_first_line
 
     if ($hist != null) {
@@ -277,7 +284,7 @@ def 'format-block' [
         $command_text | append $output | str join (char nl)
     } else {
         print --stderr "note: command not found in history, outputting raw"
-        $block | each { str replace --regex '^> ' '' } | str join (char nl)
+        $block | each { str replace --regex '^┗━> ' '' } | str join (char nl)
     }
 }
 
@@ -336,8 +343,8 @@ export def 'delete-prompts' [
     let target_line = $reversed | get $n
     let current_line = $reversed | get 0
 
-    # Include the blank line before target prompt (transient prompt emits \n before "> ")
-    let start = [($target_line - 1) 0] | math max
+    # Include the blank line and `┏ …` header above the target `┗━>` line
+    let start = [($target_line - 2) 0] | math max
     let lines_up = $current_line - $start + 1
 
     print --no-newline $"\e[($lines_up)A\e[0J"
