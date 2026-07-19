@@ -80,6 +80,7 @@ export use str.nu [
     "str c"
     # "str prepend"
     # "str repeat"
+    "str to-raw-string"
     "to-safe-filename"
 ]
 
