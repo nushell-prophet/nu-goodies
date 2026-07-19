@@ -318,7 +318,7 @@ export def 'copy-out' [
     }
     | str join "\n\n"
     | str replace --all --regex '\n+$' ''
-    | if $cwd { $"# $(pwd)\n($in)" } else { }
+    | if $cwd { $"# (pwd)\n($in)" } else { }
     | if $echo { } else { pbcopy }
 }
 
