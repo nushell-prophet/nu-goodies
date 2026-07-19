@@ -128,6 +128,7 @@ export def 'example' [
     --no-comment (-H) # Don't comment the result
     --abbreviated: int = 10
     --bare # Don't wrap in `nu -c`, output the raw nushell command
+    --cwd # Include CWD into first line comment
 ]: any -> string {
     let input = table --abbreviated $abbreviated
         | if $no_comment { } else { into string | ansi strip }
@@ -158,6 +159,7 @@ export def 'example' [
         | each { str c '# => ' $in }
     }
     | prepend $command
+    | if $cwd { prepend $"# (pwd)" } else { }
     | str join (char nl)
     | if $no_copy { } else {
         tee { pbcopy }
