@@ -83,3 +83,14 @@ export def 'to-safe-filename' [
 # Concatenate rest parameters into a string
 @example escape-interpolation { 1 + 1 | str c 'result is ' $in } --result 'result is 2'
 export def 'str c' [...rest: any]: nothing -> string { $rest | into string | str join }
+
+# Wrap a string as a Nushell raw-string literal (r#'…'#), so its own ' and "
+# need no escaping. The # fence is one longer than the longest # run inside,
+# so no inner '#… can close the string early.
+@example plain { "ls 'x' | \"\"" | str to-raw-string } --result "r#'ls 'x' | \"\"'#"
+@example nested-hash { 'a ## b' | str to-raw-string } --result "r###'a ## b'###"
+export def 'str to-raw-string' []: string -> string {
+    let input = $in
+    let hashes = $input | parse --regex '(#+)' | get capture0 | sort --reverse | get --optional 0 | default ''
+    $"r#($hashes)'($input)'#($hashes)"
+}
