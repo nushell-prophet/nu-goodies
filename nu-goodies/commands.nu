@@ -134,6 +134,7 @@ export def 'example' [
 
     let command = get-last-commands-from-sql 1
         | str replace --regex '\| example.*' ''
+        | str trim
         | if $no_comment {
             nu-highlight # for making screnshots
         } else { }
