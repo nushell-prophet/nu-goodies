@@ -1,5 +1,5 @@
 use history.nu [ get-last-commands-from-sql ]
-use str.nu [ "str c" ]
+use str.nu [ "str c" "str to-raw-string" ]
 
 # Open table in Less
 export def 'L' [
@@ -146,8 +146,8 @@ export def 'example' [
                 # only single quotes — double-quote wrap (both shells)
                 $'nu -c "($in)"'
             } else {
-                # both quotes or bash-unsafe chars — bash-only fallback
-                $"nu -c '($in | str replace --all "'" "'\\''")'"
+                # both quote types (or bash-unsafe chars) — raw string, no escaping (nushell)
+                $"nu -c ($in | str to-raw-string)"
             }
         }
         | str c $in (char nl)
