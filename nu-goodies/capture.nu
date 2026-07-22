@@ -80,6 +80,7 @@ export def 'ansi-to-png' [
     --font-size: int = 50
     --font-name: string = 'ZedMono NF Extd' # Why: wezterm sets `stretch = 'Expanded'` on ZedMono Nerd Font, so plain 'ZedMono Nerd Font' resolves to the Regular width and the box-drawing/logo glyphs render wrong. 'ZedMono NF Extd' selects the Extended variant fontconfig uses for that stretch (the same ttf install-deps checks for)
     --line-height: float = 1.0
+    --width: int = 0 # Why: ansisvg terminal width in columns. When wider than the content it left-aligns and pads the right, i.e. adds space from the right. 0 = auto-fit to content
     --background: string@$bg_presets = '#000000' # Why: matches the cozy sandbox background (black), set via `sbxw --background`
     --colorscheme: string = 'Wez' # Why: resolves palette-dependent ANSI codes (ansi green/yellow/…) with wezterm's own palette, since wezterm sets no color_scheme (built-in default). ansisvg's default 'Builtin Dark' is a saturated VGA palette that doesn't match. Any name from `ansisvg --listcolorschemes`. See todo/20260524-0240-ansi-to-png-palette-mismatch.md
     --recolor: record = {'#55cc55': '#89fc6e', '#cdcd55': '#cdcd68'} # Why: ansisvg only loads its bundled schemes (no custom-palette file) and never bold-brightens, so bold green (1;32) comes out plain #55cc55. Real wezterm bold-brightens it. These swaps (measured off the real terminal) nudge Wez's green/yellow to what wezterm actually shows. Maps source-hex -> target-hex, applied to the SVG before rasterizing. Pass `--recolor {}` to disable.
@@ -88,8 +89,9 @@ export def 'ansi-to-png' [
     let $out = $out | default (next_img_path)
     # Not ansisvg --fontfile + resvg because: resvg ignores SVG @font-face and CSS class selectors,
     # so colors collapse to grey. rsvg-convert (librsvg) handles both via fontconfig + simplecss.
+    let width_args = if $width > 0 { [--width $width] } else { [] }
     let $svg = $in
-        | ansisvg --transparent --fontname $font_name --fontsize $font_size --lineheight $line_height --colorscheme $colorscheme
+        | ansisvg --transparent --fontname $font_name --fontsize $font_size --lineheight $line_height --colorscheme $colorscheme ...$width_args
     $recolor
     | transpose from to
     | reduce --fold $svg {|it, acc| $acc | str replace --all $it.from $it.to }
