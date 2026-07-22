@@ -78,16 +78,17 @@ const bg_presets = [
 export def 'ansi-to-png' [
     out?: path # Why: when omitted, auto-pick the next free img<N>.png in cwd
     --font-size: int = 50
-    --font-name: string = 'ZedMono Nerd Font' # Why: matches wezterm config; rsvg-convert resolves via fontconfig after `brew install --cask font-zed-mono-nerd-font`
+    --font-name: string = 'ZedMono NF Extd' # Why: wezterm sets `stretch = 'Expanded'` on ZedMono Nerd Font, so plain 'ZedMono Nerd Font' resolves to the Regular width and the box-drawing/logo glyphs render wrong. 'ZedMono NF Extd' selects the Extended variant fontconfig uses for that stretch (the same ttf install-deps checks for)
     --line-height: float = 1.0
     --background: string@$bg_presets = '#000000' # Why: matches the cozy sandbox background (black), set via `sbxw --background`
+    --colorscheme: string = 'Wez' # Why: resolves palette-dependent ANSI codes (ansi green/yellow/…) with wezterm's own palette, since wezterm sets no color_scheme (built-in default). ansisvg's default 'Builtin Dark' is a saturated VGA palette that doesn't match. Any name from `ansisvg --listcolorschemes`, or a path to a Windows-Terminal-format JSON. See todo/20260524-0240-ansi-to-png-palette-mismatch.md
     --show
 ]: string -> path {
     let $out = $out | default (next_img_path)
     # Not ansisvg --fontfile + resvg because: resvg ignores SVG @font-face and CSS class selectors,
     # so colors collapse to grey. rsvg-convert (librsvg) handles both via fontconfig + simplecss.
     $in
-    | ansisvg --transparent --fontname $font_name --fontsize $font_size --lineheight $line_height
+    | ansisvg --transparent --fontname $font_name --fontsize $font_size --lineheight $line_height --colorscheme $colorscheme
     | rsvg-convert -b $background -o $out
     if $show { chafa $out }
     $out
