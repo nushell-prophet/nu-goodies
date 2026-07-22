@@ -29,8 +29,9 @@ Use [Topiary](https://github.com/tweag/topiary) for formatting `.nu` files.
 
 `nu-goodies/mod.nu` is the module entry point. It re-exports commands from dedicated submodules:
 
-- `commands.nu` — general-purpose utilities (the largest file, ~980 lines)
-- `capture.nu` — terminal capture and screenshot commands
+- `commands.nu` — general-purpose utilities (the largest file)
+- `arrange.nu` — terminal window/pane layout: `screen center`, `screen splash`, `tile-right`/`tile-left`/`tile-down`/`tile-up`
+- `capture.nu` — terminal capture, screenshot, and ANSI→PNG rendering commands
 - `cprint.nu` — colorful text printing with wrapping, framing, alignment
 - `editors.nu` — editor integration (Helix, fx, VisiData)
 - `gradient-screen.nu` — decorative gradient screen fill and `bye`
@@ -41,17 +42,23 @@ Use [Topiary](https://github.com/tweag/topiary) for formatting `.nu` files.
 
 ### commands.nu
 
-Remaining general-purpose commands (~980 lines). Key categories:
+Remaining general-purpose commands. Key categories (not exhaustive — check `mod.nu` for the full public list):
 
-- **Data display**: `bar` (Unicode progress bars), `L` (pipe table to less/bat), `normalize`, `number-format`, `number-col-format`, `side-by-side`
-- **File/navigation**: `fs` (interactive file selector), `cd-root`, `find-root`, `mc` (midnight commander-style dual pane)
-- **Shell productivity**: `example` (format command + output for sharing), `select-i` (interactive column selector), `fill non-exist`, `replace-in-all-files`
-- **Nushell dev**: `nu-test install`, `nu-test launch`, `nu-format`, `significant-digits`
+- **Data display**: `bar` (Unicode progress bars), `L` (pipe table to less/bat), `normalize`, `number-format`, `number-col-format`
+- **File/navigation**: `fs` (interactive file selector), `cd-root`, `find-root`, `mc` (midnight commander-style dual pane), `ln-for-preview`, `mv-update-links`, `ls-git-modified-date`
+- **Shell productivity**: `example` (format command + output for sharing), `select-i` (interactive column selector), `fill non-exist`, `replace-in-all-files`, `fzf-preview`, `tarq`, `to-temp-file`, `rename-tab`
+- **Nushell dev**: `nu-test install`, `nu-test launch`, `nu-format`, `cargo-updates`, `format profile`
 - **Media**: `transcribe`
 
 ### capture.nu
 
-Terminal capture and screenshot commands: `copy-out` (clipboard from Zellij scrollback), `wez-to-ansi`, `wez-to-asciicast`, `wez-to-gif`, `wez-to-png`, `zellij-to-png`. Imports from `history.nu` and `str.nu`.
+Terminal capture, screenshot, and ANSI→PNG rendering. Exports: `ansi-to-png`, `install-deps`, `copy-out` (clipboard from Zellij scrollback), `in-pane`, `delete-prompts`, `wez-to-ansi`, `wez-to-asciicast`, `wez-to-gif`, `wez-to-png`, `zellij-to-png`. Imports from `history.nu` and `str.nu`.
+
+`ansi-to-png` is the core renderer the show visuals pipe into (`npshow` covers, demo captures): it takes ANSI-colored text on stdin and rasterizes it via `ansisvg` → `rsvg-convert` (librsvg). Key flags — `out?` (auto-picks the next free `img<N>.png` in cwd), `--font-size 50`, `--font-name 'ZedMono NF Extd'` (the Extended stretch wezterm uses, so box-drawing/logo glyphs render right), `--line-height`, `--width` (ansisvg column width; wider than content = right-pad), `--background '#000000'` (matches the cozy sandbox), `--colorscheme 'Wez'` (resolves palette-dependent ANSI codes with wezterm's palette), `--recolor` (bold-brighten swaps ansisvg can't do), `--show` (preview with chafa). The `# Why:` comments on each flag record the palette-matching reasoning — keep them. `install-deps` is the idempotent provisioner for its four dependencies: ansisvg (via `go install`, symlinked into the brew prefix), librsvg, chafa, and the ZedMono Nerd Font cask.
+
+### arrange.nu
+
+Terminal window/pane layout and centering. Exports: `screen center` (center content in the terminal), `screen splash`, and the `tile-*` family (`tile-right`, `tile-left`, `tile-down`, `tile-up`). No imports from other submodules.
 
 ### cprint.nu
 
@@ -71,7 +78,7 @@ Shell history commands: `hist` (SQL-based history search with filters), `hist-to
 
 ### str.nu
 
-String utilities: `str c` (concatenation), `str repeat`, `str append`, `str prepend`, `escape-regex`, `escape-nushell-escapes`, `to-safe-filename`. No imports from other submodules.
+String utilities. Public exports: `str c` (concatenation), `str to-raw-string`, `to-safe-filename`. The file also defines `str repeat`, `str append`, `str prepend`, `escape-regex`, `escape-nushell-escapes`, but these are commented out in `mod.nu` (intentionally hidden). No imports from other submodules.
 
 ### kv/ Submodule
 
@@ -81,6 +88,7 @@ File-backed key-value store (originally by @clipplerblood). Stores values as ind
 
 ```
 str.nu          ← (no deps)
+arrange.nu      ← (no deps)
 cprint.nu       ← str.nu
 gradient-screen.nu ← str.nu
 history.nu      ← (no deps)
