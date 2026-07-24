@@ -91,7 +91,9 @@ export def 'hist' [
     # Format timestamps as human readable
     # Convert nanoseconds to seconds and format
     # TODO: check that filtering by options is adjusted by offset too
-    let formatted_results = $filtered_results | into datetime --format '%s' --offset (-3) start_timestamp
+    let formatted_results = $filtered_results
+        | default 0 start_timestamp
+        | into datetime --format '%s' --offset (-3) start_timestamp
 
     # Add pipe count column
     $formatted_results
