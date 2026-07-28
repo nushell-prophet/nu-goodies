@@ -227,15 +227,17 @@ export def ls-git-modified-date [
 
             let ts = $lines | first | into datetime
 
-            $lines
-            | skip 2
-            | if ($in | length) <= $max_files_in_commit {
-                each {|file| {name: $file commit-ts: $ts} }
-            }
+            let files = $lines | skip 2
+
+            $files | each {|file| {name: $file commit-ts: $ts bulk: (($files | length) > $max_files_in_commit)} }
         }
-        | compact
         | flatten
+        # Why: a file touched only by bulk commits must still be listed. `sort-by` is stable, so
+        # within each group the newest commit stays first; `uniq-by` then prefers a non-bulk date
+        # and falls back to a bulk one instead of dropping the file from the output entirely.
+        | sort-by bulk
         | uniq-by name
+        | reject bulk
 
     let path_candidate = git ls-files --full-name -- $path
         | lines
@@ -247,6 +249,7 @@ export def ls-git-modified-date [
     let full_paths = $path_candidate | update name { [$root $in] | path join }
 
     try { $full_paths | update name { path relative-to (pwd) } } catch { $full_paths }
+    | sort-by commit-ts --reverse
 }
 
 # Hard-link an input table to temp directory (useful for previewing files from large directories in external programs)
