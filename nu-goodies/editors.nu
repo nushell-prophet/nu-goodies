@@ -47,7 +47,8 @@ export def 'in-vd' [
         polars into-nu
     } else { }
     | if $csv or not (($in | has_hier) or $json) {
-        to csv
+        vd-friendly
+        | to csv
         | ansi strip
         | vd --save-filetype json --filetype csv -o -
         | complete
@@ -64,6 +65,26 @@ export def 'in-vd' [
             get ''
         } else { }
         | kv set vd --return-to-stdout
+    }
+}
+
+# Convert cells that `to csv` would render for humans into values VisiData can type
+#
+# Why: `to csv` writes a datetime as `Wed, 1 Jan 2020 10:20:30 +0300 (6 years ago)` —
+# the relative-time suffix makes vd's `@` (date) parser fail — and a filesize as the
+# rounded `1.2 MB`, which is both unusable for vd's `#` (int) and lossy.
+def vd-friendly []: any -> any {
+    let input = $in
+
+    if ($input | describe | $in !~ '^(table|record)') { return $input }
+
+    $input
+    | update cells {|value|
+        match ($value | describe) {
+            'datetime' => ($value | format date '%+') # ISO 8601, what vd's date type parses
+            'filesize' => ($value | into int) # bytes
+            _ => $value
+        }
     }
 }
 
