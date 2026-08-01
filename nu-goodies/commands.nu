@@ -715,6 +715,7 @@ export def 'tarq' [
     ...paths: path # files or directories to include
     --name: string # archive base name (default: basename of the first path)
     --no-timestamp # name the archive exactly $base.tar.gz
+    --ignore: list<string> = [] # paths or patterns to exclude (tar --exclude)
 ]: nothing -> string {
     if ($paths | is-empty) {
         error make {msg: 'provide at least one path to archive'}
@@ -729,7 +730,10 @@ export def 'tarq' [
         }
         | $in + '.tar.gz'
 
-    tar -czf $archive -- ...$paths
+    # Why: excludes go before the file list — bsdtar (macOS) only applies
+    # --exclude to paths that come after it; GNU tar doesn't care
+    let excludes = $ignore | each { $'--exclude=($in)' }
+    tar -czf $archive ...$excludes -- ...$paths
 
     $archive
 }
