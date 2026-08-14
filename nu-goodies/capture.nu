@@ -231,26 +231,6 @@ def 'prompt-block' [
     | first ($end - $start - 2)
 }
 
-def 'extract-by-prompts' [
-    indices: list<int>
-    lines: list<string>
-    reversed_prompts: list<int>
-    --flatten
-]: nothing -> list<string> {
-    if ($indices | length) == 1 {
-        prompt-block $lines $reversed_prompts ($indices | first) 0
-    } else if $flatten {
-        $indices
-        | each {|n| prompt-block $lines $reversed_prompts $n ($n - 1) }
-        | flatten
-    } else {
-        $indices
-        | each {|n| prompt-block $lines $reversed_prompts $n ($n - 1) | str join (char nl) }
-        | str join "\n\n"
-        | lines
-    }
-}
-
 # Look up a command in session history by matching its first line
 def 'match-history-command' [
     first_line: string
@@ -297,8 +277,11 @@ def 'format-block' [
 
 # Copy command(s) with output to clipboard from Zellij pane scrollback
 #
-# > copy-out 3     # from 3rd-to-last command through the last
-# > copy-out 3 1   # 3rd-to-last and last, separately
+# > copy-out 3     # the 3rd-to-last command only
+# > copy-out 3 1   # 3rd-to-last and last
+# Why an index means exactly that command, never a range through the last:
+# the completion menu labels each number with one specific command, so that is
+# what a number should select; a range is spelled out as `copy-out 3 2 1`.
 export def 'copy-out' [
     ...rest: int@completions-copy-out # Command indices (1 = last)
     --echo (-e) # Return text instead of copying
@@ -312,14 +295,7 @@ export def 'copy-out' [
     let output_lines = $dump.raw_lines
         | if $ansi { } else { each { ansi strip } }
 
-    # Build per-command blocks for history-assisted formatting
-    let block_indices = if ($indices | length) == 1 {
-        ($indices | first)..1
-    } else {
-        $indices
-    }
-
-    $block_indices
+    $indices
     | each {|n|
         format-block (prompt-block $output_lines $dump.reversed_prompts $n ($n - 1)) $no_comment
     }
@@ -359,8 +335,8 @@ export def 'delete-prompts' [
 
 # Capture commands from Zellij pane scrollback and render to PNG
 #
-# > zellij-to-png 3     # from 3rd-to-last command through the last
-# > zellij-to-png 3 1   # 3rd-to-last and last, separately
+# > zellij-to-png 3     # the 3rd-to-last command only
+# > zellij-to-png 3 1   # 3rd-to-last and last
 export def 'zellij-to-png' [
     ...rest: int@completions-copy-out # Command indices (1 = last)
     --output-path: path = '' # Path for saving output image
@@ -369,11 +345,18 @@ export def 'zellij-to-png' [
 
     let dump = zellij-dump-prompts $indices --name 'zellij-to-png'
 
-    let out = extract-by-prompts $indices $dump.raw_lines $dump.reversed_prompts --flatten
+    let out = $indices
+        | each {|n| prompt-block $dump.raw_lines $dump.reversed_prompts $n ($n - 1) }
+        | flatten
         | str join (char nl)
 
     let output_path = if $output_path != '' { $output_path } else {
-        let filename = last-commands ($indices | math max)
+        # Chronological list of the (max n) commands before this one; index n
+        # counts from the end, so command n sits at position (length - n)
+        let cmds = get-last-commands-from-sql (($indices | math max) + 1) | drop 1
+        let filename = $indices
+            | each {|n| $cmds | get (($cmds | length) - $n) | str trim }
+            | str join '_'
             | to-safe-filename --prefix 'zel-out-' --suffix '.png' --date
 
         default-image-path $filename
