@@ -170,15 +170,20 @@ def 'last-commands' [
     | str join '_'
 }
 
-def 'completions-copy-out' []: nothing -> list<record<value: int, description: string>> {
+# Last `limit` commands of the current session, newest first.
+# Empty when history is plain-text: no session_id column to scope by.
+def 'session-commands' [limit: int]: nothing -> list<string> {
     if ($nu.history-path | str ends-with 'txt') { return [] }
 
-    let session = history session
+    open $nu.history-path
+    | query db "SELECT command_line FROM history WHERE session_id = ? ORDER BY id DESC LIMIT ?" --params [(history session) $limit]
+    | get command_line
+}
+
+def 'completions-copy-out' []: nothing -> list<record<value: int, description: string>> {
     let width = term size | get columns | $in - 5
 
-    open $nu.history-path
-    | query db "SELECT command_line FROM history WHERE session_id = ? ORDER BY id DESC LIMIT 20" --params [$session]
-    | get command_line
+    session-commands 20
     | enumerate
     | each {|i|
         {
@@ -235,12 +240,7 @@ def 'prompt-block' [
 def 'match-history-command' [
     first_line: string
 ]: nothing -> any {
-    if ($nu.history-path | str ends-with 'txt') { return null }
-
-    let session = history session
-    let match = open $nu.history-path
-        | query db "SELECT command_line FROM history WHERE session_id = ? ORDER BY id DESC LIMIT 100" --params [$session]
-        | get command_line
+    let match = session-commands 100
         | where { ($in | lines | first | str trim --right) == ($first_line | str trim --right) }
         | get 0?
 
