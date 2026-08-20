@@ -104,7 +104,7 @@ Commands that access shell history use a helper `get-last-commands-from-sql` whi
 ## Conventions
 
 - Commands use Nushell's typed input/output signatures (e.g., `]: string -> string {`)
-- Internal helpers are non-exported `def` commands; public API commands use `export def`
+- Helpers are hidden by leaving them out of `mod.nu`, not by their definition keyword — several (`cprint.nu`'s `wrapit`, `colorit`, …) are `export def` yet stay private because `mod.nu` does not re-export them
 - `mod.nu` controls the public API by selectively importing from each submodule - commented-out entries are intentionally hidden
 - When extracting a command to a new file, the command named the same as the module file must be renamed to `main` (Nushell restriction)
 - The `str c` command (string concatenation) is used extensively instead of string interpolation for building strings
