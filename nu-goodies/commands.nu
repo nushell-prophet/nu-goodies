@@ -517,7 +517,11 @@ export def 'number-col-format' [
     let input = $in
 
     if $column_name not-in ($input | columns) {
-        error make {'msg': $'There is no ($column_name) in columns'}
+        error make {
+            msg: 'no such column in the input table'
+            label: {text: $'the table has ($input | columns | str join ", ")', span: (metadata $column_name).span}
+            help: 'pass one of the column names listed above'
+        }
     }
 
     let thousands_delim_length = $thousands_delim | str length --grapheme-clusters
@@ -920,10 +924,18 @@ export def 'mv-update-links' [
     --extensions: list<string> = [nu md py] # File extensions to scan for references
 ]: nothing -> any {
     if not ($from | path exists) {
-        error make --unspanned {msg: (str c 'file not found: ' $from)}
+        error make {
+            msg: 'file to move not found'
+            label: {text: 'no such file', span: (metadata $from).span}
+            help: 'pass the current path of the file'
+        }
     }
     if ($to | path exists) {
-        error make --unspanned {msg: (str c $to ' already exists')}
+        error make {
+            msg: 'destination already exists'
+            label: {text: 'this path is taken', span: (metadata $to).span}
+            help: 'pick a free path, or move the existing file away first'
+        }
     }
     let glob = $extensions
         | str join ','
@@ -970,10 +982,9 @@ export def git-check-file-clean [
 
     if ($git_status | is-not-empty) {
         error make --unspanned {
-            msg: (
-                "File has uncommitted changes. Please commit or stash, " +
-                "or use `--no-git-check` flag.\n" + $git_status
-            )
+            msg: (str c 'file has uncommitted changes' (char nl) $git_status)
+            help: 'commit or stash them, or pass --no-git-check'
+            code: 'nu_goodies::git::file_not_clean'
         }
     }
 }
