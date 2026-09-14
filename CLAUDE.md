@@ -43,7 +43,6 @@ It re-exports commands from dedicated submodules:
 - `history.nu` — shell history search and manipulation
 - `str.nu` — string utilities (`str c`, `str repeat`, `str append`, etc.)
 - `macos.nu` — macOS-specific commands (`O`, `ramdisk-create`, `figlet-demo`)
-- `update-public-git.nu` — script for syncing patches between private/public repos
 
 ### commands.nu
 

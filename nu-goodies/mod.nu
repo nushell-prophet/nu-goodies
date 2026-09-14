@@ -112,4 +112,3 @@ export use macos.nu [
     "figlet-demo"
 ]
 
-export use update-public-git.nu
