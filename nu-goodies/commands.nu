@@ -2,6 +2,7 @@ use history.nu [ get-last-commands-from-sql ]
 use str.nu [ "str c" "str to-raw-string" ]
 
 # Open table in Less
+@category viewers
 export def 'L' [
     --abbreviated (-a): int = 1000
     --bat (-b) # Use bat instead of less
@@ -19,6 +20,7 @@ export def 'L' [
 #
 # > bar 0.71
 # ███▌
+@category chart
 export def 'bar' [
     percentage: float
     --background (-b): string = 'default'
@@ -64,6 +66,7 @@ export def 'bar' [
 #
 # > cargo-updates
 # > cargo-updates --outdated   # only the ones with a newer stable version
+@category development
 export def 'cargo-updates' [
     --outdated (-o) # Show only crates that have a newer stable version
 ]: nothing -> table {
@@ -123,6 +126,7 @@ def semver-lt [a: string, b: string]: nothing -> bool {
 # │ nu-goodies/str.nu        │ file │ 1.4 KB │
 # │ nu-goodies/abbreviate.nu │ file │  898 B │
 # ╰───────────name───────────┴─type─┴──size──╯
+@category development
 export def 'example' [
     --no-copy # Don't copy the output into clipboard
     --no-comment (-C) # Don't comment the result
@@ -174,6 +178,7 @@ export def 'example' [
 #
 # > [{a: 1} {b: 2}] | fill non-exist | to nuon
 # [{a: 1, b: ""}, {b: 2, a: ""}]
+@category filters
 export def 'fill non-exist' [
     value_to_replace: any = ''
 ]: table -> table {
@@ -188,6 +193,7 @@ export def 'fill non-exist' [
 # Format `debug profile` output
 #
 # > debug profile {pin-text cyber} --max-depth 7 --spans | format profile | null
+@category development
 export def 'format profile' []: table -> table {
     skip
     | update depth {|i| $i.depth - 1 }
@@ -212,6 +218,7 @@ export def 'format profile' []: table -> table {
 }
 
 # Show git commit dates for files, excluding bulk-change commits
+@category filesystem
 export def ls-git-modified-date [
     path?: path
     --max-files-in-commit: int = 5 # skip commits with more than this number of files. Useful for excluding automatic changes such as those by prettier or ruff
@@ -255,6 +262,7 @@ export def ls-git-modified-date [
 # Hard-link an input table to temp directory (useful for previewing files from large directories in external programs)
 #
 # > ls | where modified > (date now | $in - 20min) | ln-for-preview
+@category filesystem
 export def --env ln-for-preview [
     --first: int = 500
 ]: [list -> nothing table -> nothing] {
@@ -304,6 +312,7 @@ export def --env ln-for-preview [
 # }
 
 # Open Midnight Commander and cd to its exit directory
+@category filesystem
 export def --env mc [
     path1?: path
     path2?: path
@@ -318,6 +327,7 @@ export def --env mc [
 }
 
 # Create directory and cd into it
+@category filesystem
 export def --env md [
     target_dir: string
     -d # Use standard directory
@@ -338,6 +348,7 @@ export def --env md [
 }
 
 # Toggle suffix `_back` for a file
+@category filesystem
 export def 'mv1' [
     file: path
 ]: nothing -> nothing {
@@ -349,6 +360,7 @@ export def 'mv1' [
 }
 
 # Backup dotfiles and config directories to their git repos
+@category development
 export def 'mygit log' []: nothing -> nothing {
     $nu.home-dir
     | path join '.*'
@@ -368,6 +380,7 @@ export def 'mygit log' []: nothing -> nothing {
 # │ 3 │ 4 │    1 │    1 │
 # │ a │   │ a    │      │
 # ╰───┴───┴──────┴──────╯
+@category filters
 export def 'normalize' [
     ...column_names: string
     --suffix: string = '_norm'
@@ -395,6 +408,7 @@ export def 'normalize' [
 }
 
 # Install nushell or polars from the HEAD or the specified PR
+@category development
 export def 'nu-test install' [
     --nushell # Update nushell only
     --polars # Update polars plugin only
@@ -432,6 +446,7 @@ export def 'nu-test install' [
 }
 
 # Launch the test-installed Nushell binary
+@category development
 export def 'nu-test launch' [
     --no-plugin
 ]: nothing -> nothing {
@@ -491,6 +506,7 @@ export def 'launch-downloaded' []: nothing -> nothing {
 # │ 123_000.00wt │
 # │   2_340.00wt │
 # ╰──────────────╯
+@category conversions
 export def 'number-col-format' [
     column_name: string # A column name to format
     --thousands-delim (-t): string = '_' # Thousands delimiter: number-format 1000 -t ': 1'000
@@ -547,6 +563,7 @@ export def 'number-col-format' [
 #
 # > number-format 1000 --denom 'Wt'
 # 1_000Wt
+@category conversions
 export def 'number-format' [
     num?: number # Number to format
     --thousands-delim (-t): string = '_' # Thousands delimiter
@@ -591,6 +608,7 @@ export def 'number-format' [
 }
 
 # Generate 14 lines of spaces (placeholder grid)
+@category terminal
 export def 'orbita' []: nothing -> list<string> {
     1..14 | each { line ' ' }
 }
@@ -602,6 +620,7 @@ def line [
 }
 
 # An alternative to `inspect` that doesn't break debugging output
+@category viewers
 export def 'print-and-pass' [
     callback?: closure
 ]: any -> any {
@@ -620,6 +639,7 @@ export def 'print-and-pass' [
 # by @melmass at discord
 
 # Interactively select columns from a table
+@category viewers
 export def 'select-i' []: table -> nothing {
     let tgt = $in
     let choices = $tgt
@@ -711,6 +731,7 @@ export def 'significant-digits' [
 #
 # > tarq notes.md pics
 # notes.md_20260712_101010.tar.gz
+@category filesystem
 export def 'tarq' [
     ...paths: path # files or directories to include
     --name: string # archive base name (default: basename of the first path)
@@ -739,6 +760,7 @@ export def 'tarq' [
 }
 
 # checks for toolkit.nu file in the dir, and puts into commandline `overlay use as tk`
+@category development
 export def --env 'tt' [] {
     if ('toolkit.nu' | path exists) {
         commandline edit "overlay use 'toolkit.nu' --prefix as tk; commandline edit 'tk'"
@@ -760,6 +782,7 @@ export def --env 'testcd' [destination: path]: nothing -> nothing { cd $destinat
 # the stdin first. If no stdin is used closure takes no argument & the output is
 # used as the file content. If there is stdin closure takes the file name as an
 # argument & operates on it.
+@category filesystem
 export def 'to-temp-file' [
     content?: any # Commands used to generate the content of the file.
 ]: [any -> path nothing -> path] {
@@ -773,6 +796,7 @@ export def 'to-temp-file' [
 }
 
 # Transcribe audio file to text using whisper.cpp
+@category platform
 export def 'transcribe' [file: path]: nothing -> nothing {
     let file = $file
         | if $in =~ '\.wav$' { } else {
@@ -789,6 +813,7 @@ export def 'transcribe' [file: path]: nothing -> nothing {
 }
 
 # riggrep to output table to capture paths via "[^\\s│]+:\\d+:\\d+" in wezterm
+@category development
 export def 'rgv' --wrapped [...rest] {
     rg --vimgrep ...$rest
     | lines
@@ -849,6 +874,7 @@ def 'replace-in-files' [
 }
 
 # Find and replace text across multiple files by extension
+@category filesystem
 export def 'replace-in-all-files' [
     find: string # Text to search for
     replace: string # Replacement text
@@ -885,6 +911,7 @@ export def 'replace-in-all-files' [
 # Replaces occurrences of the old path as given, then — if the basename
 # changed — occurrences of the bare basename, which catches relative
 # links like `../old.md` written from other directories.
+@category filesystem
 export def 'mv-update-links' [
     from: path # Current path of the file
     to: path # New path of the file
@@ -969,6 +996,7 @@ def 'insert-new-lines' []: string -> string {
 }
 
 # Format Nushell code using Topiary formatter
+@category development
 export def 'nu-format' [
     --no-new-lines (-n) # Skip automatic line breaks before pipes
 ]: [nothing -> nothing string -> string] {
@@ -1013,6 +1041,7 @@ def 'completions-files-modified' [context: string]: nothing -> record {
 }
 
 # Resolve symlinks and return target paths, sorted by modification time
+@category filesystem
 export def 'fs' [...files: path@completions-files-modified]: nothing -> any {
     $files
     | uniq
@@ -1043,6 +1072,7 @@ export def 'fs' [...files: path@completions-files-modified]: nothing -> any {
 # Binary files show `file --brief` info instead of bat output.
 # With --content the preview shows the cell value itself (for long texts),
 # and the selection returns the whole row as a record.
+@category filesystem
 export def 'fzf-preview' [
     --column: string # column to take values from (table input); defaults to `name`, `path`, or the first column
     --content # preview cell values themselves instead of files; return the selected row as a record
@@ -1108,6 +1138,7 @@ esac'
 #
 # Try to find the repository root directory by looking for .git in parent
 # directories.
+@category filesystem
 export def find-root [dir?: path]: [nothing -> path nothing -> nothing] {
     let dir2 = $dir | default { pwd }
 
@@ -1130,11 +1161,13 @@ export def find-root [dir?: path]: [nothing -> path nothing -> nothing] {
 }
 
 # Change directory to git repository root
+@category filesystem
 export def --env cd-root [dir?: path]: [nothing -> nothing] {
     cd (find-root $dir)
 }
 
 # Rename Zellij tab, auto-incrementing duplicates
+@category terminal
 export def rename-tab [name: string = '']: nothing -> nothing {
     let name = if $name == '' { pwd | path basename | str replace -r '^-+' '' } else { $name }
 

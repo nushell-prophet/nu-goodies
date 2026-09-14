@@ -1,6 +1,7 @@
 use str.nu [ "str c" "str repeat" ]
 
 # Print a string colorfully with bells and whistles
+@category strings
 export def main [
     text?: string # Text to format, if omitted stdin will be used
     --color (-c): string@'completions-colors' = 'default' # Color to use for the cprint text

@@ -4,6 +4,7 @@ use kv
 
 # use in-vd.nu
 
+@category history
 export def get-last-commands-from-sql [n: int = 1]: nothing -> any {
     if ($nu.history-path | str ends-with 'txt') {
         return (history | last $n | get command | if $n == 1 { get 0 } else { })
@@ -17,6 +18,7 @@ export def get-last-commands-from-sql [n: int = 1]: nothing -> any {
 }
 
 # Copy this command to clipboard
+@category history
 export def 'copy-cmd' []: nothing -> nothing {
     let commands = get-last-commands-from-sql 2
         | str trim
@@ -31,6 +33,7 @@ export def 'copy-cmd' []: nothing -> nothing {
 }
 
 # Filter history with regex and convenient flags, add useful columns
+@category history
 export def 'hist' [
     like_filter?: string # a string to search in db
     --regex-filters: list<string> = [] # a regex to search for
@@ -107,6 +110,7 @@ export def 'hist' [
 }
 
 # Save significant or all current session history entries into a .nu file. If the .nu file already exists, data will be appended.
+@category history
 export def 'hist-to-script' [
     filename?: path
     --dont-open (-O) # Don't open the saved history file in editor
@@ -158,6 +162,7 @@ export def 'hist-to-script' [
 }
 
 # Open nushell commands history in visidata
+@category history
 export def 'in-vd history' []: table -> nothing {
     where command !~ 'in-vd history'
     | to csv
@@ -334,6 +339,7 @@ def 'zellij-navigate' [
 }
 
 # Jump to directory from history using fuzzy search
+@category filesystem
 export def --env 'z' [
     query?: string@'completions-cwds' # Fuzzy search query for directory
     --interactive (-i) # Always show interactive picker

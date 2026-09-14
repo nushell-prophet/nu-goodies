@@ -2,6 +2,7 @@
 use kv
 
 # Convert data structure to JSON and open it in fx
+@category viewers
 export def --wrapped in-fx [
     ...rest
 ]: any -> nothing {
@@ -11,6 +12,7 @@ export def --wrapped in-fx [
 }
 
 # Open data in Helix editor, return edited content to commandline
+@category viewers
 export def 'in-hx' [
     --path (-p) # Output file path instead of content
 ]: any -> nothing {
@@ -39,6 +41,7 @@ export def 'in-hx' [
 #
 # Examples:
 # > history | in-vd
+@category viewers
 export def 'in-vd' [
     --json (-j) # Force using msgpack for piping data in-vd
     --csv (-c) # Force using csv for piping data in-vd

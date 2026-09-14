@@ -48,6 +48,7 @@ def truncate-visible [width: int]: string -> string {
 #
 # With --vertical, also pads with blank lines so the block sits in the
 # vertical middle of the terminal.
+@category terminal
 export def 'screen center' [
     --factor: int = 1 # Divide terminal width by this factor
     --vertical (-v) # Also center vertically within terminal height
@@ -73,6 +74,7 @@ export def 'screen center' [
 
 # Clear the screen, show input centered on both axes as a splash, and
 # wait for a keypress before returning the prompt
+@category terminal
 export def 'screen splash' [
     --factor: int = 1 # Divide terminal width by this factor
     --no-wait # Show the splash and return immediately, without waiting for a keypress
@@ -89,6 +91,7 @@ export def 'screen splash' [
 # > "ab\ncd" | tile-right { "12\n34" }
 # ab  12
 # cd  34
+@category terminal
 export def 'tile-right' [
     right: closure # Closure producing the right panel
     --gap: int = 2 # Number of spaces between panels
@@ -124,6 +127,7 @@ export def 'tile-right' [
 # > "ab" | tile-down { "cd" }
 # ab
 # cd
+@category terminal
 export def 'tile-down' [
     bottom: closure # Closure producing the bottom panel
     --gap: int = 0 # Number of blank lines between panels
@@ -133,6 +137,7 @@ export def 'tile-down' [
 }
 
 # Tile another output to the left of the piped input
+@category terminal
 export def 'tile-left' [
     left: closure # Closure producing the left panel
     --gap: int = 2 # Number of spaces between panels
@@ -143,6 +148,7 @@ export def 'tile-left' [
 }
 
 # Tile another output above the piped input
+@category terminal
 export def 'tile-up' [
     top: closure # Closure producing the top panel
     --gap: int = 0 # Number of blank lines between panels

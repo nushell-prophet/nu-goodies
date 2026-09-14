@@ -1,6 +1,7 @@
 use str.nu [ "str c" ]
 
 # Display gradient screen and exit the shell
+@category terminal
 export def 'bye' [
     ...strings: string
     --no-date # Don't append date
@@ -11,6 +12,7 @@ export def 'bye' [
 }
 
 # Fill screen with repeated texts from arguments or $env.gradient-screen.texts with random color gradient
+@category terminal
 export def --env main [
     ...strings: string
     --no-date # Don't append date

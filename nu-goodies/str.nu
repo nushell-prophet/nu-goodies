@@ -64,6 +64,7 @@ def 'now-fn' []: nothing -> string {
 }
 
 # Convert string to filesystem-safe filename
+@category strings
 export def 'to-safe-filename' [
     --prefix: string = '' # Prepend to filename
     --suffix: string = '' # Append to filename
@@ -82,6 +83,7 @@ export def 'to-safe-filename' [
 
 # Concatenate rest parameters into a string
 @example escape-interpolation { 1 + 1 | str c 'result is ' $in } --result 'result is 2'
+@category strings
 export def 'str c' [...rest: any]: nothing -> string { $rest | into string | str join }
 
 # Wrap a string as a Nushell raw-string literal (r#'…'#), so its own ' and "
@@ -89,6 +91,7 @@ export def 'str c' [...rest: any]: nothing -> string { $rest | into string | str
 # so no inner '#… can close the string early.
 @example plain { "ls 'x' | \"\"" | str to-raw-string } --result "r#'ls 'x' | \"\"'#"
 @example nested-hash { 'a ## b' | str to-raw-string } --result "r###'a ## b'###"
+@category strings
 export def 'str to-raw-string' []: string -> string {
     let input = $in
     let hashes = $input | parse --regex '(#+)' | get capture0 | sort --reverse | get --optional 0 | default ''

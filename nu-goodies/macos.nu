@@ -5,6 +5,7 @@ def completions-macos-apps []: nothing -> list<string> {
 
 # Open a file in the specified macOS application or reveal it in Finder (--app flag supports completions)
 # > O O.nu --app "Sublime Text"
+@category platform
 export def 'O' [
     filepath?: path
     --app (-a): string@'completions-macos-apps' = 'Snagit 2022.app' # App to open with
@@ -20,6 +21,7 @@ export def 'O' [
 
 ###file ramdisk-create.nu
 # Create ramdisk in macOS
+@category platform
 export def 'ramdisk-create' [
     size: filesize = 4194304kb
 ]: nothing -> nothing {
@@ -31,6 +33,7 @@ export def 'ramdisk-create' [
 
 ###file figlet-demo.nu
 # Preview text in all available figlet fonts
+@category platform
 export def figlet-demo [text: string]: nothing -> record {
     glob /opt/homebrew/Cellar/figlet/2.2.5/share/figlet/fonts/*.flf
     | par-each --keep-order {|font|

@@ -2,11 +2,13 @@ use history.nu [ get-last-commands-from-sql ]
 use str.nu [ "str c" "to-safe-filename" ]
 
 # Capture recent commands from Wezterm scrollback with ANSI codes
+@category capture
 export def 'wez-to-ansi' []: nothing -> string {
     ^wezterm cli get-text --escapes
 }
 
 # Record Wezterm session to asciicast format
+@category capture
 export def 'wez-to-asciicast' [
     command: string = '' # Command to record
 ]: nothing -> path {
@@ -29,6 +31,7 @@ export def 'wez-to-asciicast' [
 }
 
 # Record Wezterm session and convert to GIF
+@category capture
 export def 'wez-to-gif' [
     --filename: path # Output GIF path
     --font-family: string = "ZedMono Nerd Font" # Font for rendering
@@ -75,6 +78,7 @@ const bg_presets = [
 
 # Render ANSI on stdin to a PNG file via ansisvg -> rsvg-convert.
 # Returns the output path so callers can pass it to ^open or chafa.
+@category capture
 export def 'ansi-to-png' [
     out?: path # Why: when omitted, auto-pick the next free img<N>.png in cwd
     --font-size: int = 50
@@ -113,6 +117,7 @@ def 'next_img_path' []: nothing -> string {
 # Idempotent installer for the four pieces ansi-to-png needs:
 # ansisvg (no brew formula, fetched via go install + symlinked into brew prefix),
 # librsvg for rsvg-convert, chafa, and the ZedMono Nerd Font cask.
+@category capture
 export def 'install-deps' []: nothing -> nothing {
     if (which ansisvg | is-empty) {
         # Not brew because: ansisvg has no formula. Go install puts the binary in $GOPATH/bin;
@@ -145,6 +150,7 @@ export def 'install-deps' []: nothing -> nothing {
 }
 
 # Capture wezterm scrollback, split by prompts, output chosen ones to an image file
+@category capture
 export def 'wez-to-png' [
     n_last_commands: int = 2 # Number of recent commands (and outputs) to capture.
     --output-path: path = '' # Path for saving output images.
@@ -282,6 +288,7 @@ def 'format-block' [
 # Why an index means exactly that command, never a range through the last:
 # the completion menu labels each number with one specific command, so that is
 # what a number should select; a range is spelled out as `copy-out 3 2 1`.
+@category capture
 export def 'copy-out' [
     ...rest: int@completions-copy-out # Command indices (1 = last)
     --echo (-e) # Return text instead of copying
@@ -307,6 +314,7 @@ export def 'copy-out' [
 
 # Open a new Zellij pane in the current tab running `nu --execute <command>`.
 # Pane closes automatically when nushell exits (--close-on-exit).
+@category terminal
 export def 'in-pane' [
     command: string # Command to run in the new pane (nushell syntax; pipes allowed)
     --right (-r) # Split right instead of down
@@ -317,6 +325,7 @@ export def 'in-pane' [
 
 # Delete last N prompts with their outputs from Zellij pane scrollback
 # Uses ANSI escapes to clear terminal lines; works for on-screen content
+@category terminal
 export def 'delete-prompts' [
     n: int = 1 # Number of prompts (with outputs) to delete
 ]: nothing -> nothing {
@@ -337,6 +346,7 @@ export def 'delete-prompts' [
 #
 # > zellij-to-png 3     # the 3rd-to-last command only
 # > zellij-to-png 3 1   # 3rd-to-last and last
+@category capture
 export def 'zellij-to-png' [
     ...rest: int@completions-copy-out # Command indices (1 = last)
     --output-path: path = '' # Path for saving output image
