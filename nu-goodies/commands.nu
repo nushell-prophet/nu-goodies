@@ -252,10 +252,14 @@ export def ls-git-modified-date [
         | join $gitlog name --inner
 
     let root = find-root
+    let cwd = pwd
 
-    let full_paths = $path_candidate | update name { [$root $in] | path join }
-
-    try { $full_paths | update name { path relative-to (pwd) } } catch { $full_paths }
+    $path_candidate
+    | update name { [$root $in] | path join }
+    # Why: names are cwd-relative only when `$path` sits under cwd; otherwise they stay absolute.
+    # The trailing slash keeps `/a/bc` from passing as "under" `/a/b`. `--no-symlink` keeps the
+    # logical path, the same one `pwd` and `find-root` report, so a symlinked cwd still matches.
+    | if ($path | path expand --no-symlink | path join '' | str starts-with ($cwd | path join '')) { update name { path relative-to $cwd } } else { }
     | sort-by commit-ts --reverse
 }
 
