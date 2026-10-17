@@ -54,12 +54,12 @@ export def 'in-vd' [
         if $no_convert { } else { vd-friendly }
         | to csv
         | ansi strip
-        | vd --save-filetype json --filetype csv -o -
+        | vd --filetype csv --output-filetype json -o -
         | complete
         | get stdout
     } else {
         to json --raw
-        | vd --save-filetype json --filetype json -o -
+        | vd --filetype json --output-filetype json -o -
         | complete
         | get stdout
     }
