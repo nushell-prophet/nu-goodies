@@ -103,6 +103,12 @@ def vd-friendly []: any -> any {
 # false
 # > [{a: {c: d}, b: e}] | has_hier
 # true
+# > [{a: null}, {a: [x]}] | has_hier
+# true
+#
+# Why: a nested type can sit inside `oneof<nothing, list<string>>` (`ps --long`), not only
+# after `: `. A type name is never followed by `:`, a column name always is.
+# Not `describe --detailed` because: it builds a record per cell — 477ms vs 3ms on 10k rows.
 def has_hier []: any -> bool {
-    describe | $in !~ '^table(?!.*: (table|record|list))'
+    describe | $in !~ '^table(?!.*[ <](table|record|list)\b(?!:))'
 }
