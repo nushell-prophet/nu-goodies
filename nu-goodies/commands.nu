@@ -1032,13 +1032,38 @@ export def 'nu-format' [
     } else { }
 }
 
-def 'completions-files-modified' [context: string]: nothing -> record {
-    $context
-    | split row ' '
-    | last
+# Resolve a path to one relative to cwd: as typed when it exists there, else from the repo root
+def 'path from-root' []: string -> string {
+    let typed = $in
+    if ($typed | path exists) and not ($typed starts-with '/') { return $typed }
+
+    let root = find-root
+    let target = if ($typed | path exists) { $typed } else if $root != null and ($root | path join $typed | path exists) {
+        $root | path join $typed
+    } else {
+        error make {msg: $'no file `($typed)` from cwd or from the repo root'}
+    }
+    | path expand --no-symlink
+
+    # Why: an absolute path outside the repo reads better as is than as a chain of `..`
+    if $root == null or not ($target | path join '' | str starts-with ($root | path join '')) { return $target }
+
+    let from = pwd | path split
+    let to = $target | path split
+    let common = $from | zip $to | take while {|pair| $pair.0 == $pair.1 } | length
+    $from | skip $common | each { '..' } | append ($to | skip $common) | path join
+}
+
+def 'completions-files-modified' [token: record]: nothing -> record {
+    let typed = $token.text
+    let resolved = if $typed == '' { $typed } else { try { $typed | path from-root } catch { $typed } }
+    # Why: nushell filters suggestions by the typed text, which a path rewritten from the repo root never matches
+    let filter = $resolved == $typed
+
+    $resolved
     | if ($in | path type) == 'dir' and $in != '' {
         path join '*' | into glob | ls $in
-    } else { ls }
+    } else if not $filter { ls $in } else { ls }
     | sort-by modified --reverse
     | select name modified
     | update name { if $in has ' ' { $'`($in)`' } else { } }
@@ -1050,15 +1075,18 @@ def 'completions-files-modified' [context: string]: nothing -> record {
             completion_algorithm: fuzzy
             positional: false
             sort: false
+            filter: $filter
         }
         completions: $in
     }
 }
 
 # Resolve symlinks and return target paths, sorted by modification time
+# A path written from the repo root becomes relative to cwd; a path found nowhere is an error
 @category filesystem
 export def 'fs' [...files: path@completions-files-modified]: nothing -> any {
     $files
+    | each { path from-root }
     | uniq
     | each {|i|
         $i
