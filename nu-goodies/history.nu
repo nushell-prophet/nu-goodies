@@ -245,7 +245,7 @@ def 'update-dead-dirs' []: nothing -> list<string> {
 # Find first existing path from candidates, recording dead ones along the way
 def 'find-first-existing' [
     candidates: list<string>
-]: nothing -> string {
+]: nothing -> oneof<string, nothing> {
     $candidates
     | par-each --keep-order {|path|
         if ($path | path exists) {
