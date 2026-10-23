@@ -1,12 +1,12 @@
 # Render any value as lines of text
-def to-lines []: any -> list<string> {
+export def to-lines []: any -> list<string> {
     table | into string | lines
 }
 
 # Truncate to a visible width while preserving ANSI escape codes.
 # Why: `str substring --grapheme-clusters` counts ANSI bytes as graphemes, so we
 # walk the string and skip CSI sequences from the visible count.
-def truncate-visible [width: int]: string -> string {
+export def truncate-visible [width: int]: string -> string {
     let chars = $in | split chars
     let n = $chars | length
     let esc = "\u{1b}"
@@ -14,8 +14,10 @@ def truncate-visible [width: int]: string -> string {
     mut i = 0
     mut visible = 0
     mut state = 'normal'
+
     while $i < $n {
         let c = $chars | get $i
+
         match $state {
             'normal' => {
                 if $c == $esc {
@@ -55,7 +57,7 @@ export def 'screen center' [
 ]: any -> string {
     let input = $in | to-lines | str trim --right
 
-    let max_length = $input | each { ansi strip | str length --grapheme-clusters } | math max
+    let max_length = $input | ansi strip | str length --grapheme-clusters | math max
     let term_width = (term size).columns / $factor
     let left_pad = [0 (($term_width - $max_length) // 2)] | math max
     let padding = ('' | fill --character ' ' --width ($left_pad | into int))
@@ -64,6 +66,7 @@ export def 'screen center' [
 
     let centered = if $vertical {
         let top_pad = [0 ((((term size).rows - ($input | length)) // 2))] | math max
+
         (0..<$top_pad | each { '' }) ++ $centered
     } else {
         $centered
@@ -87,10 +90,7 @@ export def 'screen splash' [
 }
 
 # Tile another output to the right of the piped input
-#
-# > "ab\ncd" | tile-right { "12\n34" }
-# ab  12
-# cd  34
+@example two-columns { "ab\ncd" | tile-right { "12\n34" } } --result "ab  12\ncd  34"
 @category terminal
 export def 'tile-right' [
     right: closure # Closure producing the right panel
@@ -100,7 +100,7 @@ export def 'tile-right' [
     let left = $in | to-lines
     let right_lines = do $right | to-lines
 
-    let left_width = $left | each { ansi strip | str length --grapheme-clusters } | math max
+    let left_width = $left | ansi strip | str length --grapheme-clusters | math max
     let left_n = $left | length
     let right_n = $right_lines | length
     let gap_str = ('' | fill --character ' ' --width $gap)
@@ -123,16 +123,14 @@ export def 'tile-right' [
 }
 
 # Tile another output below the piped input
-#
-# > "ab" | tile-down { "cd" }
-# ab
-# cd
+@example two-rows { "ab" | tile-down { "cd" } } --result "ab\ncd"
 @category terminal
 export def 'tile-down' [
     bottom: closure # Closure producing the bottom panel
     --gap: int = 0 # Number of blank lines between panels
 ]: any -> string {
     let separator = 1..($gap + 1) | each { (char nl) } | str join
+
     ($in | to-lines | str join (char nl)) + $separator + (do $bottom | to-lines | str join (char nl))
 }
 
@@ -144,6 +142,7 @@ export def 'tile-left' [
     --no-truncate (-T) # Don't truncate lines to terminal width
 ]: any -> string {
     let right = $in
+
     do $left | tile-right --no-truncate=$no_truncate --gap $gap { $right }
 }
 
@@ -154,5 +153,6 @@ export def 'tile-up' [
     --gap: int = 0 # Number of blank lines between panels
 ]: any -> string {
     let bottom = $in
+
     do $top | tile-down --gap $gap { $bottom }
 }

@@ -47,10 +47,10 @@ export def 'wez-to-gif' [
             | default $'_wez_gif_(date now | format date `%s`).gif'
         )
 
-    ^agg --font-family $font_family --font-size $font_size -v $wezrec $gif_name
+    ^agg --font-family $font_family --font-size $font_size --verbose $wezrec $gif_name
     print ''
 
-    ^open -R $gif_name # Reveal in Finder
+    ^open --reveal $gif_name # Reveal in Finder
 }
 
 # Capture wezterm scrollback, split by prompts, output chosen ones to an image file
@@ -60,7 +60,7 @@ export def 'wez-to-gif' [
 
 # use wez-to-ansi.nu
 
-def 'default-image-path' [
+export def 'default-image-path' [
     filename: string
 ]: nothing -> path {
     ['~/temp/freeze_images/' (pwd | path split | last)]
@@ -90,27 +90,29 @@ export def 'ansi-to-png' [
     --recolor: record = {'#55cc55': '#89fc6e', '#cdcd55': '#cdcd68'} # Why: ansisvg only loads its bundled schemes (no custom-palette file) and never bold-brightens, so bold green (1;32) comes out plain #55cc55. Real wezterm bold-brightens it. These swaps (measured off the real terminal) nudge Wez's green/yellow to what wezterm actually shows. Maps source-hex -> target-hex, applied to the SVG before rasterizing. Pass `--recolor {}` to disable.
     --show
 ]: string -> path {
-    let $out = $out | default (next_img_path)
+    let out = $out | default (next-img-path)
     # Not ansisvg --fontfile + resvg because: resvg ignores SVG @font-face and CSS class selectors,
     # so colors collapse to grey. rsvg-convert (librsvg) handles both via fontconfig + simplecss.
     let width_args = if $width > 0 { [--width $width] } else { [] }
-    let $svg = $in
+    let svg = $in
         | ansisvg --transparent --fontname $font_name --fontsize $font_size --lineheight $line_height --colorscheme $colorscheme ...$width_args
+
     $recolor
     | transpose from to
     | reduce --fold $svg {|it, acc| $acc | str replace --all $it.from $it.to }
-    | rsvg-convert -b $background -o $out
+    | rsvg-convert --background-color $background --output $out
     if $show { chafa $out }
     $out
 }
 
-def 'next_img_path' []: nothing -> string {
-    let $nums = ls
+export def 'next-img-path' []: nothing -> string {
+    let nums = ls
         | get name
-        | each {|n| $n | parse --regex `^img(?<n>\d+)\.png$` | get n.0? }
-        | compact
-        | each { into int }
-    let $next = ($nums | append 0 | math max) + 1
+        | parse --regex `^img(?<n>\d+)\.png$`
+        | get n
+        | into int
+    let next = ($nums | append 0 | math max) + 1
+
     $'img($next).png'
 }
 
@@ -123,12 +125,13 @@ export def 'install-deps' []: nothing -> nothing {
         # Not brew because: ansisvg has no formula. Go install puts the binary in $GOPATH/bin;
         # symlink into brew prefix so it lands on the same PATH as the rest.
         if (which go | is-empty) {
-            error make {msg: 'go required to install ansisvg; install go first'}
+            error make {msg: 'go required to install ansisvg' help: 'install go first'}
         }
         print 'installing ansisvg...'
         ^go install github.com/wader/ansisvg@latest
-        let $src = ^go env GOPATH | str trim | path join 'bin' 'ansisvg'
-        let $dst = ^brew --prefix | str trim | path join 'bin' 'ansisvg'
+        let src = ^go env GOPATH | str trim | path join 'bin' 'ansisvg'
+        let dst = ^brew --prefix | str trim | path join 'bin' 'ansisvg'
+
         ^ln -sf $src $dst
     }
     if (which rsvg-convert | is-empty) {
@@ -139,10 +142,11 @@ export def 'install-deps' []: nothing -> nothing {
         print 'installing chafa...'
         ^brew install chafa
     }
-    let $font_installed = [
+    let font_installed = [
         '~/.local/share/fonts/ZedMonoNerdFont-Extended.ttf'
         '~/Library/Fonts/ZedMonoNerdFont-Extended.ttf'
-    ] | each { path expand } | any {|p| $p | path exists }
+    ] | path expand | any {|p| $p | path exists }
+
     if not $font_installed {
         print 'installing ZedMono Nerd Font...'
         ^brew install --cask font-zed-mono-nerd-font
@@ -164,10 +168,10 @@ export def 'wez-to-png' [
         default-image-path $filename
     }
 
-    wez-to-ansi | ansi-to-png $output_path | ^open -R $in
+    wez-to-ansi | ansi-to-png $output_path | ^open --reveal $in
 }
 
-def 'last-commands' [
+export def 'last-commands' [
     n_last_commands: int
 ]: nothing -> string {
     get-last-commands-from-sql ($n_last_commands + 1)
@@ -178,7 +182,7 @@ def 'last-commands' [
 
 # Last `limit` commands of the current session, newest first.
 # Empty when history is plain-text: no session_id column to scope by.
-def 'session-commands' [limit: int]: nothing -> list<string> {
+export def 'session-commands' [limit: int]: nothing -> list<string> {
     if ($nu.history-path | str ends-with 'txt') { return [] }
 
     open $nu.history-path
@@ -186,7 +190,7 @@ def 'session-commands' [limit: int]: nothing -> list<string> {
     | get command_line
 }
 
-def 'completions-copy-out' []: nothing -> list<record<value: int, description: string>> {
+export def 'completions-copy-out' []: nothing -> list<record<value: int, description: string>> {
     let width = term size | get columns | $in - 5
 
     session-commands 20
@@ -199,25 +203,27 @@ def 'completions-copy-out' []: nothing -> list<record<value: int, description: s
     }
 }
 
-def 'zellij-dump-prompts' [
+export def 'zellij-dump-prompts' [
     indices: list<int>
     --name: string = 'scrollback'
 ]: nothing -> record<raw_lines: list<string>, reversed_prompts: list<int>> {
     let tmp = $nu.temp-dir | path join $'($name).txt'
+
     zellij action dump-screen --path $tmp --full
 
     let raw_lines = open $tmp | lines
-    let stripped = $raw_lines | each { ansi strip }
+    let stripped = $raw_lines | ansi strip
 
     # Why: the prompt renders each command as `\n┏ path …\n┗━> cmd` (transient
     # prompt disabled), so `┗━> ` marks the command line in scrollback.
     # Keep in sync with create-left-prompt in dotfiles/nushell/env.nu.
     let prompts = $stripped
         | enumerate
-        | where { $in.item =~ '^┗━> ' }
+        | where item =~ '^┗━> '
         | get index
 
     let max_n = $indices | math max
+
     if ($prompts | length) < ($max_n + 1) {
         error make --unspanned {msg: $"Not enough commands in scrollback \(need ($max_n + 1) prompts\)"}
     }
@@ -226,7 +232,7 @@ def 'zellij-dump-prompts' [
 }
 
 # Slice scrollback lines between two prompts (indices into reversed_prompts)
-def 'prompt-block' [
+export def 'prompt-block' [
     lines: list<string>
     reversed_prompts: list<int>
     from: int
@@ -243,9 +249,9 @@ def 'prompt-block' [
 }
 
 # Look up a command in session history by matching its first line
-def 'match-history-command' [
+export def 'match-history-command' [
     first_line: string
-]: nothing -> any {
+]: nothing -> oneof<record, nothing> {
     let match = session-commands 100
         | where { ($in | lines | first | str trim --right) == ($first_line | str trim --right) }
         | get 0?
@@ -255,7 +261,7 @@ def 'match-history-command' [
 }
 
 # Format a scrollback block (command + output) using history-assisted splitting
-def 'format-block' [
+export def 'format-block' [
     block: list<string>
     no_comment: bool
 ]: nothing -> string {
@@ -274,10 +280,11 @@ def 'format-block' [
             | each {
                 if ($in | is-empty) { } else { str c '# => ' $in }
             }
+
         $command_text | append $output | str join (char nl)
     } else {
         print --stderr "note: command not found in history, outputting raw"
-        $block | each { str replace --regex '^┗━> ' '' } | str join (char nl)
+        $block | str replace --regex '^┗━> ' '' | str join (char nl)
     }
 }
 
@@ -295,12 +302,12 @@ export def 'copy-out' [
     --ansi (-a) # Keep ANSI escape codes
     --no-comment (-C) # Don't comment output with # =>
     --cwd # Include CWD into first line comment
-]: nothing -> any {
-    let indices = $rest | if ($in | is-empty) { [1] } else { }
+]: nothing -> oneof<string, nothing> {
+    let indices = $rest | default --empty [1]
 
     let dump = zellij-dump-prompts $indices --name 'copy-out'
     let output_lines = $dump.raw_lines
-        | if $ansi { } else { each { ansi strip } }
+        | if $ansi { } else { ansi strip }
 
     $indices
     | each {|n|
@@ -320,6 +327,7 @@ export def 'in-pane' [
     --right (-r) # Split right instead of down
 ]: nothing -> nothing {
     let direction = if $right { 'right' } else { 'down' }
+
     zellij action new-pane --close-on-exit --direction $direction -- nu --execute $command | ignore
 }
 
@@ -351,7 +359,7 @@ export def 'zellij-to-png' [
     ...rest: int@completions-copy-out # Command indices (1 = last)
     --output-path: path = '' # Path for saving output image
 ]: nothing -> nothing {
-    let indices = $rest | if ($in | is-empty) { [1] } else { }
+    let indices = $rest | default --empty [1]
 
     let dump = zellij-dump-prompts $indices --name 'zellij-to-png'
 
@@ -372,5 +380,5 @@ export def 'zellij-to-png' [
         default-image-path $filename
     }
 
-    $out | ansi-to-png $output_path | ^open -R $in
+    $out | ansi-to-png $output_path | ^open --reveal $in
 }

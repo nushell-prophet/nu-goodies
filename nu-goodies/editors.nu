@@ -50,16 +50,16 @@ export def 'in-vd' [
     if ($in | describe | $in =~ 'FrameCustomValue') {
         polars into-nu
     } else { }
-    | if $csv or not (($in | has_hier) or $json) {
+    | if $csv or not (($in | has-hier) or $json) {
         if $no_convert { } else { vd-friendly }
         | to csv
         | ansi strip
-        | vd --filetype csv --output-filetype json -o -
+        | vd --filetype csv --output-filetype json --output -
         | complete
         | get stdout
     } else {
         to json --raw
-        | vd --filetype json --output-filetype json -o -
+        | vd --filetype json --output-filetype json --output -
         | complete
         | get stdout
     }
@@ -84,7 +84,7 @@ export def 'in-vd' [
 # all, and `update <col>` / `into int <col>` then fail with `Cannot find column`. Per-cell
 # costs about 2x (10k rows x 6 cols: +106ms vs +48ms over a 21ms `to csv`) — invisible next
 # to starting a TUI.
-def vd-friendly []: any -> any {
+export def vd-friendly []: any -> any {
     let input = $in
 
     if ($input | describe | $in !~ '^(table|record)') { return $input }
@@ -99,16 +99,16 @@ def vd-friendly []: any -> any {
     }
 }
 
-# > [{a: b, c: d}] | has_hier
+# > [{a: b, c: d}] | has-hier
 # false
-# > [{a: {c: d}, b: e}] | has_hier
+# > [{a: {c: d}, b: e}] | has-hier
 # true
-# > [{a: null}, {a: [x]}] | has_hier
+# > [{a: null}, {a: [x]}] | has-hier
 # true
 #
 # Why: a nested type can sit inside `oneof<nothing, list<string>>` (`ps --long`), not only
 # after `: `. A type name is never followed by `:`, a column name always is.
 # Not `describe --detailed` because: it builds a record per cell — 477ms vs 3ms on 10k rows.
-def has_hier []: any -> bool {
+export def has-hier []: any -> bool {
     describe | $in !~ '^table(?!.*[ <](table|record|list)\b(?!:))'
 }

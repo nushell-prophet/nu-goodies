@@ -1,5 +1,5 @@
 ###file O.nu
-def completions-macos-apps []: nothing -> list<string> {
+export def completions-macos-apps []: nothing -> list<string> {
     ls /Applications --short-names | get name | each { str replace '.app' '' | $'"($in)"' }
 }
 
@@ -13,7 +13,7 @@ export def 'O' [
 ]: [path -> nothing nothing -> nothing] {
     if $filepath == null { } else { $filepath }
     | if $reveal {
-        ^open -R $in
+        ^open --reveal $in
     } else {
         ^open -a $app $in
     }
@@ -26,6 +26,7 @@ export def 'ramdisk-create' [
     size: filesize = 4194304kb
 ]: nothing -> nothing {
     let vol = (hdiutil attach -nobrowse -nomount $'ram://($size | into int | $in * 1.024 / 1000 * 2)' | str trim);
+
     sleep 2sec
     (^diskutil erasevolume HFS+ RAMDisk $vol)
     cd /Volumes/RAMDisk

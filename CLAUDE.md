@@ -129,7 +129,7 @@ The codebase guards against plain-text history format and expects SQLite format 
 ## Conventions
 
 - Commands use Nushell's typed input/output signatures (e.g., `]: string -> string {`)
-- Helpers are hidden by leaving them out of `mod.nu`, not by their definition keyword — several (`cprint.nu`'s `wrapit`, `colorit`, …) are `export def` yet stay private because `mod.nu` does not re-export them
+- Every command in a submodule that `mod.nu` imports is `export def`, so a test can `use <file>.nu`; `mod.nu` names the public ones, and a helper is private because `mod.nu` leaves it out
 - `mod.nu` controls the public API by selectively importing from each submodule - commented-out entries are intentionally hidden
 - When extracting a command to a new file, the command named the same as the module file must be renamed to `main` (Nushell restriction)
 - The `str c` command (string concatenation) is used extensively instead of string interpolation for building strings

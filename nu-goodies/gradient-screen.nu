@@ -18,7 +18,7 @@ export def --env main [
     --no-date # Don't append date
     --echo
     --rows: int
-]: nothing -> any {
+]: nothing -> oneof<string, nothing> {
     let strings = $strings
         | if $in == [] {
             $env.gradient-screen?.texts?
@@ -50,7 +50,7 @@ export def --env main [
     }
 }
 
-def apply-gradient [
+export def apply-gradient [
     chars: list<string>
     pattern_len: int
     colors: list<string>
@@ -70,7 +70,7 @@ def apply-gradient [
     | $'($in)(ansi reset)'
 }
 
-def build-screen-buffer [
+export def build-screen-buffer [
     strings: list<string>
     screen_size: int
     --no-date
@@ -116,7 +116,7 @@ def build-screen-buffer [
     }
 }
 
-def split-ansi-chars [s: string]: nothing -> list<string> {
+export def split-ansi-chars [s: string]: nothing -> list<string> {
     # Pattern to match: escape sequence + one character (no reset needed for gradients)
     let pat = "(\e\\[[0-9;]*m)+(.)"
 
@@ -128,15 +128,15 @@ def split-ansi-chars [s: string]: nothing -> list<string> {
     | compact --empty
 }
 
-def generate-colors []: nothing -> list<int> { 1..3 | each { (random int 0..255) } }
+export def generate-colors []: nothing -> list<int> { 1..3 | each { (random int 0..255) } }
 
-def make-hex []: list<int> -> string { each { into binary --compact | encode hex } | prepend '0x' | str join }
+export def make-hex []: list<int> -> string { each { into binary --compact | encode hex } | prepend '0x' | str join }
 
-def check-colors [c0: list<int> c1: list<int> --threshold: int = 250]: nothing -> bool {
+export def check-colors [c0: list<int> c1: list<int> --threshold: int = 250]: nothing -> bool {
     ($c0 | zip $c1 | each {|i| ($i.0 - $i.1) ** 2 } | math sum | math sqrt) > $threshold
 }
 
-def rand-hex-col2 []: nothing -> list<string> {
+export def rand-hex-col2 []: nothing -> list<string> {
     # Try up to 30 times to find contrasting colors
     let pair = generate {|i = 0|
         if $i >= 30 { return {} }
@@ -156,6 +156,7 @@ def rand-hex-col2 []: nothing -> list<string> {
     $pair | default {
         let c0 = generate-colors
         let rand = random int 100..180
+
         [$c0 ($c0 | each { ($in + $rand) mod 255 })]
     }
     | each { make-hex }

@@ -7,7 +7,7 @@ export def 'L' [
     --abbreviated (-a): int = 1000
     --bat (-b) # Use bat instead of less
 ]: any -> nothing {
-    table -e --abbreviated $abbreviated | into string | if $bat { bat } else { less -R }
+    table --expand --abbreviated $abbreviated | into string | if $bat { bat } else { less --RAW-CONTROL-CHARS }
 }
 
 # use std repeat
@@ -82,6 +82,7 @@ export def 'cargo-updates' [
             let latest = try {
                 let cr = http get --headers [User-Agent "nu-goodies cargo-updates"] $"https://crates.io/api/v1/crates/($c.name)"
                     | get crate
+
                 # Why: prefer the latest *stable* release; fall back to newest only for
                 # crates that have never cut a stable version.
                 $cr.max_stable_version | default $cr.newest_version
@@ -98,22 +99,24 @@ export def 'cargo-updates' [
     }
 
     $checked
-    | if $outdated { where updatable } else { $in }
+    | if $outdated { where $it.updatable } else { $in }
     | sort-by name
     | sort-by updatable --reverse # stable sort: updatable crates float to the top, names stay ordered
 }
 
 # True if version string $a is older than $b, compared by numeric release parts.
 # Pre-release (`-rc.1`) and build (`+sha`) metadata are dropped before comparing.
-def semver-lt [a: string, b: string]: nothing -> bool {
-    let pa = $a | split row '+' | first | split row '-' | first | split row '.' | each { into int }
-    let pb = $b | split row '+' | first | split row '-' | first | split row '.' | each { into int }
+export def semver-lt [a: string, b: string]: nothing -> bool {
+    let pa = $a | split row '+' | first | split row '-' | first | split row '.' | into int
+    let pb = $b | split row '+' | first | split row '-' | first | split row '.' | into int
     let n = [($pa | length) ($pb | length)] | math max
     let pa = $pa | append (0..<$n | each { 0 }) | first $n # right-pad with zeros so 1.2 vs 1.2.0 compare equal
     let pb = $pb | append (0..<$n | each { 0 }) | first $n
+
     for i in 0..<$n {
         let x = $pa | get $i
         let y = $pb | get $i
+
         if $x != $y { return ($x < $y) }
     }
     false
@@ -175,9 +178,7 @@ export def 'example' [
 # This is how empty columns are represented
 # > [{a: 1} {b: 2}] | to nuon
 # [{a: 1}, {b: 2}]
-#
-# > [{a: 1} {b: 2}] | fill non-exist | to nuon
-# [{a: 1, b: ""}, {b: 2, a: ""}]
+@example fill-missing-columns { [{a: 1} {b: 2}] | fill non-exist | to nuon } --result '[{a: 1, b: ""}, {b: 2, a: ""}]'
 @category filters
 export def 'fill non-exist' [
     value_to_replace: any = ''
@@ -196,7 +197,7 @@ export def 'fill non-exist' [
 @category development
 export def 'format profile' []: table -> table {
     skip
-    | update depth {|i| $i.depth - 1 }
+    | update depth { $in - 1 }
     | normalize duration_ms
     | update duration_ms_norm { bar $in --width 16 }
     | if 'span' not-in ($in | columns) {
@@ -323,7 +324,8 @@ export def --env mc [
 ]: nothing -> nothing {
     let path = ($nu.temp-dir | path join (random chars))
     let dirs = [$path1 $path2] | compact
-    ^mc --nosubshell ...$dirs -P $path
+
+    ^mc --nosubshell ...$dirs --printwd $path
     if ($path | path exists) {
         cd (open --raw $path)
         rm $path
@@ -389,7 +391,7 @@ export def 'normalize' [
     ...column_names: string
     --suffix: string = '_norm'
 ]: table -> table {
-    mut $table = ($in)
+    mut table = $in
     let allowed_types = ['int' 'float' 'filesize']
 
     for column in $column_names {
@@ -492,12 +494,13 @@ export def --env download-nushell-nightly [
     print $"Downloading to:(char lf)($destination_file)"
 
     http get $asset.browser_download_url | save $destination_file
-    tar -C $nightly_path -xzf $destination_file
+    tar --directory $nightly_path --extract --gzip --file $destination_file
 }
 
 # Launch the most recent downloaded nightly Nushell
 export def 'launch-downloaded' []: nothing -> nothing {
     let path = glob ($nightly_path | path join *darwin *nu) | sort | last
+
     commandline edit --replace $path
 }
 
@@ -559,18 +562,10 @@ export def 'number-col-format' [
 # use significant-digits.nu
 
 # Format big numbers nicely
-#
-# > number-format 1000 --thousands-delim "'"
-# 1'000
-#
-# > number-format 123 --integers 6
-#    123
-#
-# > number-format 1000.1234 --decimals 2
-# 1_000.12
-#
-# > number-format 1000 --denom 'Wt'
-# 1_000Wt
+@example thousands-delimiter { number-format 1000 --thousands-delim "'" | ansi strip } --result "1'000"
+@example padding { number-format 123 --integers 6 | ansi strip } --result '   123'
+@example decimals { number-format 1000.1234 --decimals 2 | ansi strip } --result '1_000.12'
+@example denomination { number-format 1000 --denom 'Wt' | ansi strip } --result '1_000Wt'
 @category conversions
 export def 'number-format' [
     num?: number # Number to format
@@ -621,7 +616,7 @@ export def 'orbita' []: nothing -> list<string> {
     1..14 | each { line ' ' }
 }
 
-def line [
+export def line [
     symbol: string
 ]: nothing -> string {
     1..61 | each { $symbol } | str join
@@ -762,14 +757,15 @@ export def 'tarq' [
     # Why: excludes go before the file list — bsdtar (macOS) only applies
     # --exclude to paths that come after it; GNU tar doesn't care
     let excludes = $ignore | each { $'--exclude=($in)' }
-    tar -czf $archive ...$excludes -- ...$paths
+
+    tar --create --gzip --file $archive ...$excludes -- ...$paths
 
     $archive
 }
 
 # checks for toolkit.nu file in the dir, and puts into commandline `overlay use as tk`
 @category development
-export def --env 'tt' [] {
+export def --env 'tt' []: nothing -> oneof<table, nothing> {
     if ('toolkit.nu' | path exists) {
         commandline edit "overlay use 'toolkit.nu' --prefix as tk; commandline edit 'tk'"
     } else {
@@ -809,20 +805,21 @@ export def 'transcribe' [file: path]: nothing -> nothing {
     let file = $file
         | if $in =~ '\.wav$' { } else {
             let f = $in + '.wav';
+
             ffmpeg -i $file -ar 16000 $f;
             $f
         }
 
     (
-        ^~/git/whisper.cpp/build/bin/whisper-cli -f $file
-        -m ~/git/whisper.cpp/models/ggml-base.en.bin
-        -otxt $'($file).txt' -osrt $'($file).srt' -np
+        ^~/git/whisper.cpp/build/bin/whisper-cli --file $file
+        --model ~/git/whisper.cpp/models/ggml-base.en.bin
+        --output-txt $'($file).txt' --output-srt $'($file).srt' --no-prints
     )
 }
 
 # riggrep to output table to capture paths via "[^\\s│]+:\\d+:\\d+" in wezterm
 @category development
-export def 'rgv' --wrapped [...rest] {
+export def --wrapped 'rgv' [...rest]: any -> table {
     rg --vimgrep ...$rest
     | lines
     | each {
@@ -832,7 +829,7 @@ export def 'rgv' --wrapped [...rest] {
 }
 
 # Find files matching the glob that contain the fixed string
-def 'files-containing' [
+export def 'files-containing' [
     find: string
     glob_pattern: string
     no_rg: bool = false
@@ -854,7 +851,7 @@ def 'files-containing' [
 
 # Replace a fixed string in the given files; return the changed lines
 # as a table with rgv-style `path:line:col` links
-def 'replace-in-files' [
+export def 'replace-in-files' [
     find: string
     replace: string
     files: list<string>
@@ -890,7 +887,7 @@ export def 'replace-in-all-files' [
     --no-git-check # Skip uncommitted changes check
     --no-rg # Use Nushell instead of ripgrep
     --extensions: list<string> = [nu md py] # File extensions to process
-]: nothing -> any {
+]: nothing -> oneof<table, nothing> {
     let glob = $extensions
         | str join ','
         | str c '**/*.{' $in '}'
@@ -904,6 +901,7 @@ export def 'replace-in-all-files' [
 
     if not $quiet {
         let field_name = $'total .($extensions) files'
+
         # I use record here just for decoration
         print {
             $field_name: (glob --no-dir $glob | length)
@@ -926,7 +924,7 @@ export def 'mv-update-links' [
     --quiet # Suppress the changed-lines table
     --no-git-check # Skip uncommitted changes check
     --extensions: list<string> = [nu md py] # File extensions to scan for references
-]: nothing -> any {
+]: nothing -> oneof<table, nothing> {
     if not ($from | path exists) {
         error make {
             msg: 'file to move not found'
@@ -971,6 +969,7 @@ export def 'mv-update-links' [
     let changes = $pairs
         | each {|pair|
             let files = files-containing $pair.find $glob
+
             replace-in-files $pair.find $pair.replace $files
         }
         | flatten
@@ -994,7 +993,7 @@ export def git-check-file-clean [
 }
 
 # Insert new lines before the pipe symbol and let/mut
-def 'insert-new-lines' []: string -> string {
+export def 'insert-new-lines' []: string -> string {
     let cmd = $in
 
     ast --flatten $cmd
@@ -1033,8 +1032,9 @@ export def 'nu-format' [
 }
 
 # Resolve a path to one relative to cwd: as typed when it exists there, else from the repo root
-def 'path from-root' []: string -> string {
+export def 'path from-root' []: string -> string {
     let typed = $in
+
     if ($typed | path exists) and not ($typed starts-with '/') { return $typed }
 
     let root = find-root
@@ -1051,10 +1051,11 @@ def 'path from-root' []: string -> string {
     let from = pwd | path split
     let to = $target | path split
     let common = $from | zip $to | take while {|pair| $pair.0 == $pair.1 } | length
+
     $from | skip $common | each { '..' } | append ($to | skip $common) | path join
 }
 
-def 'completions-files-modified' [token: record]: nothing -> record {
+export def 'completions-files-modified' [token: record]: nothing -> record {
     let typed = $token.text
     let resolved = if $typed == '' { $typed } else { try { $typed | path from-root } catch { $typed } }
     # Why: nushell filters suggestions by the typed text, which a path rewritten from the repo root never matches
@@ -1152,12 +1153,12 @@ export def 'fzf-preview' [
     let preview = 'f={}
 l=0
 if ! [ -r "$f" ]; then
-  rest=$(printf %s "$f" | grep -oE ":[0-9]+(:[0-9]+)?$")
+  rest=$(printf %s "$f" | grep --only-matching --extended-regexp ":[0-9]+(:[0-9]+)?$")
   if [ -n "$rest" ]; then
     base=${f%$rest}
     if [ -r "$base" ]; then
       f=$base
-      l=$(printf %s "$rest" | grep -oE "[0-9]+" | head -1)
+      l=$(printf %s "$rest" | grep --only-matching --extended-regexp "[0-9]+" | head -1)
     fi
   fi
 fi
@@ -1212,7 +1213,7 @@ export def --env cd-root [dir?: path]: [nothing -> nothing] {
 # Rename Zellij tab, auto-incrementing duplicates
 @category terminal
 export def rename-tab [name: string = '']: nothing -> nothing {
-    let name = if $name == '' { pwd | path basename | str replace -r '^-+' '' } else { $name }
+    let name = if $name == '' { pwd | path basename | str replace --regex '^-+' '' } else { $name }
 
     let name_with_index = zellij action query-tab-names
         | lines

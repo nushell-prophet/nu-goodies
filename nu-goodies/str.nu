@@ -3,11 +3,12 @@ export def 'str repeat' [
     n: int
 ]: string -> string {
     let text = $in
+
     seq 1 $n | each { $text } | str join
 }
 
 # Build the separator between input and rest from the convenience flags
-def 'build-concatenator' [
+export def 'build-concatenator' [
     new_line: bool
     tab: bool
     two_space: bool
@@ -59,7 +60,7 @@ export def 'escape-nushell-escapes' []: string -> string {
     str replace --all --regex '(\\|\"|\/|\(|\)|\{|\}|\$|\^|\#|\||\~)' '\$1'
 }
 
-def 'now-fn' []: nothing -> string {
+export def 'now-fn' []: nothing -> string {
     date now | format date "%Y%m%d_%H%M%S"
 }
 
@@ -95,5 +96,6 @@ export def 'str c' [...rest: any]: nothing -> string { $rest | into string | str
 export def 'str to-raw-string' []: string -> string {
     let input = $in
     let hashes = $input | parse --regex '(#+)' | get capture0 | sort --reverse | get --optional 0 | default ''
+
     $"r#($hashes)'($input)'#($hashes)"
 }

@@ -113,6 +113,6 @@ export def 'indentit' [
     str replace --all --regex --multiline '^' (char sp | str repeat $indent)
 }
 
-def 'completions-colors' []: nothing -> list<string> {
+export def 'completions-colors' []: nothing -> list<string> {
     ansi --list | take until {|it| $it.name == reset } | get name
 }

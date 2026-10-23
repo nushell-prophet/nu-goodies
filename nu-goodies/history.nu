@@ -1,5 +1,3 @@
-alias core_hist = history
-
 use kv
 
 # use in-vd.nu
@@ -172,7 +170,7 @@ export def 'hist-to-script' [
 export def 'in-vd history' []: table -> nothing {
     where command !~ 'in-vd history'
     | to csv
-    | vd --save-filetype csv --filetype csv -o -
+    | vd --save-filetype csv --filetype csv --output -
     | complete
     | get stdout
     | if ($in == null) { return } else { }
@@ -186,13 +184,13 @@ export def 'in-vd history' []: table -> nothing {
 }
 
 # Helper function to initialize dead_cwds table if it doesn't exist
-def 'init-dead-cwds-table' []: nothing -> nothing {
+export def 'init-dead-cwds-table' []: nothing -> nothing {
     open $nu.history-path
     | query db "CREATE TABLE IF NOT EXISTS dead_cwds (path TEXT PRIMARY KEY, added_date TEXT DEFAULT CURRENT_TIMESTAMP)"
 }
 
 # Helper function to add a dead directory to the table
-def 'add-dead-dir' [
+export def 'add-dead-dir' [
     dir: string # Directory to add to dead dirs list
 ]: nothing -> nothing {
     # Insert new directory if it doesn't exist (parameterized to prevent SQL injection)
@@ -202,7 +200,7 @@ def 'add-dead-dir' [
 
 # Helper function to get all unique directories from command history
 # Now with SQL-level filtering against dead_cwds
-def 'get-history-dirs' [
+export def 'get-history-dirs' [
     --include-dead (-d) # Include nonexistent directories in the results
 ]: nothing -> list<string> {
     # Ensure dead_cwds table exists
@@ -227,13 +225,13 @@ def 'get-history-dirs' [
 }
 
 # Scan history directories and rebuild the dead_cwds table with non-existent paths
-def 'update-dead-dirs' []: nothing -> list<string> {
+export def 'update-dead-dirs' []: nothing -> list<string> {
     # Get all directories including those already marked as dead
     let all_cwds = get-history-dirs --include-dead
 
     # Check which directories no longer exist
     let dead_cwds = $all_cwds
-        | where {|dir| $dir | path exists | not $in }
+        | where not ($it | path exists)
 
     # Clear existing dead_cwds table and insert new values
     # (table already initialized by get-history-dirs above)
@@ -249,7 +247,7 @@ def 'update-dead-dirs' []: nothing -> list<string> {
 }
 
 # Find first existing path from candidates, recording dead ones along the way
-def 'find-first-existing' [
+export def 'find-first-existing' [
     candidates: list<string>
 ]: nothing -> oneof<string, nothing> {
     $candidates
@@ -266,7 +264,7 @@ def 'find-first-existing' [
 }
 
 # Select a directory path using fuzzy search
-def 'select-dir' [
+export def 'select-dir' [
     query: string # The search query
     --interactive (-i) # Force interactive mode
 ]: nothing -> string {
@@ -277,36 +275,36 @@ def 'select-dir' [
     }
 
     if $interactive {
-        return ($valid_cwds | fzf --scheme=path -q $query)
+        return ($valid_cwds | fzf --scheme=path --query $query)
     }
 
     # Try fuzzy finding first
-    let candidates = $valid_cwds | fzf -f $query | lines | first 10
+    let candidates = $valid_cwds | fzf --filter $query | lines | first 10
     let existing_path = find-first-existing $candidates
 
     if ($existing_path | is-empty) {
         # Fall back to interactive
-        $valid_cwds | fzf --scheme=path -q $query
+        $valid_cwds | fzf --scheme=path --query $query
     } else {
         $existing_path
     }
 }
 
 # Helper function to get open Zellij tab names
-def 'zellij-tab-names' []: nothing -> list<string> {
+export def 'zellij-tab-names' []: nothing -> list<string> {
     if ($env.ZELLIJ? | is-empty) { return [] }
     zellij action query-tab-names | lines
 }
 
 # Generate regex pattern to match Zellij tab by directory name
 # Matches "dirname" or "dirname·2" (indexed duplicates)
-def 'zellij-tab-pattern' [dir_name: string]: nothing -> string {
+export def 'zellij-tab-pattern' [dir_name: string]: nothing -> string {
     $"^($dir_name)\(·|$\)"
 }
 
 # Handle Zellij tab navigation: create new tab, switch to existing, or rename current.
 # Returns true if caller should cd (Zellij renamed tab), false if Zellij handled navigation.
-def 'zellij-navigate' [
+export def 'zellij-navigate' [
     path: string # Target directory path
     dir_name: string # Directory name for tab
     --new-tab (-n) # Open in new tab
@@ -321,7 +319,7 @@ def 'zellij-navigate' [
 
     # Check if tab with this name already exists
     let matching_tab = zellij-tab-names
-        | where { $in =~ (zellij-tab-pattern $dir_name) }
+        | where $it =~ (zellij-tab-pattern $dir_name)
         | get 0?
 
     let request: closure = {
