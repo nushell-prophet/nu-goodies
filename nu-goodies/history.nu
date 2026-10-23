@@ -56,7 +56,7 @@ export def 'hist' [
         duration_ms / 1000000.0 as duration_s, exit_status FROM history WHERE 1=1
     "
         | if $like_filter != null {
-            append $" AND command_line LIKE '%($like_filter)%'"
+            append " AND command_line LIKE ?"
         } else { }
         | append " AND command_line NOT LIKE 'hist %'" # Build where clauses based on parameters Exclude 'hist' commands
         | if $all_codes { } else { append " AND exit_status = 0" } # Only successful commands
@@ -66,7 +66,7 @@ export def 'hist' [
         } else { }
         | if $cwd {
             # Folder filter
-            append $" AND cwd = '(pwd)'"
+            append " AND cwd = ?"
         } else { }
         | if $last_x != null {
             # Time filter
@@ -78,8 +78,14 @@ export def 'hist' [
         } else { }
         | str join
 
+    # Why: the user's text and the path go as parameters, so a `'` in them cannot break the query.
+    # The order follows the `?` placeholders above.
+    let params = []
+        | if $like_filter != null { append $"%($like_filter)%" } else { }
+        | if $cwd { append (pwd) } else { }
+
     # Execute the query
-    let results = open $nu.history-path | query db $sql_query
+    let results = open $nu.history-path | query db $sql_query --params $params
 
     # Apply regex filters in Nushell (SQLite doesn't support all regex features)
     let filtered_results = if $regex_filters == [] {
