@@ -18,7 +18,8 @@ export def 'in-hx' [
 ]: any -> path {
     let input = $in
     let type = $input | describe
-    let filename = $nu.temp-dir | path join (date now | format date "%Y%m%d_%H%M%S" | $in + '.nu')
+    let filename = $nu.temp-dir
+        | path join (date now | format date %J_%Q | $'in-hx_($in).nu')
 
     $input
     | if ($type =~ '(table|record|list)') { to nuon --indent 4 } else { }
