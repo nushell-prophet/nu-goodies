@@ -11,11 +11,9 @@ export def --wrapped in-fx [
     | ^fx ...$rest
 }
 
-# Open data in Helix editor, return edited content to commandline
+# Open data in Helix editor, return the path of the edited file
 @category viewers
-export def 'in-hx' [
-    --path (-p) # Output file path instead of content
-]: any -> path {
+export def 'in-hx' []: any -> path {
     let input = $in
     let type = $input | describe
     let filename = $nu.temp-dir
