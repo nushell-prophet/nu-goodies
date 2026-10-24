@@ -15,7 +15,7 @@ export def --wrapped in-fx [
 @category viewers
 export def 'in-hx' [
     --path (-p) # Output file path instead of content
-]: any -> nothing {
+]: any -> path {
     let input = $in
     let type = $input | describe
     let filename = $nu.temp-dir | path join (date now | format date "%Y%m%d_%H%M%S" | $in + '.nu')
@@ -27,11 +27,7 @@ export def 'in-hx' [
 
     hx $filename
 
-    if $path {
-        print $filename
-    } else {
-        commandline edit --replace $"r######'(open $filename)'######"
-    }
+    $filename
 }
 
 # Open data in VisiData🔥
