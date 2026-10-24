@@ -1052,7 +1052,8 @@ export def 'path from-root' []: string -> string {
     let to = $target | path split
     let common = $from | zip $to | take while {|pair| $pair.0 == $pair.1 } | length
 
-    $from | skip $common | each { '..' } | append ($to | skip $common) | path join
+    $from | skip $common | each { '..' } | append ($to | skip $common)
+    | if ($in | is-empty) { '.' } else { path join }
 }
 
 export def 'completions-files-modified' [token: record]: nothing -> record {
